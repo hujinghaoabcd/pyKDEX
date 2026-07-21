@@ -9,12 +9,17 @@ Author:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any
 
 from pykdex.data import SpatialEvents
 from pykdex.data._utils import stable_fingerprint
 from pykdex.data.validation import DataValidationReport
+from pykdex.network.distance import (
+    NetworkDistanceAsset,
+    NetworkLocations,
+    build_event_lixel_distances,
+)
 from pykdex.network.events import NetworkEvents, SnapResult, snap_events
 from pykdex.network.linear_network import LinearNetwork
 from pykdex.network.support import LixelSupport
@@ -22,16 +27,17 @@ from pykdex.network.support import LixelSupport
 
 @dataclass(frozen=True)
 class NetworkWorkspace:
-    """Prepared network, snapped events, and measured lixel support.
+    """Prepared network, snapped events, lixels, and optional distances.
 
     A workspace is deliberately estimator-independent. Multiple future NKDE,
     heat-kernel, or temporal-network estimators can reuse the same topology,
-    snapping decisions, and lixel partition.
+    snapping decisions, lixel partition, and sparse distance neighbourhoods.
     """
 
     network: LinearNetwork
     snap_result: SnapResult
     lixels: LixelSupport
+    distance_asset: NetworkDistanceAsset | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.network, LinearNetwork):
@@ -40,6 +46,10 @@ class NetworkWorkspace:
             raise TypeError("snap_result must be a SnapResult instance.")
         if not isinstance(self.lixels, LixelSupport):
             raise TypeError("lixels must be a LixelSupport instance.")
+        if self.distance_asset is not None and not isinstance(
+            self.distance_asset, NetworkDistanceAsset
+        ):
+            raise TypeError("distance_asset must be NetworkDistanceAsset or None.")
         self.validate().raise_for_errors()
 
     @property
@@ -54,6 +64,7 @@ class NetworkWorkspace:
             self.network.fingerprint,
             None if self.events is None else self.events.fingerprint,
             self.lixels.fingerprint,
+            None if self.distance_asset is None else self.distance_asset.fingerprint,
             dict(self.snap_result.parameters),
         )
 
@@ -63,6 +74,18 @@ class NetworkWorkspace:
         report = report.combine(self.lixels.validate(self.network))
         if self.events is not None:
             report = report.combine(self.events.validate(self.network))
+        if self.distance_asset is not None:
+            sources = None
+            if self.events is not None:
+                sources = NetworkLocations.from_events(self.events)
+            targets = NetworkLocations.from_lixels(self.lixels)
+            report = report.combine(
+                self.distance_asset.validate(
+                    self.network,
+                    sources=sources,
+                    targets=targets,
+                )
+            )
         return report
 
     def summary(self) -> dict[str, Any]:
@@ -75,10 +98,36 @@ class NetworkWorkspace:
             "n_rejected": self.snap_result.n_rejected,
             "n_lixels": self.lixels.n_lixels,
             "total_length": self.network.total_length,
+            "n_distance_pairs": (
+                0 if self.distance_asset is None else self.distance_asset.n_pairs
+            ),
+            "distance_cutoff": (
+                None if self.distance_asset is None else self.distance_asset.cutoff
+            ),
             "valid": validation.valid,
             "n_warnings": len(validation.warnings),
             "fingerprint": self.fingerprint,
         }
+
+    def with_event_lixel_distances(
+        self,
+        *,
+        cutoff: float | None = None,
+        weight: str = "length",
+        directed: bool | None = None,
+    ) -> "NetworkWorkspace":
+        """Return a workspace with exact event-to-lixel distance assets."""
+        if self.events is None:
+            raise ValueError("Cannot build distances without accepted network events.")
+        asset = build_event_lixel_distances(
+            self.network,
+            self.events,
+            self.lixels,
+            cutoff=cutoff,
+            weight=weight,
+            directed=directed,
+        )
+        return replace(self, distance_asset=asset)
 
     @classmethod
     def prepare(
