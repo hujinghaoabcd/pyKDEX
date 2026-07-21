@@ -21,7 +21,7 @@ def readonly_array(
     *,
     dtype: Any | None = None,
     ndim: int | None = None,
-    name: str,
+    name: str = "array",
 ) -> np.ndarray:
     """Return an owned, C-contiguous, read-only NumPy array."""
     try:
