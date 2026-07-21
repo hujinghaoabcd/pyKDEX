@@ -11,7 +11,7 @@ from __future__ import annotations
 
 __author__ = "Jinghao Hu"
 __license__ = "MIT"
-__version__ = "0.0.5"
+__version__ = "0.0.6"
 
 from pykdex.adapters import from_networkx_graph, from_osmnx_graph, network_from_place
 from pykdex.bandwidths import (
@@ -21,7 +21,7 @@ from pykdex.bandwidths import (
     LeastSquaresCVBandwidth,
     LikelihoodCVBandwidth,
 )
-from pykdex.core import BandwidthSelectionResult, SpatialKDEResult
+from pykdex.core import BandwidthSelectionResult, NetworkField, SpatialKDEResult
 from pykdex.data import (
     DataProvenance,
     DataValidationReport,
@@ -42,7 +42,7 @@ from pykdex.datasets import (
     make_bimodal_events,
     make_grid_network,
 )
-from pykdex.estimators import SpatialKDE
+from pykdex.estimators import NetworkKDE, SpatialKDE
 from pykdex.kernels import (
     EpanechnikovKernel,
     ExponentialKernel,
@@ -54,6 +54,9 @@ from pykdex.kernels import (
 )
 from pykdex.metrics import EuclideanMetric
 from pykdex.network import (
+    ContinuousJunctionPolicy,
+    DiscontinuousJunctionPolicy,
+    JunctionPolicy,
     LinearNetwork,
     LixelSupport,
     NetworkDataset,
@@ -61,19 +64,26 @@ from pykdex.network import (
     NetworkEvents,
     NetworkLocations,
     NetworkWorkspace,
+    PropagationRecord,
+    PropagationTrace,
+    SimpleJunctionPolicy,
     SnapResult,
     TraversalResult,
     TraversalState,
     build_event_lixel_distances,
     build_network_distance_asset,
+    get_junction_policy,
     snap_events,
+    trace_network_propagation,
     truncated_traversal,
 )
 from pykdex.selection import LeastSquaresCV, LikelihoodCV
 
 __all__ = [
     "SpatialKDE",
+    "NetworkKDE",
     "SpatialKDEResult",
+    "NetworkField",
     "BandwidthSelectionResult",
     "SpatialEvents",
     "PointSupport",
@@ -105,6 +115,14 @@ __all__ = [
     "TraversalState",
     "TraversalResult",
     "truncated_traversal",
+    "JunctionPolicy",
+    "SimpleJunctionPolicy",
+    "DiscontinuousJunctionPolicy",
+    "ContinuousJunctionPolicy",
+    "get_junction_policy",
+    "PropagationRecord",
+    "PropagationTrace",
+    "trace_network_propagation",
     "from_networkx_graph",
     "from_osmnx_graph",
     "network_from_place",

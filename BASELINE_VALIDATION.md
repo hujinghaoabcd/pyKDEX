@@ -1,40 +1,40 @@
-# pyKDEX 0.0.5 validation
+# pyKDEX 0.0.6 validation
 
 Validation date: 2026-07-22
 
 ## Implemented public functionality
 
 - fixed, cross-validated, kNN, and Abramson spatial KDE bandwidths;
-- weighted density and event-intensity estimation;
+- public `SpatialKDE` and fixed-bandwidth `NetworkKDE` estimators;
+- weighted density and event-intensity targets;
 - structured events, measured supports, boundaries, datasets, and provenance;
-- canonical geometric `LinearNetwork` objects;
-- directed and undirected multigraph topology with stable IDs;
+- canonical geometric `LinearNetwork` objects with directed and parallel edges;
 - GeoDataFrame, NetworkX, and OSMnx adapters;
-- auditable event snapping with rejected-event records;
-- measured lixel partitions and reusable `NetworkWorkspace` objects;
-- immutable `NetworkLocations` for arbitrary along-edge positions;
-- exact directed and undirected `NetworkDistanceAsset` objects;
-- cutoff-based finite distance neighbourhoods;
-- explicit truncated traversal states retaining parallel and partial edges.
+- auditable event snapping and measured lixel partitions;
+- exact directed and undirected network-distance assets;
+- simple geodesic, discontinuous equal-split, and continuous equal-split junction policies;
+- immutable signed propagation records and traces;
+- measured `NetworkField` integration and tabular/geospatial exports.
 
-## Network-distance validation
+## NetworkKDE validation
 
-- direct same-edge distance is considered independently of endpoint routes;
-- arbitrary event and lixel offsets are included in path length;
-- directed routes obey edge orientation;
-- undirected overrides permit reverse travel on directed source networks;
-- geometric offsets are converted proportionally for custom edge costs;
-- ring networks select the shorter valid route;
-- disconnected pairs remain unreachable;
-- finite cutoffs omit distant pairs without losing reachable zero distances;
-- parallel edges remain separate traversal states;
-- a cutoff inside an edge records the exact reached fraction;
-- distance, location, network, and workspace fingerprints are validated;
-- Python 3.11 dataclass compatibility is explicitly covered.
+- the simple policy matches the one-dimensional kernel value at zero network distance;
+- discontinuous propagation divides amplitude equally among valid forward branches;
+- continuous propagation applies transmission coefficient `2/d` and reflection coefficient `2/d - 1`;
+- limiting estimates agree across incident edges at a T-junction;
+- terminal vertices provide reflecting boundaries for continuous propagation;
+- lixel-length integration recovers unit density mass within midpoint-rule tolerance;
+- weighted intensity equals total event weight times the corresponding weighted density;
+- accepted snapped-event weights, network fingerprints, and lixel measures are retained;
+- continuous propagation rejects directed metric networks explicitly;
+- recursive path policies reject infinite-support kernels explicitly;
+- simple geodesic estimation accepts Gaussian kernels;
+- propagation record limits fail explicitly rather than silently truncating cyclic walks;
+- failed fits atomically reset all fitted estimator state.
 
 ## Engineering validation
 
-- pytest: 106 passed;
+- pytest: 118 passed;
 - branch-coverage gate: passed at the required 80% minimum;
 - Black, isort, Ruff, and mypy: passed;
 - MkDocs strict build: passed;
@@ -45,8 +45,7 @@ Validation date: 2026-07-22
 
 ## Deliberate exclusions
 
-- simple, discontinuous, and continuous junction mass-allocation policies;
-- `NetworkField` and public `NetworkKDE` estimators;
-- heat-equation network KDE;
+- network bandwidth selection and adaptive network bandwidths;
+- heat-equation Gaussian network KDE;
 - temporal and network-time data objects and estimators;
 - spatial boundary correction, bandwidth matrices, relative risk, and uncertainty.

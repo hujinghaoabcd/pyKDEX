@@ -1,6 +1,8 @@
 symbol,example
 SpatialKDE,01_spatial_kde.py
+NetworkKDE,08_network_kde.py
 SpatialKDEResult,01_spatial_kde.py
+NetworkField,08_network_kde.py
 BandwidthSelectionResult,03_bandwidth_selection.py
 FixedBandwidth,01_spatial_kde.py
 KNNBandwidth,04_adaptive_bandwidths.py
@@ -32,7 +34,7 @@ NetworkEvents,06_network_foundation.py
 SnapResult,06_network_foundation.py
 snap_events,06_network_foundation.py
 LixelSupport,06_network_foundation.py
-NetworkWorkspace,07_network_distances.py
+NetworkWorkspace,08_network_kde.py
 NetworkDataset,06_network_foundation.py
 NetworkLocations,07_network_distances.py
 NetworkDistanceAsset,07_network_distances.py
@@ -41,10 +43,18 @@ build_event_lixel_distances,07_network_distances.py
 TraversalState,07_network_distances.py
 TraversalResult,07_network_distances.py
 truncated_traversal,07_network_distances.py
+JunctionPolicy,08_network_kde.py
+SimpleJunctionPolicy,08_network_kde.py
+DiscontinuousJunctionPolicy,08_network_kde.py
+ContinuousJunctionPolicy,08_network_kde.py
+get_junction_policy,08_network_kde.py
+PropagationRecord,08_network_kde.py
+PropagationTrace,08_network_kde.py
+trace_network_propagation,08_network_kde.py
 from_networkx_graph,06_network_foundation.py
 from_osmnx_graph,06_network_foundation.py
 network_from_place,06_network_foundation.py
-load_t_junction,07_network_distances.py
+load_t_junction,08_network_kde.py
 load_cross_network,06_network_foundation.py
 load_ring_network,06_network_foundation.py
 load_disconnected_network,06_network_foundation.py

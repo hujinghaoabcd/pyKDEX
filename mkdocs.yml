@@ -61,6 +61,7 @@ nav:
       - Core Concepts: getting-started/concepts.md
   - Estimators:
       - Spatial KDE: estimators/spatial-kde.md
+      - Network KDE: estimators/network-kde.md
   - Guides:
       - Data objects: guides/data.md
       - Built-in datasets: guides/datasets.md
@@ -75,6 +76,7 @@ nav:
       - Network objects: api/network.md
       - Graph adapters: api/adapters.md
       - SpatialKDE: api/spatial-kde.md
+      - NetworkKDE: api/network-kde.md
       - Kernels: api/kernels.md
       - Bandwidths: api/bandwidths.md
       - Selection: api/selection.md

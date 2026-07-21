@@ -1,6 +1,15 @@
 # Changelog
 
-## 0.0.5 - Unreleased
+## 0.0.6 - Unreleased
+
+- Add public fixed-bandwidth `NetworkKDE` for network density and intensity.
+- Add simple geodesic, discontinuous equal-split, and continuous equal-split junction policies.
+- Add signed immutable propagation records and traces.
+- Add measured `NetworkField` integration and DataFrame/GeoDataFrame exports.
+- Enforce explicit directed-network and compact-kernel policy constraints.
+- Add analytical branch allocation, continuity, mass, weighting, and state-safety tests.
+
+## 0.0.5
 
 - Add immutable `NetworkLocations` for arbitrary along-edge positions.
 - Add exact directed and undirected network-distance assets.

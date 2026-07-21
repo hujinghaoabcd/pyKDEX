@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Jinghao Hu
 # SPDX-License-Identifier: MIT
 
-"""Geometric linear-network data and distance foundations."""
+"""Geometric linear-network data, distance, and propagation foundations."""
 
 from pykdex.network.dataset import NetworkDataset
 from pykdex.network.distance import (
@@ -15,6 +15,16 @@ from pykdex.network.distance import (
 )
 from pykdex.network.events import NetworkEvents, SnapResult, snap_events
 from pykdex.network.linear_network import LinearNetwork
+from pykdex.network.propagation import (
+    ContinuousJunctionPolicy,
+    DiscontinuousJunctionPolicy,
+    JunctionPolicy,
+    PropagationRecord,
+    PropagationTrace,
+    SimpleJunctionPolicy,
+    get_junction_policy,
+    trace_network_propagation,
+)
 from pykdex.network.support import LixelSupport
 from pykdex.network.workspace import NetworkWorkspace
 
@@ -33,4 +43,12 @@ __all__ = [
     "TraversalState",
     "TraversalResult",
     "truncated_traversal",
+    "JunctionPolicy",
+    "SimpleJunctionPolicy",
+    "DiscontinuousJunctionPolicy",
+    "ContinuousJunctionPolicy",
+    "get_junction_policy",
+    "PropagationRecord",
+    "PropagationTrace",
+    "trace_network_propagation",
 ]
