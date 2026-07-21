@@ -1,61 +1,48 @@
-# pyKDEX 0.0.1 baseline validation
+# pyKDEX 0.0.2 validation
 
-Validation date: 2026-07-21
+Validation date: 2026-07-22
 
-## Implemented public baseline
+## Implemented public functionality
 
-- `SpatialKDE`
-- `SpatialKDEResult`
-- `FixedBandwidth`
-- `EuclideanMetric`
-- Gaussian, Epanechnikov, quartic, triangular, uniform, and exponential kernels
-- density and intensity targets
-- scalar and event-specific bandwidth evaluation paths
-- pandas and GeoPandas result export
+- fixed-bandwidth spatial density and intensity estimation;
+- six normalized radial kernels in arbitrary Euclidean dimension;
+- weighted leave-one-out likelihood bandwidth selection;
+- exact weighted Gaussian least-squares cross-validation;
+- k-nearest-neighbour sample-point bandwidths;
+- Abramson sample-point adaptive bandwidths;
+- immutable bandwidth-selection traces;
+- pandas and GeoPandas result export.
 
 ## Numerical validation
 
-- all six radial kernels numerically integrate to one in dimensions 1, 2, and 3;
-- a one-event Gaussian estimate matches its closed-form analytical value;
-- spatial density numerically integrates to one;
-- weighted spatial intensity numerically integrates to the total event weight;
-- density is invariant to a common multiplicative rescaling of event weights;
-- chunked and unchunked evaluation produce identical estimates.
+- every radial kernel integrates to one in dimensions 1, 2, and 3;
+- one-event Gaussian estimates match their closed-form values;
+- fixed, kNN, and Abramson density estimates numerically conserve unit mass;
+- weighted intensity integrates to the total event weight;
+- likelihood CV matches a hand-calculated two-event Gaussian value;
+- Gaussian LSCV matches direct high-resolution numerical integration;
+- weighted selectors, duplicate-location handling, optimizer traces, and
+  deterministic repeated selection are tested.
 
-## State and API validation
+## Engineering validation
 
-- fit inputs are copied and cannot be mutated externally after fitting;
-- a failed refit atomically clears all previous fitted state;
-- DataFrame coordinate schemas are recorded and support-column order is checked;
-- estimators expose no public backend or device parameter;
-- results export to DataFrame and planar GeoDataFrame;
-- every top-level public symbol is mapped to a runnable example.
-
-## Quality gates
-
-- pytest: 42 passed;
-- branch coverage: 87.3%, threshold 80%;
-- Black: passed;
-- isort: passed;
-- Ruff: passed;
-- mypy: passed for the full `src/pykdex` tree;
+- pytest: 57 passed;
+- branch coverage: 84.1%, threshold 80%;
+- Black, isort, Ruff, and mypy: passed;
 - MkDocs strict build: passed;
-- wheel and sdist build: passed;
-- Twine metadata check: passed;
-- distribution-content verification: passed;
-- installed-wheel smoke test outside the source tree: passed.
+- public API/example coverage: complete;
+- wheel and sdist build and Twine metadata check: passed;
+- installed-wheel smoke test: passed;
+- failed refits atomically clear all previous fitted state.
 
 ## Deliberate exclusions
 
-The following are not yet exposed as working models:
+The following remain future work:
 
-- automatic and adaptive bandwidth selectors;
-- spatiotemporal KDE;
-- cyclic temporal kernels;
+- boundary correction and bandwidth matrices;
+- balloon adaptive bandwidths;
+- spatiotemporal and cyclic temporal KDE;
 - network topology, snapping, lixels, and arixels;
 - simple, discontinuous, continuous, and heat-kernel NKDE;
 - temporal network KDE;
 - relative-risk, uncertainty, and separability estimators.
-
-These features will be added only with independent mathematical validation and
-without runtime calls to external reference packages.

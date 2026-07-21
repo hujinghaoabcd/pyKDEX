@@ -20,7 +20,7 @@ import numpy as np
 
 from pykdex.bandwidths import BaseBandwidth, get_bandwidth
 from pykdex.core.base import BaseKDE
-from pykdex.core.results import SpatialKDEResult
+from pykdex.core.results import BandwidthSelectionResult, SpatialKDEResult
 from pykdex.core.validation import (
     ArrayLike,
     validate_points,
@@ -58,7 +58,7 @@ class SpatialKDE(BaseKDE):
     def __init__(
         self,
         kernel: str | BaseKernel = "gaussian",
-        bandwidth: float | BaseBandwidth = 1.0,
+        bandwidth: float | int | np.floating | BaseBandwidth = 1.0,
         metric: str | BaseMetric = "euclidean",
         target: str = "density",
         chunk_size: Optional[int] = None,
@@ -84,6 +84,8 @@ class SpatialKDE(BaseKDE):
         self._reset_common_state()
         self.kernel_: Optional[BaseKernel] = None
         self.metric_: Optional[BaseMetric] = None
+        self.bandwidth_strategy_: Optional[BaseBandwidth] = None
+        self.bandwidth_selection_: Optional[BandwidthSelectionResult] = None
 
     def fit(
         self,
@@ -98,7 +100,12 @@ class SpatialKDE(BaseKDE):
             kernel = get_kernel(self.kernel)
             metric = get_metric(self.metric)
             bandwidth_strategy = get_bandwidth(self.bandwidth)
-            resolved = bandwidth_strategy.resolve(events_array)
+            resolved = bandwidth_strategy.resolve(
+                events_array,
+                weights=weights_array,
+                metric=metric,
+                kernel=kernel,
+            )
             bandwidth = self._validate_resolved_bandwidth(
                 resolved, n_events=events_array.shape[0]
             )
@@ -112,12 +119,15 @@ class SpatialKDE(BaseKDE):
             self.kernel_ = kernel
             self.metric_ = metric
             self.bandwidth_ = bandwidth
+            self.bandwidth_strategy_ = bandwidth_strategy
+            self.bandwidth_selection_ = getattr(bandwidth_strategy, "result_", None)
             self.fit_metadata_ = {
                 "kernel": kernel.name,
                 "metric": metric.name,
                 "target": self.target,
                 "n_events": self.n_events_,
                 "dimension": self.dimension_,
+                "bandwidth_strategy": bandwidth_strategy.__class__.__name__,
             }
             self._mark_fitted()
             return self

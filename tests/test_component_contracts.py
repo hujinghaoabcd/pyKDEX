@@ -14,7 +14,14 @@ from pykdex.metrics import EuclideanMetric, get_metric
 class EventBandwidth(BaseBandwidth):
     """Small deterministic event-specific bandwidth used only in tests."""
 
-    def resolve(self, events: np.ndarray) -> np.ndarray:
+    def resolve(
+        self,
+        events: np.ndarray,
+        *,
+        weights: np.ndarray | None = None,
+        metric: object | None = None,
+        kernel: object | None = None,
+    ) -> np.ndarray:
         return np.linspace(0.4, 0.7, events.shape[0])
 
 

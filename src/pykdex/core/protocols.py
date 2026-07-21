@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: 2026 Jinghao Hu
 # SPDX-License-Identifier: MIT
 
-
 """Structural protocols used by the composition-oriented public API."""
 
 from __future__ import annotations
@@ -18,16 +17,12 @@ class KernelProtocol(Protocol):
     name: str
     finite_support: bool
 
-    def evaluate(self, standardized_distance: np.ndarray, dimension: int) -> np.ndarray:
+    def evaluate(
+        self,
+        standardized_distance: np.ndarray,
+        dimension: int,
+    ) -> np.ndarray:
         """Evaluate the normalized kernel at non-negative radial distances."""
-
-
-@runtime_checkable
-class BandwidthProtocol(Protocol):
-    """Protocol for bandwidth strategies."""
-
-    def resolve(self, events: np.ndarray) -> float | np.ndarray:
-        """Return a scalar or one positive bandwidth per event."""
 
 
 @runtime_checkable
@@ -38,3 +33,18 @@ class MetricProtocol(Protocol):
 
     def pairwise(self, left: np.ndarray, right: np.ndarray) -> np.ndarray:
         """Return pairwise distances with shape ``(len(left), len(right))``."""
+
+
+@runtime_checkable
+class BandwidthProtocol(Protocol):
+    """Protocol for scalar or event-specific bandwidth strategies."""
+
+    def resolve(
+        self,
+        events: np.ndarray,
+        *,
+        weights: np.ndarray | None = None,
+        metric: MetricProtocol | None = None,
+        kernel: KernelProtocol | None = None,
+    ) -> float | np.ndarray:
+        """Resolve bandwidths using the fitted estimator context."""

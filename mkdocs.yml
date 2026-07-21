@@ -69,6 +69,7 @@ nav:
       - SpatialKDE: api/spatial-kde.md
       - Kernels: api/kernels.md
       - Bandwidths: api/bandwidths.md
+      - Selection: api/selection.md
       - Results: api/results.md
   - Development:
       - Architecture: development/architecture.md
