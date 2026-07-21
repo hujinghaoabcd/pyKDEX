@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use pyKDEX, please cite this software."
+title: "pyKDEX"
+type: software
+authors:
+  - family-names: Hu
+    given-names: Jinghao
+version: 0.0.1
+date-released: 2026-07-21
+license: MIT
+repository-code: "https://github.com/hujinghaoabcd/pyKDEX"

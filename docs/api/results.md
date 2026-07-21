@@ -1,0 +1,1 @@
+::: pykdex.core.results.SpatialKDEResult

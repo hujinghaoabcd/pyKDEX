@@ -1,0 +1,77 @@
+site_name: pyKDEX
+site_description: An extensible Python framework for spatial and network kernel density estimation
+site_author: Jinghao Hu
+site_url: https://hujinghaoabcd.github.io/pyKDEX
+repo_name: hujinghaoabcd/pyKDEX
+repo_url: https://github.com/hujinghaoabcd/pyKDEX
+edit_uri: edit/main/docs/
+copyright: Copyright &copy; 2026 Jinghao Hu
+strict: true
+
+theme:
+  name: material
+  language: en
+  font: false
+  features:
+    - content.code.copy
+    - navigation.sections
+    - navigation.tabs
+    - navigation.top
+    - search.highlight
+    - search.suggest
+
+plugins:
+  - search:
+      lang: [en, zh]
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: google
+            docstring_section_style: table
+            show_source: true
+            show_root_heading: true
+            show_root_full_path: false
+            show_signature_annotations: true
+            separate_signature: true
+            merge_init_into_class: true
+            filters: ["!^_"]
+            members_order: source
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Quick Start: getting-started/quickstart.md
+      - Core Concepts: getting-started/concepts.md
+  - Estimators:
+      - Spatial KDE: estimators/spatial-kde.md
+  - Guides:
+      - Kernels: guides/kernels.md
+      - Bandwidths: guides/bandwidths.md
+      - Results: guides/results.md
+  - API Reference:
+      - SpatialKDE: api/spatial-kde.md
+      - Kernels: api/kernels.md
+      - Bandwidths: api/bandwidths.md
+      - Results: api/results.md
+  - Development:
+      - Architecture: development/architecture.md
+      - Testing: development/testing.md
+      - Roadmap: development/roadmap.md
+  - 中文: zh/index.md
