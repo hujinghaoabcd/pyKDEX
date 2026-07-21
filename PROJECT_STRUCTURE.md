@@ -5,7 +5,9 @@ pyKDEX/
 ├── src/pykdex/
 │   ├── core/          fitted-state, validation, protocols, and results
 │   ├── data/          events, support, boundaries, datasets, and provenance
-│   ├── datasets/      deterministic loaders and synthetic generators
+│   ├── datasets/      deterministic spatial and network fixtures
+│   ├── network/       topology, snapping, lixels, workspaces, and bundles
+│   ├── adapters/      NetworkX and OSMnx conversion and acquisition
 │   ├── kernels/       normalized radial kernels and registry
 │   ├── bandwidths/    bandwidth strategies
 │   ├── metrics/       distance strategies

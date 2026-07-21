@@ -7,9 +7,9 @@ The package follows the engineering conventions of pyGWRx while keeping the
 KDE architecture composition-based: domains, metrics, kernels, bandwidths,
 corrections, supports, and estimators are independent components.
 
-> Status: spatial KDE and data-foundation development release. Validated event,
-> support, boundary, dataset, provenance, and fingerprint objects are available.
-> Network and temporal estimators are not yet exposed as working models.
+> Status: spatial KDE, structured spatial data, and road-network data foundation.
+> Canonical networks, OSMnx/NetworkX adapters, auditable snapping, lixels, and
+> reusable workspaces are available. Network estimators are not yet exposed.
 
 ## Installation
 
@@ -57,6 +57,24 @@ grid = GridSupport.from_bounds(
 result = SpatialKDE(bandwidth=500.0).fit_predict(events, grid)
 print(result.integral())
 ```
+
+## Network data preparation
+
+```python
+from pykdex import NetworkWorkspace, load_t_junction
+
+dataset = load_t_junction()
+workspace = NetworkWorkspace.prepare(
+    dataset.network,
+    dataset.raw_events,
+    lixel_length=0.25,
+    max_snap_distance=0.2,
+)
+print(workspace.summary())
+```
+
+Install external graph adapters with `python -m pip install "pyKDEX[network]"`.
+OSM downloads additionally require `python -m pip install "pyKDEX[osm]"`.
 
 ## Bandwidth selection and adaptation
 

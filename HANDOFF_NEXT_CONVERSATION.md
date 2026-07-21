@@ -2,29 +2,31 @@
 
 ## Current status
 
-- development version: `0.0.3`;
+- development version: `0.0.4`;
 - public estimator: `SpatialKDE`;
 - scalar bandwidths: fixed, likelihood CV, and Gaussian LSCV;
 - event-specific bandwidths: kNN and Abramson;
-- structured data: events, point support, measured grid support, boundaries,
-  datasets, validation reports, provenance, and fingerprints;
-- tests: 75 passed;
+- structured spatial data, measured grid support, boundaries, provenance, and datasets;
+- canonical `LinearNetwork` with directed and parallel edges;
+- GeoDataFrame, NetworkX, and OSMnx conversion;
+- auditable event snapping, measured lixels, and reusable `NetworkWorkspace`;
+- tests: 95 passed;
 - branch coverage: 81.0%;
-- formatting, linting, typing, strict documentation, build, and installation
-  checks pass locally;
+- formatting, linting, typing, documentation, build, and installation checks pass;
 - no runtime dependency on external KDE implementations.
 
 ## Next recommended development unit
 
-Build the road-network data foundation before exposing any network estimator:
+Build the numerical network-distance and traversal contract before publishing
+`NetworkKDE`:
 
-1. `LinearNetwork` with stable node and edge tables;
-2. GeoDataFrame, NetworkX, and OSMnx adapters;
-3. topology validation, connected components, and directed parallel edges;
-4. `NetworkEvents` and auditable event snapping;
-5. `LixelSupport` with exact segment measures;
-6. `NetworkWorkspace` and reusable distance/topology fingerprints;
-7. T-junction, cross, ring, disconnected, and OSMnx-derived fixtures.
+1. explicit network-location objects for events and lixel centres;
+2. exact event-to-support network distance including along-edge offsets;
+3. directed and undirected truncated shortest-path search;
+4. reusable sparse distance/neighbourhood assets in `NetworkWorkspace`;
+5. traversal states that preserve parallel-edge and branch information;
+6. independent single-line, T-junction, ring, and directed reference fixtures;
+7. memory and cutoff tests for sparse network neighbourhood queries.
 
-Do not expose `NetworkKDE` until network-distance, junction, mass-conservation,
-and lixel integration contracts are implemented and tested.
+Only after these contracts pass should simple, discontinuous, and continuous
+junction policies and a `NetworkField` result enter the public API.
