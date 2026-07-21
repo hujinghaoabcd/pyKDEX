@@ -69,7 +69,11 @@ def test_continuous_trace_adds_signed_reflection_at_degree_three_node():
         junction_policy="continuous",
     )
 
-    corrected = [record for record in trace.records if record.depth == 1]
+    corrected = [
+        record
+        for record in trace.records
+        if record.depth == 1 and np.isclose(record.start_distance, 0.75)
+    ]
     coefficients = sorted(record.coefficient for record in corrected)
     np.testing.assert_allclose(coefficients, [-1.0 / 3.0, 2.0 / 3.0, 2.0 / 3.0])
 
