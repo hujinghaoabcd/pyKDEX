@@ -1,0 +1,7 @@
+src/pykdex/network/propagation.py:187: error: Incompatible return value type
+(got
+"SimpleJunctionPolicy | DiscontinuousJunctionPolicy | ContinuousJunctionPolicy",
+expected "JunctionPolicy")  [return-value]
+            return _POLICIES[name]()
+                   ^~~~~~~~~~~~~~~~~
+Found 1 error in 1 file (checked 50 source files)
