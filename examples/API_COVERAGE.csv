@@ -17,3 +17,13 @@ TriangularKernel,02_weighted_intensity.py
 UniformKernel,02_weighted_intensity.py
 ExponentialKernel,02_weighted_intensity.py
 get_kernel,02_weighted_intensity.py
+SpatialEvents,05_data_objects.py
+PointSupport,05_data_objects.py
+GridSupport,05_data_objects.py
+SpatialBoundary,05_data_objects.py
+KDEDataset,05_data_objects.py
+DataProvenance,05_data_objects.py
+DataValidationReport,05_data_objects.py
+make_bimodal_events,05_data_objects.py
+load_bimodal_points,05_data_objects.py
+load_bounded_square,05_data_objects.py

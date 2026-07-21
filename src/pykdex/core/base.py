@@ -79,6 +79,9 @@ class BaseKDE(BaseEstimator):
         self.weights_: Optional[np.ndarray] = None
         self.weight_sum_: Optional[float] = None
         self.bandwidth_: Optional[float | np.ndarray] = None
+        self.event_crs_: Optional[str] = None
+        self.spatial_unit_: Optional[str] = None
+        self.event_fingerprint_: Optional[str] = None
         self.fit_metadata_: Optional[dict[str, Any]] = None
 
     @abstractmethod

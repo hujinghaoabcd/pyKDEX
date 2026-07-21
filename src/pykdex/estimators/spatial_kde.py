@@ -1,12 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Jinghao Hu
 # SPDX-License-Identifier: MIT
 
-
-"""Fixed- or strategy-bandwidth spatial kernel density estimation.
-
-This module is the reference estimator used to establish pyKDEX API, state,
-validation, and numerical conventions before network and temporal estimators
-are added.
+"""Spatial kernel density and intensity estimation.
 
 Author:
     Jinghao Hu
@@ -23,10 +18,15 @@ from pykdex.core.base import BaseKDE
 from pykdex.core.results import BandwidthSelectionResult, SpatialKDEResult
 from pykdex.core.validation import (
     ArrayLike,
-    validate_points,
+    EventInput,
+    SupportInput,
+    ValidatedPointInput,
+    validate_point_input,
+    validate_spatial_metadata,
     validate_support_schema,
     validate_weights,
 )
+from pykdex.data import SpatialEvents
 from pykdex.kernels import BaseKernel, get_kernel
 from pykdex.metrics import BaseMetric, get_metric
 
@@ -89,14 +89,33 @@ class SpatialKDE(BaseKDE):
 
     def fit(
         self,
-        events: ArrayLike,
+        events: EventInput,
         weights: ArrayLike | None = None,
     ) -> "SpatialKDE":
-        """Fit the estimator to event coordinates and optional event weights."""
+        """Fit the estimator to coordinates or a :class:`SpatialEvents` object.
+
+        When ``events`` is a ``SpatialEvents`` object, its stored weights are
+        used and the separate ``weights`` argument must be omitted.
+        """
         self._reset_fit_state()
         try:
-            events_array, coordinate_names = validate_points(events, name="events")
-            weights_array = validate_weights(weights, events_array.shape[0])
+            event_input = validate_point_input(events, name="events")
+            if isinstance(events, SpatialEvents):
+                if weights is not None:
+                    raise ValueError(
+                        "weights must be omitted when events is SpatialEvents; "
+                        "the object already owns validated event weights."
+                    )
+                weights_array = validate_weights(
+                    events.weights,
+                    event_input.coordinates.shape[0],
+                )
+            else:
+                weights_array = validate_weights(
+                    weights,
+                    event_input.coordinates.shape[0],
+                )
+            events_array = event_input.coordinates
             kernel = get_kernel(self.kernel)
             metric = get_metric(self.metric)
             bandwidth_strategy = get_bandwidth(self.bandwidth)
@@ -107,15 +126,19 @@ class SpatialKDE(BaseKDE):
                 kernel=kernel,
             )
             bandwidth = self._validate_resolved_bandwidth(
-                resolved, n_events=events_array.shape[0]
+                resolved,
+                n_events=events_array.shape[0],
             )
 
             self.events_ = events_array
             self.weights_ = weights_array
             self.n_events_ = int(events_array.shape[0])
             self.dimension_ = int(events_array.shape[1])
-            self.coordinate_names_in_ = coordinate_names
+            self.coordinate_names_in_ = event_input.coordinate_names
             self.weight_sum_ = float(np.sum(weights_array))
+            self.event_crs_ = event_input.crs
+            self.spatial_unit_ = event_input.spatial_unit
+            self.event_fingerprint_ = event_input.fingerprint
             self.kernel_ = kernel
             self.metric_ = metric
             self.bandwidth_ = bandwidth
@@ -128,6 +151,9 @@ class SpatialKDE(BaseKDE):
                 "n_events": self.n_events_,
                 "dimension": self.dimension_,
                 "bandwidth_strategy": bandwidth_strategy.__class__.__name__,
+                "event_crs": self.event_crs_,
+                "spatial_unit": self.spatial_unit_,
+                "event_fingerprint": self.event_fingerprint_,
             }
             self._mark_fitted()
             return self
@@ -155,23 +181,36 @@ class SpatialKDE(BaseKDE):
             raise ValueError("resolved bandwidth values must be finite and positive.")
         return np.ascontiguousarray(array.copy())
 
-    def evaluate(self, support: ArrayLike) -> np.ndarray:
-        """Evaluate the fitted estimator at support coordinates."""
+    def _prepare_support(self, support: SupportInput) -> ValidatedPointInput:
         self._check_is_fitted()
         validate_support_schema(support, self.coordinate_names_in_)
-        support_array, _ = validate_points(
+        validated = validate_point_input(
             support,
             name="support",
             expected_dimension=self.dimension_,
         )
-        chunk_size = self.chunk_size or support_array.shape[0]
-        values = np.empty(support_array.shape[0], dtype=float)
-        for start in range(0, support_array.shape[0], chunk_size):
-            stop = min(start + chunk_size, support_array.shape[0])
-            values[start:stop] = self._evaluate_chunk(support_array[start:stop])
-        return values
+        validate_spatial_metadata(
+            event_crs=self.event_crs_,
+            support_crs=validated.crs,
+            event_unit=self.spatial_unit_,
+            support_unit=validated.spatial_unit,
+        )
+        return validated
+
+    def evaluate(self, support: SupportInput) -> np.ndarray:
+        """Evaluate the fitted estimator at support coordinates."""
+        validated = self._prepare_support(support)
+        return self._evaluate_array(validated.coordinates)
 
     predict = evaluate
+
+    def _evaluate_array(self, support: np.ndarray) -> np.ndarray:
+        chunk_size = self.chunk_size or support.shape[0]
+        values = np.empty(support.shape[0], dtype=float)
+        for start in range(0, support.shape[0], chunk_size):
+            stop = min(start + chunk_size, support.shape[0])
+            values[start:stop] = self._evaluate_chunk(support[start:stop])
+        return values
 
     def _evaluate_chunk(self, support: np.ndarray) -> np.ndarray:
         if (
@@ -210,38 +249,40 @@ class SpatialKDE(BaseKDE):
             raise FloatingPointError("KDE evaluation produced non-finite values.")
         return estimates
 
-    def predict_result(self, support: ArrayLike) -> SpatialKDEResult:
+    def predict_result(self, support: SupportInput) -> SpatialKDEResult:
         """Evaluate and return a structured result object."""
-        self._check_is_fitted()
-        validate_support_schema(support, self.coordinate_names_in_)
-        support_array, support_names = validate_points(
-            support,
-            name="support",
-            expected_dimension=self.dimension_,
-        )
-        values = self.evaluate(support)
+        validated = self._prepare_support(support)
+        values = self._evaluate_array(validated.coordinates)
         if self.kernel_ is None or self.metric_ is None or self.bandwidth_ is None:
             raise RuntimeError("Fitted estimator components are unavailable.")
         names = (
-            tuple(str(name) for name in support_names)
-            if support_names is not None
+            tuple(str(name) for name in validated.coordinate_names)
+            if validated.coordinate_names is not None
             else None
         )
+        metadata = dict(self.fit_metadata_ or {})
+        if validated.shape is not None:
+            metadata["support_shape"] = validated.shape
         return SpatialKDEResult(
             values=values,
-            support=support_array,
+            support=validated.coordinates,
             bandwidth=self.bandwidth_,
             target=self.target,
             kernel=self.kernel_.name,
             metric=self.metric_.name,
             coordinate_names=names,
-            metadata=dict(self.fit_metadata_ or {}),
+            support_ids=validated.ids,
+            support_measure=validated.measure,
+            crs=validated.crs or self.event_crs_,
+            spatial_unit=validated.spatial_unit or self.spatial_unit_,
+            support_fingerprint=validated.fingerprint,
+            metadata=metadata,
         )
 
     def fit_predict(
         self,
-        events: ArrayLike,
-        support: ArrayLike,
+        events: EventInput,
+        support: SupportInput,
         weights: ArrayLike | None = None,
     ) -> SpatialKDEResult:
         """Fit to events and immediately evaluate a support."""

@@ -7,9 +7,9 @@ The package follows the engineering conventions of pyGWRx while keeping the
 KDE architecture composition-based: domains, metrics, kernels, bandwidths,
 corrections, supports, and estimators are independent components.
 
-> Status: spatial KDE development release. Fixed, cross-validated, kNN, and
-> Abramson bandwidths are implemented. Network and temporal estimators are not
-> yet exposed as working models.
+> Status: spatial KDE and data-foundation development release. Validated event,
+> support, boundary, dataset, provenance, and fingerprint objects are available.
+> Network and temporal estimators are not yet exposed as working models.
 
 ## Installation
 
@@ -35,6 +35,28 @@ print(result.values)
 print(result.to_frame().head())
 ```
 
+
+
+## Structured data workflow
+
+```python
+from pykdex import GridSupport, SpatialEvents, SpatialKDE
+
+events = SpatialEvents.from_array(
+    coordinates,
+    weights=weights,
+    crs="EPSG:3857",
+    spatial_unit="m",
+)
+grid = GridSupport.from_bounds(
+    bounds,
+    resolution=100.0,
+    crs="EPSG:3857",
+    spatial_unit="m",
+)
+result = SpatialKDE(bandwidth=500.0).fit_predict(events, grid)
+print(result.integral())
+```
 
 ## Bandwidth selection and adaptation
 

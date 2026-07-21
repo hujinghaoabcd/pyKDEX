@@ -11,7 +11,7 @@ from __future__ import annotations
 
 __author__ = "Jinghao Hu"
 __license__ = "MIT"
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 
 from pykdex.bandwidths import (
     AbramsonBandwidth,
@@ -21,6 +21,20 @@ from pykdex.bandwidths import (
     LikelihoodCVBandwidth,
 )
 from pykdex.core import BandwidthSelectionResult, SpatialKDEResult
+from pykdex.data import (
+    DataProvenance,
+    DataValidationReport,
+    GridSupport,
+    KDEDataset,
+    PointSupport,
+    SpatialBoundary,
+    SpatialEvents,
+)
+from pykdex.datasets import (
+    load_bimodal_points,
+    load_bounded_square,
+    make_bimodal_events,
+)
 from pykdex.estimators import SpatialKDE
 from pykdex.kernels import (
     EpanechnikovKernel,
@@ -38,6 +52,16 @@ __all__ = [
     "SpatialKDE",
     "SpatialKDEResult",
     "BandwidthSelectionResult",
+    "SpatialEvents",
+    "PointSupport",
+    "GridSupport",
+    "SpatialBoundary",
+    "KDEDataset",
+    "DataProvenance",
+    "DataValidationReport",
+    "make_bimodal_events",
+    "load_bimodal_points",
+    "load_bounded_square",
     "FixedBandwidth",
     "KNNBandwidth",
     "AbramsonBandwidth",

@@ -1,6 +1,14 @@
 # Changelog
 
-## 0.0.2 - Unreleased
+## 0.0.3 - Unreleased
+
+- Add immutable `SpatialEvents`, `PointSupport`, and `GridSupport` objects.
+- Add polygonal `SpatialBoundary` and structured `KDEDataset` bundles.
+- Add validation reports, provenance records, and deterministic fingerprints.
+- Integrate structured CRS, unit, identifier, and support-measure metadata with `SpatialKDE`.
+- Add deterministic synthetic datasets for tutorials and boundary validation.
+
+## 0.0.2
 
 - Add weighted leave-one-out likelihood bandwidth selection.
 - Add exact Gaussian least-squares cross-validation.

@@ -92,6 +92,11 @@ class SpatialKDEResult:
         kernel: Canonical kernel name.
         metric: Canonical metric name.
         coordinate_names: Optional support coordinate column names.
+        support_ids: Optional stable support identifiers.
+        support_measure: Optional integration measure per support location.
+        crs: Optional coordinate reference system label.
+        spatial_unit: Optional coordinate unit label.
+        support_fingerprint: Optional support content fingerprint.
         metadata: Additional immutable-by-convention estimation metadata.
     """
 
@@ -102,6 +107,11 @@ class SpatialKDEResult:
     kernel: str
     metric: str
     coordinate_names: Optional[Tuple[str, ...]] = None
+    support_ids: Optional[np.ndarray] = None
+    support_measure: Optional[np.ndarray] = None
+    crs: Optional[str] = None
+    spatial_unit: Optional[str] = None
+    support_fingerprint: Optional[str] = None
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
@@ -115,19 +125,70 @@ class SpatialKDEResult:
             raise ValueError("values and support must contain the same number of rows.")
         if not np.all(np.isfinite(values)) or np.any(values < 0.0):
             raise ValueError("values must be finite and non-negative.")
-        object.__setattr__(self, "values", values.copy())
-        object.__setattr__(self, "support", support.copy())
+        ids = None
+        if self.support_ids is not None:
+            ids = np.asarray(self.support_ids)
+            if ids.ndim != 1 or ids.shape[0] != support.shape[0]:
+                raise ValueError("support_ids must contain one value per support row.")
+        measure = None
+        if self.support_measure is not None:
+            measure = np.asarray(self.support_measure, dtype=float)
+            if measure.ndim != 1 or measure.shape[0] != support.shape[0]:
+                raise ValueError(
+                    "support_measure must contain one value per support row."
+                )
+            if not np.all(np.isfinite(measure)) or np.any(measure <= 0.0):
+                raise ValueError("support_measure must be finite and positive.")
+        values = values.copy()
+        support = support.copy()
+        values.setflags(write=False)
+        support.setflags(write=False)
+        object.__setattr__(self, "values", values)
+        object.__setattr__(self, "support", support)
         if isinstance(self.bandwidth, np.ndarray):
-            object.__setattr__(self, "bandwidth", self.bandwidth.copy())
+            bandwidth = self.bandwidth.copy()
+            bandwidth.setflags(write=False)
+            object.__setattr__(self, "bandwidth", bandwidth)
+        if ids is not None:
+            ids = ids.copy()
+            ids.setflags(write=False)
+            object.__setattr__(self, "support_ids", ids)
+        if measure is not None:
+            measure = measure.copy()
+            measure.setflags(write=False)
+            object.__setattr__(self, "support_measure", measure)
 
     def to_frame(self) -> pd.DataFrame:
-        """Return support coordinates and estimates as a DataFrame."""
+        """Return support coordinates, measures, and estimates as a DataFrame."""
         names = self.coordinate_names or tuple(
             f"coord_{index}" for index in range(self.support.shape[1])
         )
         frame = pd.DataFrame(self.support, columns=list(names))
+        if self.support_ids is not None:
+            frame.insert(0, "support_id", self.support_ids)
+        if self.support_measure is not None:
+            frame["support_measure"] = self.support_measure
         frame[self.target] = self.values
         return frame
+
+    def integral(self) -> float:
+        """Approximate the integral using explicit support measures."""
+        if self.support_measure is None:
+            raise ValueError(
+                "This result has no support_measure. Use GridSupport or another "
+                "measured support to approximate an integral."
+            )
+        return float(np.dot(self.values, self.support_measure))
+
+    def to_grid(self) -> np.ndarray:
+        """Reshape values to the original regular-grid shape."""
+        shape = self.metadata.get("support_shape")
+        if shape is None:
+            raise ValueError("This result was not evaluated on a GridSupport.")
+        resolved = tuple(int(value) for value in shape)
+        if np.prod(resolved) != self.values.size:
+            raise ValueError("Stored support_shape is inconsistent with result values.")
+        return np.asarray(self.values).reshape(resolved)
 
     def to_geodataframe(self, crs: Optional[str | int] = None) -> Any:
         """Return a GeoDataFrame for one- or two-dimensional support.
@@ -151,4 +212,5 @@ class SpatialKDEResult:
             geometry = [Point(float(x), 0.0) for x in self.support[:, 0]]
         else:
             geometry = [Point(float(x), float(y)) for x, y in self.support]
-        return gpd.GeoDataFrame(frame, geometry=geometry, crs=crs)
+        resolved_crs: str | int | None = self.crs if crs is None else crs
+        return gpd.GeoDataFrame(frame, geometry=geometry, crs=resolved_crs)
