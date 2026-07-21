@@ -1,29 +1,27 @@
 # pyKDEX handoff
 
-The current directory is the first reliable pyKDEX engineering baseline.
-Do not rebuild it from isolated snippets.
-
 ## Current status
 
-- version: `0.0.1`;
+- development version: `0.0.2`;
 - public estimator: `SpatialKDE`;
-- tests: 42 passed;
-- branch coverage: 87.3%;
-- formatting, linting, typing, documentation, build, and installation gates pass;
+- scalar bandwidths: fixed, likelihood CV, and Gaussian LSCV;
+- event-specific bandwidths: kNN and Abramson;
+- tests: 57 passed;
+- branch coverage: 84.1%;
+- formatting, linting, typing, strict documentation, build, and installation
+  checks pass locally;
 - no runtime dependency on external KDE implementations.
 
 ## Next recommended development unit
 
-Implement bandwidth selection and adaptive spatial KDE before beginning network
-algorithms. The recommended sequence is:
+Complete the ordinary spatial KDE family before introducing time or networks:
 
-1. leave-one-out likelihood objective;
-2. least-squares cross-validation objective;
-3. bounded scalar optimization with deterministic result objects;
-4. k-nearest-neighbour bandwidth strategy;
-5. Abramson sample-point adaptive bandwidth;
-6. independent fixtures and mass-conservation tests;
-7. examples and documentation for every new public symbol.
+1. reflection and renormalization boundary correction;
+2. anisotropic bandwidth matrices;
+3. balloon kNN bandwidths;
+4. relative-risk density ratios with denominator safeguards;
+5. bootstrap uncertainty for spatial density and intensity;
+6. independent mass, boundary-bias, and analytical Gaussian tests.
 
-Do not add network and temporal placeholders to the public API until they are
-implemented and tested.
+Do not expose temporal or network placeholder models before their mathematical
+contracts and reference fixtures are implemented.

@@ -8,6 +8,7 @@ pyKDEX/
 │   ├── bandwidths/    bandwidth strategies
 │   ├── metrics/       distance strategies
 │   ├── estimators/    user-facing estimators
+│   ├── selection/     CV objectives and scalar optimization
 │   └── py.typed       inline typing marker
 ├── examples/          isolated runnable examples and API coverage map
 ├── tests/             numerical, behavioural, and packaging tests

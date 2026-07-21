@@ -5,6 +5,7 @@ import inspect
 import numpy as np
 import pandas as pd
 import pytest
+from scipy.integrate import trapezoid
 
 from pykdex import GaussianKernel, SpatialKDE
 
@@ -37,8 +38,8 @@ def test_density_approximately_integrates_to_one(events_2d):
     support = np.column_stack([xx.ravel(), yy.ravel()])
     values = SpatialKDE(bandwidth=0.55).fit(events_2d).evaluate(support)
     grid = values.reshape(y.size, x.size)
-    integral_x = np.trapezoid(grid, x=x, axis=1)
-    integral = np.trapezoid(integral_x, x=y)
+    integral_x = trapezoid(grid, x=x, axis=1)
+    integral = trapezoid(integral_x, x=y)
     np.testing.assert_allclose(integral, 1.0, rtol=2e-4, atol=2e-4)
 
 
@@ -54,7 +55,7 @@ def test_intensity_approximately_integrates_to_weight_sum(events_2d):
         .evaluate(support)
     )
     grid = values.reshape(y.size, x.size)
-    integral = np.trapezoid(np.trapezoid(grid, x=x, axis=1), x=y)
+    integral = trapezoid(trapezoid(grid, x=x, axis=1), x=y)
     np.testing.assert_allclose(integral, weights.sum(), rtol=3e-4, atol=3e-4)
 
 

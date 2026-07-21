@@ -7,9 +7,9 @@ The package follows the engineering conventions of pyGWRx while keeping the
 KDE architecture composition-based: domains, metrics, kernels, bandwidths,
 corrections, supports, and estimators are independent components.
 
-> Status: first engineering baseline. The current public estimator is a
-> validated fixed-bandwidth spatial KDE. Network and temporal estimators are
-> planned but are not yet exposed as working models.
+> Status: spatial KDE development release. Fixed, cross-validated, kNN, and
+> Abramson bandwidths are implemented. Network and temporal estimators are not
+> yet exposed as working models.
 
 ## Installation
 
@@ -33,6 +33,25 @@ result = model.predict_result(support)
 
 print(result.values)
 print(result.to_frame().head())
+```
+
+
+## Bandwidth selection and adaptation
+
+```python
+from pykdex import (
+    AbramsonBandwidth,
+    KNNBandwidth,
+    LikelihoodCVBandwidth,
+    SpatialKDE,
+)
+
+selected = SpatialKDE(
+    bandwidth=LikelihoodCVBandwidth(bounds=(0.1, 2.0))
+).fit(events)
+
+knn = SpatialKDE(bandwidth=KNNBandwidth(k=20)).fit(events)
+adaptive = SpatialKDE(bandwidth=AbramsonBandwidth(0.5)).fit(events)
 ```
 
 ## Initial design commitments

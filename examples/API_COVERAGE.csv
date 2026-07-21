@@ -1,7 +1,14 @@
 symbol,example
 SpatialKDE,01_spatial_kde.py
 SpatialKDEResult,01_spatial_kde.py
+BandwidthSelectionResult,03_bandwidth_selection.py
 FixedBandwidth,01_spatial_kde.py
+KNNBandwidth,04_adaptive_bandwidths.py
+AbramsonBandwidth,04_adaptive_bandwidths.py
+LikelihoodCVBandwidth,03_bandwidth_selection.py
+LeastSquaresCVBandwidth,03_bandwidth_selection.py
+LikelihoodCV,03_bandwidth_selection.py
+LeastSquaresCV,03_bandwidth_selection.py
 EuclideanMetric,01_spatial_kde.py
 GaussianKernel,01_spatial_kde.py
 EpanechnikovKernel,02_weighted_intensity.py

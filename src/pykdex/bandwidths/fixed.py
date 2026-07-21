@@ -30,13 +30,22 @@ class FixedBandwidth(BaseBandwidth):
             raise ValueError("bandwidth must be finite and greater than zero.")
         object.__setattr__(self, "value", numeric)
 
-    def resolve(self, events: np.ndarray) -> float:
+    def resolve(
+        self,
+        events: np.ndarray,
+        *,
+        weights: np.ndarray | None = None,
+        metric: object | None = None,
+        kernel: object | None = None,
+    ) -> float:
         if events.ndim != 2 or events.shape[0] == 0:
             raise ValueError("events must be a non-empty two-dimensional array.")
         return self.value
 
 
-def get_bandwidth(bandwidth: float | BaseBandwidth) -> BaseBandwidth:
+def get_bandwidth(
+    bandwidth: float | int | np.floating | BaseBandwidth,
+) -> BaseBandwidth:
     """Resolve a numeric or strategy bandwidth."""
     if isinstance(bandwidth, BaseBandwidth):
         return bandwidth
