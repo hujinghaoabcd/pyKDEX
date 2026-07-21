@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from collections import deque
 from dataclasses import dataclass, field
-from typing import Any, Protocol, runtime_checkable
+from typing import Any, Protocol, cast, runtime_checkable
 
 import numpy as np
 import pandas as pd
@@ -184,7 +184,7 @@ def get_junction_policy(policy: str | JunctionPolicy) -> JunctionPolicy:
         raise TypeError("junction_policy must be a non-empty string or policy object.")
     name = policy.strip().lower()
     try:
-        return _POLICIES[name]()
+        return cast(JunctionPolicy, _POLICIES[name]())
     except KeyError as exc:
         supported = ", ".join(sorted(_POLICIES))
         raise ValueError(
