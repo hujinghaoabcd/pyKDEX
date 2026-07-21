@@ -65,6 +65,7 @@ nav:
       - Data objects: guides/data.md
       - Built-in datasets: guides/datasets.md
       - Network data: guides/network-data.md
+      - Network distances: guides/network-distances.md
       - Kernels: guides/kernels.md
       - Bandwidths: guides/bandwidths.md
       - Results: guides/results.md
