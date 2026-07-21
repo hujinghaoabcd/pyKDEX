@@ -11,7 +11,7 @@ from __future__ import annotations
 
 __author__ = "Jinghao Hu"
 __license__ = "MIT"
-__version__ = "0.0.4"
+__version__ = "0.0.5"
 
 from pykdex.adapters import from_networkx_graph, from_osmnx_graph, network_from_place
 from pykdex.bandwidths import (
@@ -57,10 +57,17 @@ from pykdex.network import (
     LinearNetwork,
     LixelSupport,
     NetworkDataset,
+    NetworkDistanceAsset,
     NetworkEvents,
+    NetworkLocations,
     NetworkWorkspace,
     SnapResult,
+    TraversalResult,
+    TraversalState,
+    build_event_lixel_distances,
+    build_network_distance_asset,
     snap_events,
+    truncated_traversal,
 )
 from pykdex.selection import LeastSquaresCV, LikelihoodCV
 
@@ -91,6 +98,13 @@ __all__ = [
     "LixelSupport",
     "NetworkWorkspace",
     "NetworkDataset",
+    "NetworkLocations",
+    "NetworkDistanceAsset",
+    "build_network_distance_asset",
+    "build_event_lixel_distances",
+    "TraversalState",
+    "TraversalResult",
+    "truncated_traversal",
     "from_networkx_graph",
     "from_osmnx_graph",
     "network_from_place",
