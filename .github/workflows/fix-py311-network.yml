@@ -1,0 +1,51 @@
+name: Fix Python 3.11 network compatibility
+
+on:
+  push:
+    branches: [agent/network-distances]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/network-distances
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Patch dataclass default
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("src/pykdex/network/distance.py")
+          text = path.read_text(encoding="utf-8")
+          text = text.replace(
+              "from dataclasses import dataclass\n",
+              "from dataclasses import dataclass, field\n",
+              1,
+          )
+          text = text.replace(
+              "metadata: Mapping[str, Any] = MappingProxyType({})",
+              "metadata: Mapping[str, Any] = field(default_factory=dict)",
+              1,
+          )
+          path.write_text(text, encoding="utf-8")
+          PY
+          python -m pip install black isort
+          python -m black src/pykdex/network/distance.py
+          python -m isort src/pykdex/network/distance.py
+      - name: Commit patch
+        run: |
+          if git diff --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pykdex/network/distance.py
+          git commit -m "Fix Python 3.11 dataclass compatibility"
+          git push origin HEAD:agent/network-distances
