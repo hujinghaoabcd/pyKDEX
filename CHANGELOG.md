@@ -1,6 +1,16 @@
 # Changelog
 
-## 0.0.4 - Unreleased
+## 0.0.5 - Unreleased
+
+- Add immutable `NetworkLocations` for arbitrary along-edge positions.
+- Add exact directed and undirected network-distance assets.
+- Support same-edge travel, endpoint offsets, disconnected components, and edge costs.
+- Add sparse cutoff neighbourhoods that preserve reachable zero-distance pairs.
+- Add explicit truncated traversal states with parallel-edge and partial-edge retention.
+- Integrate reusable event-to-lixel distances with `NetworkWorkspace`.
+- Add analytical distance, direction, ring, cutoff, traversal, and compatibility tests.
+
+## 0.0.4
 
 - Add canonical `LinearNetwork` geometry and topology objects.
 - Preserve directed and parallel edges from NetworkX and OSMnx graphs.
