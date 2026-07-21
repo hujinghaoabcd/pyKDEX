@@ -54,9 +54,7 @@ def _adjacency(
 ) -> sparse.csr_matrix:
     edge_weights = _resolve_weight(network, weight)
     entries: dict[tuple[int, int], float] = {}
-    for u, v, value in zip(
-        network.edge_u, network.edge_v, edge_weights, strict=True
-    ):
+    for u, v, value in zip(network.edge_u, network.edge_v, edge_weights, strict=True):
         pair = (int(u), int(v))
         entries[pair] = min(entries.get(pair, np.inf), float(value))
         if not directed:
@@ -81,9 +79,7 @@ class NetworkLocations:
     kind: str = "location"
 
     def __post_init__(self) -> None:
-        location_ids = readonly_array(
-            self.location_ids, ndim=1, name="location_ids"
-        )
+        location_ids = readonly_array(self.location_ids, ndim=1, name="location_ids")
         n_locations = location_ids.shape[0]
         if n_locations == 0:
             raise ValueError("NetworkLocations must contain at least one location.")
@@ -93,7 +89,9 @@ class NetworkLocations:
         )
         offsets = readonly_array(self.offsets, dtype=float, ndim=1, name="offsets")
         if edge_indices.shape[0] != n_locations or offsets.shape[0] != n_locations:
-            raise ValueError("edge_indices and offsets must contain one value per location.")
+            raise ValueError(
+                "edge_indices and offsets must contain one value per location."
+            )
         if np.any(edge_indices < 0):
             raise ValueError("edge_indices must be non-negative.")
         if not np.all(np.isfinite(offsets)) or np.any(offsets < 0.0):

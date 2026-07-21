@@ -39,7 +39,9 @@ def test_same_edge_and_t_junction_distances_match_analytical_values():
 def test_cutoff_produces_sparse_neighbourhood_without_losing_zero_pairs():
     network = load_t_junction().network
     sources = _locations(network, ["source"], [0], [0.3])
-    targets = _locations(network, ["same", "source_copy", "far"], [0, 0, 2], [0.8, 0.3, 0.5])
+    targets = _locations(
+        network, ["same", "source_copy", "far"], [0, 0, 2], [0.8, 0.3, 0.5]
+    )
 
     asset = build_network_distance_asset(
         network,
