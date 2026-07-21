@@ -1,0 +1,51 @@
+name: Patch NetworkKDE mypy
+
+on:
+  push:
+    branches: [agent/network-kde]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/network-kde
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Apply protocol cast
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("src/pykdex/network/propagation.py")
+          text = path.read_text(encoding="utf-8")
+          text = text.replace(
+              "from typing import Any, Protocol, runtime_checkable",
+              "from typing import Any, Protocol, cast, runtime_checkable",
+              1,
+          )
+          text = text.replace(
+              "return _POLICIES[name]()",
+              "return cast(JunctionPolicy, _POLICIES[name]())",
+              1,
+          )
+          path.write_text(text, encoding="utf-8")
+          PY
+      - run: python -m pip install black isort
+      - run: python -m black src/pykdex/network/propagation.py
+      - run: python -m isort src/pykdex/network/propagation.py
+      - name: Commit patch
+        run: |
+          if git diff --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pykdex/network/propagation.py
+          git commit -m "Fix junction policy protocol typing"
+          git push origin HEAD:agent/network-kde
