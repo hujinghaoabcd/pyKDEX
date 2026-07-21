@@ -62,10 +62,14 @@ nav:
   - Estimators:
       - Spatial KDE: estimators/spatial-kde.md
   - Guides:
+      - Data objects: guides/data.md
+      - Built-in datasets: guides/datasets.md
       - Kernels: guides/kernels.md
       - Bandwidths: guides/bandwidths.md
       - Results: guides/results.md
   - API Reference:
+      - Data objects: api/data.md
+      - Datasets: api/datasets.md
       - SpatialKDE: api/spatial-kde.md
       - Kernels: api/kernels.md
       - Bandwidths: api/bandwidths.md
