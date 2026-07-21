@@ -11,7 +11,7 @@ from __future__ import annotations
 
 __author__ = "Jinghao Hu"
 __license__ = "MIT"
-__version__ = "0.0.5"
+__version__ = "0.0.6"
 
 from pykdex.adapters import from_networkx_graph, from_osmnx_graph, network_from_place
 from pykdex.bandwidths import (
