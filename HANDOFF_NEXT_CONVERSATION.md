@@ -2,19 +2,20 @@
 
 ## Current status
 
-- development version: `0.0.5`;
-- public estimator: `SpatialKDE`;
-- scalar bandwidths: fixed, likelihood CV, and Gaussian LSCV;
-- event-specific bandwidths: kNN and Abramson;
+- development version: `0.0.6`;
+- public estimators: `SpatialKDE` and fixed-bandwidth `NetworkKDE`;
+- scalar spatial bandwidths: fixed, likelihood CV, and Gaussian LSCV;
+- event-specific spatial bandwidths: kNN and Abramson;
 - structured spatial data, measured support, boundaries, provenance, and datasets;
 - canonical `LinearNetwork` with directed and parallel edges;
 - GeoDataFrame, NetworkX, and OSMnx conversion;
 - auditable event snapping, measured lixels, and reusable `NetworkWorkspace`;
-- arbitrary along-edge `NetworkLocations`;
-- exact directed and undirected event-to-support distances;
-- sparse cutoff neighbourhood assets preserving zero-distance pairs;
-- explicit truncated traversal states retaining parallel and partial edges;
-- tests: 106 passed;
+- exact directed and undirected event-to-support network distances;
+- simple geodesic, discontinuous equal-split, and continuous equal-split junction policies;
+- immutable signed propagation records and traces;
+- measured `NetworkField` results with integration and tabular/geospatial export;
+- density and intensity targets using accepted snapped-event weights;
+- tests: 118 passed;
 - branch-coverage gate: passed at the required 80% minimum;
 - formatting, linting, typing, documentation, build, and installation checks pass;
 - Linux, Windows, and macOS CI passes on Python 3.11-3.14;
@@ -22,21 +23,18 @@
 
 ## Next recommended development unit
 
-Implement junction propagation and the first public network-density result without
-mixing topology policy into the radial kernel implementation:
+Add network-specific bandwidth selection and adaptive bandwidths without changing
+the validated junction-propagation contract:
 
-1. define a `JunctionPolicy` protocol and immutable propagation records;
-2. implement the simple shortest-path policy as an explicit baseline;
-3. implement discontinuous equal-split propagation with mass accounting;
-4. implement continuous propagation with node-continuity tests;
-5. add a measured `NetworkField` result with `integral()`, `to_frame()`, and
-   `to_geodataframe()`;
-6. implement fixed-bandwidth `NetworkKDE` for density and intensity targets;
-7. validate single-line analytical values, T-junction allocation, continuity,
-   lixel mass integration, weighted intensity, disconnected components, and
-   directed networks;
-8. compare independent fixtures against published NKDE definitions without
-   runtime calls to external packages.
+1. add reusable event-to-event network-distance assets;
+2. implement weighted leave-one-out likelihood for fixed network bandwidths;
+3. implement lixel-integrated least-squares cross-validation;
+4. return immutable optimization traces and bandwidth-selection results;
+5. implement network k-nearest-neighbour event bandwidths;
+6. cache compatible event-event and event-lixel neighbourhoods in workspaces;
+7. validate single-line analytical objectives, disconnected components, duplicated
+   locations, weighted events, and directed networks;
+8. add memory, cutoff, and repeated-evaluation benchmarks on generated grids.
 
-Heat-equation NKDE, adaptive network bandwidths, and temporal-network KDE should
+Heat-equation Gaussian network KDE, temporal-network KDE, and uncertainty should
 remain separate later development units.
