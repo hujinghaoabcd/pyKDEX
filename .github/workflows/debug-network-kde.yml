@@ -14,14 +14,11 @@ jobs:
       fail-fast: false
       matrix:
         test:
-          - tests/test_network_propagation.py
-          - tests/test_network_kde.py::test_simple_network_kde_matches_kernel_value_at_zero_distance
-          - tests/test_network_kde.py::test_discontinuous_network_kde_has_exact_equal_split_branch_values
-          - tests/test_network_kde.py::test_continuous_network_kde_matches_backward_correction_near_node
-          - tests/test_network_kde.py::test_continuous_network_field_conserves_mass_and_exports_measured_support
-          - tests/test_network_kde.py::test_weighted_intensity_is_weight_sum_times_weighted_density
-          - tests/test_network_kde.py::test_path_policy_rejects_infinite_support_and_resets_fit_state
-          - tests/test_network_kde.py::test_simple_policy_accepts_gaussian_kernel
+          - tests/test_network_propagation.py::test_junction_policy_weights_match_equal_split_definitions
+          - tests/test_network_propagation.py::test_discontinuous_trace_splits_t_junction_into_two_equal_branches
+          - tests/test_network_propagation.py::test_continuous_trace_adds_signed_reflection_at_degree_three_node
+          - tests/test_network_propagation.py::test_continuous_policy_rejects_directed_metric_graphs
+          - tests/test_network_propagation.py::test_path_safety_limit_fails_explicitly_on_repeated_ring_walks
     name: ${{ matrix.test }}
     steps:
       - uses: actions/checkout@v4
@@ -31,17 +28,3 @@ jobs:
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e ".[test]"
       - run: python -m pytest -q "${{ matrix.test }}"
-
-  existing-suite:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-      - run: python -m pip install --upgrade pip
-      - run: python -m pip install -e ".[test]"
-      - run: >-
-          python -m pytest -q
-          --ignore=tests/test_network_kde.py
-          --ignore=tests/test_network_propagation.py
