@@ -54,7 +54,9 @@ def test_discontinuous_trace_splits_t_junction_into_two_equal_branches():
         [record.coefficient for record in branch_records],
         [0.5, 0.5],
     )
-    assert all(record.start_distance == pytest.approx(0.75) for record in branch_records)
+    assert all(
+        record.start_distance == pytest.approx(0.75) for record in branch_records
+    )
     assert trace.to_frame().shape[0] == trace.n_records
 
 

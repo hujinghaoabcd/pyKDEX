@@ -369,7 +369,9 @@ def _outgoing_orientations(
     return tuple(orientations)
 
 
-def _orientation_start(network: LinearNetwork, edge_index: int, direction: int) -> float:
+def _orientation_start(
+    network: LinearNetwork, edge_index: int, direction: int
+) -> float:
     return 0.0 if direction == 1 else float(network.edge_lengths[edge_index])
 
 
@@ -499,9 +501,7 @@ def trace_network_propagation(
     tolerance = float(coefficient_tolerance)
     if not np.isfinite(tolerance) or tolerance <= 0.0:
         raise ValueError("coefficient_tolerance must be finite and positive.")
-    if isinstance(max_records, bool) or not isinstance(
-        max_records, (int, np.integer)
-    ):
+    if isinstance(max_records, bool) or not isinstance(max_records, (int, np.integer)):
         raise TypeError("max_records must be a positive integer.")
     record_limit = int(max_records)
     if record_limit <= 0:
@@ -596,9 +596,7 @@ def trace_network_propagation(
                 _PendingState(
                     edge_index=next_edge,
                     direction=next_direction,
-                    start_offset=_orientation_start(
-                        network, next_edge, next_direction
-                    ),
+                    start_offset=_orientation_start(network, next_edge, next_direction),
                     start_distance=arrival_distance,
                     coefficient=next_coefficient,
                     depth=state.depth + 1,

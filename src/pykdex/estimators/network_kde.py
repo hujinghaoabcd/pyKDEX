@@ -176,9 +176,7 @@ class NetworkKDE(BaseKDE):
             self.weights_ = np.ascontiguousarray(events.weights.copy())
             self.n_events_ = events.n_events
             self.dimension_ = 1
-            self.coordinate_names_in_ = np.asarray(
-                ["network_distance"], dtype=object
-            )
+            self.coordinate_names_in_ = np.asarray(["network_distance"], dtype=object)
             self.weight_sum_ = events.weight_sum
             self.bandwidth_ = float(self.bandwidth)
             self.event_crs_ = events.crs
