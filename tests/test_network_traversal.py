@@ -23,7 +23,7 @@ def test_t_junction_traversal_reaches_each_branch_fraction():
         [state.reached_fraction for state in result.states],
         [0.5, 0.5, 0.5],
     )
-    assert not any(state.reversed and state.start_distance == 0.0 for state in result.states)
+    assert sum(state.reversed for state in result.states) == 1
 
 
 def test_directed_osm_traversal_keeps_parallel_edges_as_distinct_states():
