@@ -25,3 +25,19 @@
 ::: pykdex.network.TraversalResult
 
 ::: pykdex.network.truncated_traversal
+
+::: pykdex.network.JunctionPolicy
+
+::: pykdex.network.SimpleJunctionPolicy
+
+::: pykdex.network.DiscontinuousJunctionPolicy
+
+::: pykdex.network.ContinuousJunctionPolicy
+
+::: pykdex.network.get_junction_policy
+
+::: pykdex.network.PropagationRecord
+
+::: pykdex.network.PropagationTrace
+
+::: pykdex.network.trace_network_propagation
