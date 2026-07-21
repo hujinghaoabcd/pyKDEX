@@ -14,3 +14,11 @@ Structured data objects carry CRS, units, identifiers, provenance, and stable
 fingerprints. Future OSMnx and NetworkX inputs will be converted to pyKDEX's own
 `LinearNetwork`; core network estimators will not depend directly on either
 external graph representation.
+
+
+## Network preparation
+
+External GeoDataFrame, NetworkX, and OSMnx inputs are converted to an immutable
+`LinearNetwork`. Event snapping and lixelization produce separately validated
+objects, while `NetworkWorkspace` bundles reusable prepared assets without
+binding them to a particular estimator.

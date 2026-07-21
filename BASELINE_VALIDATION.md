@@ -1,4 +1,4 @@
-# pyKDEX 0.0.3 validation
+# pyKDEX 0.0.4 validation
 
 Validation date: 2026-07-22
 
@@ -6,47 +6,40 @@ Validation date: 2026-07-22
 
 - fixed, cross-validated, kNN, and Abramson spatial KDE bandwidths;
 - weighted density and event-intensity estimation;
-- immutable `SpatialEvents`, `PointSupport`, and `GridSupport` objects;
-- polygonal `SpatialBoundary` objects;
-- structured `KDEDataset` bundles;
-- validation reports with stable error and warning codes;
-- provenance records and deterministic content fingerprints;
-- CRS, spatial-unit, coordinate-schema, and support-measure propagation;
-- deterministic bimodal and bounded-square datasets.
+- structured events, measured supports, boundaries, datasets, and provenance;
+- canonical geometric `LinearNetwork` objects;
+- directed and undirected multigraph topology with stable IDs;
+- GeoDataFrame, NetworkX, and OSMnx adapters;
+- auditable event snapping with rejected-event records;
+- measured lixel partitions and reusable `NetworkWorkspace` objects;
+- deterministic analytical network datasets and grid-network generators.
 
-## Numerical and data validation
+## Network validation
 
-- every radial kernel integrates to one in dimensions 1, 2, and 3;
-- one-event Gaussian estimates match closed-form values;
-- fixed, kNN, and Abramson density estimates conserve unit mass;
-- weighted intensity integrates to total event weight;
-- measured `GridSupport` results expose `integral()` and `to_grid()`;
-- remainder grid cells preserve the exact requested bounding-box area;
-- structured event weights are used without ambiguous duplication;
-- CRS, coordinate-unit, dimension, identifier, duplicate, and boundary checks
-  are tested;
-- synthetic datasets and fingerprints are deterministic for a fixed random seed.
+- directed edge orientation is retained;
+- parallel OSM-style edges remain distinct while sparse adjacency uses minimum cost;
+- geographic OSMnx graphs are rejected by default until projected;
+- disconnected components, self-loops, endpoint mismatches, and parallel edges are reported;
+- event offsets and network fingerprints are checked;
+- equal-distance snapping ties are deterministic and auditable;
+- events beyond a maximum distance are returned as rejected records;
+- lixel measures exactly cover total network length, including remainder segments;
+- workspace fingerprints are deterministic for identical prepared inputs.
 
 ## Engineering validation
 
-- pytest: 75 passed;
+- pytest: 95 passed;
 - branch coverage: 81.0%, threshold 80%;
 - Black, isort, Ruff, and mypy: passed;
 - MkDocs strict build: passed;
 - public API/example coverage: complete;
-- wheel and sdist build and Twine metadata check: passed;
-- installed-wheel smoke test: passed;
-- failed refits atomically clear all previous fitted state.
+- wheel and sdist build and Twine metadata checks: passed;
+- installed-wheel smoke test: passed.
 
 ## Deliberate exclusions
 
-The following remain future work:
-
-- linear-network topology, snapping, lixels, and workspaces;
-- NetworkX and OSMnx adapters;
+- event-to-lixel shortest-path distance assets;
+- junction traversal and mass-allocation policies;
 - simple, discontinuous, continuous, and heat-kernel NKDE;
-- boundary correction and bandwidth matrices;
-- balloon adaptive bandwidths;
-- spatiotemporal and cyclic temporal KDE;
-- temporal network KDE;
-- relative-risk, uncertainty, and separability estimators.
+- temporal and network-time data objects and estimators;
+- boundary correction, bandwidth matrices, relative risk, and uncertainty.

@@ -1,6 +1,15 @@
 # Changelog
 
-## 0.0.3 - Unreleased
+## 0.0.4 - Unreleased
+
+- Add canonical `LinearNetwork` geometry and topology objects.
+- Preserve directed and parallel edges from NetworkX and OSMnx graphs.
+- Add projected-OSM validation and optional OSM place downloads.
+- Add auditable `NetworkEvents` snapping with accepted and rejected records.
+- Add measured `LixelSupport` partitions and `NetworkWorkspace` preparation.
+- Add T-junction, cross, ring, disconnected, OSMnx-like, and grid datasets.
+
+## 0.0.3
 
 - Add immutable `SpatialEvents`, `PointSupport`, and `GridSupport` objects.
 - Add polygonal `SpatialBoundary` and structured `KDEDataset` bundles.
