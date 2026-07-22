@@ -1,0 +1,52 @@
+name: Record pyKDEX 0.0.7 merge
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Record final merge commit
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          merge_sha = "eec1bbee65e6131c942f67adb8286e6a4a56af26"
+          for filename in (
+              "HANDOFF_0.0.7_NETWORK_BANDWIDTHS.md",
+              "docs/development/handoff-0.0.7-network-bandwidths.md",
+          ):
+              path = Path(filename)
+              text = path.read_text(encoding="utf-8")
+              old = "- Merge commit: pending PR #6 squash merge"
+              new = f"- Merge commit: `{merge_sha}`"
+              if old not in text:
+                  raise SystemExit(f"Expected merge placeholder not found in {filename}")
+              path.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+          validation = Path("BASELINE_VALIDATION.md")
+          text = validation.read_text(encoding="utf-8")
+          old = "- PR #6 merge commit: pending squash merge."
+          new = f"- PR #6 squash merge commit: `{merge_sha}`."
+          if old not in text:
+              raise SystemExit("Expected validation merge placeholder not found")
+          validation.write_text(text.replace(old, new, 1), encoding="utf-8")
+          PY
+      - name: Remove temporary workflow and commit
+        run: |
+          rm -f .github/workflows/record-0.0.7-merge.yml
+          git add -A
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Record pyKDEX 0.0.7 merge commit in handoff records'
+          git push origin HEAD:main
