@@ -34,26 +34,19 @@ Validation date: 2026-07-22
 - selector wrappers retain complete deterministic optimization traces;
 - failed adaptive or selection fits atomically reset estimator state.
 
-## Current observed local validation
+## Final observed validation
 
-- pytest: 129 passed;
-- branch coverage: 80.5%, above the required 80% minimum;
+- pytest: 137 passed;
+- branch coverage: 81.97%, above the required 80% minimum;
 - public API/example coverage: 70 symbols mapped;
-- source, tests, and examples compile successfully;
-- deterministic grid-network benchmark completed successfully.
-
-## Required final release checks
-
-The following must be copied here after the final clean pull-request CI:
-
-- Black, isort, Ruff, and mypy;
-- MkDocs strict build;
-- wheel and sdist build and Twine metadata checks;
-- installed-wheel smoke test;
-- Linux, Windows, and macOS with Python 3.11-3.14;
-- final test and branch-coverage counts from GitHub Actions;
-- removal of temporary source-export and diagnostic workflows;
-- merge commit for PR #6.
+- Black, isort, Ruff, and mypy: passed;
+- MkDocs strict build: passed;
+- wheel, sdist, Twine metadata, and installed-wheel smoke tests: passed;
+- Linux, Windows, and macOS passed with Python 3.11-3.14;
+- deterministic grid-network benchmark completed successfully;
+- final pull-request CI: run #74 (29902449039), conclusion success;
+- temporary patch, source-export, formatter, and diagnostic workflows: removed;
+- PR #6 merge commit: pending squash merge.
 
 ## Deliberate exclusions
 

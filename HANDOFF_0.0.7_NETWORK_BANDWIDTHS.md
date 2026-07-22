@@ -254,9 +254,9 @@ must not be represented as an ordinary radial-kernel name.
 
 ## 12. Finalization fields
 
-- Final version: pending clean CI
-- Final test count: pending clean CI
-- Final branch coverage: pending clean CI
-- Final CI run: pending clean CI
-- Merge commit: pending
-- Temporary workflow removal: pending
+- Final version: `0.0.7`
+- Final test count: `137 passed`
+- Final branch coverage: `81.97%`
+- Final CI run: GitHub Actions run `#74` (`29902449039`), conclusion `success`
+- Merge commit: pending PR #6 squash merge
+- Temporary workflow removal: completed
