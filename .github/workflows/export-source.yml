@@ -1,0 +1,23 @@
+name: Export source
+
+on:
+  push:
+    branches: [agent/network-bandwidths]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/network-bandwidths
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pykdex-source
+          path: .
+          include-hidden-files: true
+          retention-days: 1
