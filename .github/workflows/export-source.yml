@@ -3,6 +3,7 @@ name: Export source
 on:
   push:
     branches: [agent/network-bandwidths]
+  pull_request:
   workflow_dispatch:
 
 permissions:
