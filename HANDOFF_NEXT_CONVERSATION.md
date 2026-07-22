@@ -1,28 +1,39 @@
 # pyKDEX current handoff
 
-The latest development unit is **0.0.7 network bandwidth selection and adaptive NetworkKDE**.
-Read `HANDOFF_0.0.7_NETWORK_BANDWIDTHS.md` first; it contains the full architecture,
-mathematical definitions, changed files, validation contract, exclusions, recovery steps,
-and recommended next unit.
+The latest completed development unit is **0.0.7 network bandwidth selection and adaptive
+NetworkKDE**. Read `HANDOFF_0.0.7_NETWORK_BANDWIDTHS.md` first; it contains the full
+architecture, mathematical definitions, changed files, validation contract, exclusions,
+recovery steps, and recommended next unit.
 
 ## Current repository state
 
 - repository: `hujinghaoabcd/pyKDEX`;
 - default branch: `main`;
-- active development branch: `agent/network-bandwidths`;
-- active pull request: `#6`;
-- last stable merged version before this unit: `0.0.6`;
-- development version on the branch: `0.0.7`;
-- reviewed source commit: `9685687764f66a86c19dcd3cde3f1587da9ec236`;
-- formatted source commit: `3fbb6fac3477ea389398347b9194214d434839c4`;
-- finalized handoff commit: `994c59b9ed0cd13391e54bcfc6dd2f96ee947c62`;
+- latest stable development version: `0.0.7`;
+- completed pull request: `#6 Add network bandwidth selection and adaptive NetworkKDE`;
+- PR #6 squash merge commit: `eec1bbee65e6131c942f67adb8286e6a4a56af26`;
+- post-merge handoff-record commit: `0a5adc6ae21052f6dcd1bd0eb7c53595ed766ae0`;
 - validation: `137 passed`, branch coverage `81.97%`, and 70 public symbols mapped to examples;
-- clean full CI run #74 (`29902449039`): success;
-- temporary patch fragments, patch-application, source-export, formatter, finalizer, and
-  diagnostic workflows: removed;
-- current unit status: implementation, formatting, validation records, and versioned handoff are
-  complete. The final documentation-only CI triggered by this update must pass before PR #6 is
-  marked ready and squash-merged.
+- final documentation-complete PR CI run #77 (`29902827180`): success;
+- Black, isort, Ruff, mypy, strict MkDocs, distributions, installed-wheel smoke tests, and the
+  Linux/Windows/macOS Python 3.11-3.14 matrix passed;
+- temporary patch fragments and all patch, source-export, formatter, finalizer, merge-recorder,
+  and diagnostic workflows were removed;
+- unit status: complete and merged into `main`.
+
+## Next recommended development unit
+
+Return to the unfinished ordinary spatial KDE family in a new dedicated branch:
+
+1. polygon boundary renormalization;
+2. reflection correction for explicitly supported boundary geometries;
+3. positive-definite bandwidth matrices and anisotropic transformations;
+4. balloon kNN bandwidths;
+5. boundary-aware analytical and mass-conservation tests;
+6. a new detailed versioned Markdown handoff before merge.
+
+Heat-equation Gaussian NKDE remains a separate later numerical engine and must not be exposed as
+an ordinary radial-kernel name.
 
 ## Permanent process rule
 
