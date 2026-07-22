@@ -18,6 +18,7 @@ from pykdex.data.validation import DataValidationReport
 from pykdex.network.distance import (
     NetworkDistanceAsset,
     NetworkLocations,
+    build_event_event_distances,
     build_event_lixel_distances,
 )
 from pykdex.network.events import NetworkEvents, SnapResult, snap_events
@@ -38,6 +39,7 @@ class NetworkWorkspace:
     snap_result: SnapResult
     lixels: LixelSupport
     distance_asset: NetworkDistanceAsset | None = None
+    event_distance_asset: NetworkDistanceAsset | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.network, LinearNetwork):
@@ -50,6 +52,12 @@ class NetworkWorkspace:
             self.distance_asset, NetworkDistanceAsset
         ):
             raise TypeError("distance_asset must be NetworkDistanceAsset or None.")
+        if self.event_distance_asset is not None and not isinstance(
+            self.event_distance_asset, NetworkDistanceAsset
+        ):
+            raise TypeError(
+                "event_distance_asset must be NetworkDistanceAsset or None."
+            )
         self.validate().raise_for_errors()
 
     @property
@@ -65,6 +73,11 @@ class NetworkWorkspace:
             None if self.events is None else self.events.fingerprint,
             self.lixels.fingerprint,
             None if self.distance_asset is None else self.distance_asset.fingerprint,
+            (
+                None
+                if self.event_distance_asset is None
+                else self.event_distance_asset.fingerprint
+            ),
             dict(self.snap_result.parameters),
         )
 
@@ -86,6 +99,17 @@ class NetworkWorkspace:
                     targets=targets,
                 )
             )
+        if self.event_distance_asset is not None:
+            locations = None
+            if self.events is not None:
+                locations = NetworkLocations.from_events(self.events)
+            report = report.combine(
+                self.event_distance_asset.validate(
+                    self.network,
+                    sources=locations,
+                    targets=locations,
+                )
+            )
         return report
 
     def summary(self) -> dict[str, Any]:
@@ -103,6 +127,16 @@ class NetworkWorkspace:
             ),
             "distance_cutoff": (
                 None if self.distance_asset is None else self.distance_asset.cutoff
+            ),
+            "n_event_distance_pairs": (
+                0
+                if self.event_distance_asset is None
+                else self.event_distance_asset.n_pairs
+            ),
+            "event_distance_cutoff": (
+                None
+                if self.event_distance_asset is None
+                else self.event_distance_asset.cutoff
             ),
             "valid": validation.valid,
             "n_warnings": len(validation.warnings),
@@ -128,6 +162,26 @@ class NetworkWorkspace:
             directed=directed,
         )
         return replace(self, distance_asset=asset)
+
+    def with_event_event_distances(
+        self,
+        *,
+        cutoff: float | None = None,
+        weight: str = "length",
+        directed: bool | None = None,
+    ) -> "NetworkWorkspace":
+        """Return a workspace with exact event-to-event distance assets."""
+        if self.events is None:
+            raise ValueError("Cannot build distances without accepted network events.")
+        asset = build_event_event_distances(
+            self.network,
+            self.events,
+            cutoff=cutoff,
+            weight=weight,
+            directed=directed,
+        )
+        return replace(self, event_distance_asset=asset)
+
 
     @classmethod
     def prepare(

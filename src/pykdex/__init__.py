@@ -11,15 +11,20 @@ from __future__ import annotations
 
 __author__ = "Jinghao Hu"
 __license__ = "MIT"
-__version__ = "0.0.6"
+__version__ = "0.0.7"
 
 from pykdex.adapters import from_networkx_graph, from_osmnx_graph, network_from_place
 from pykdex.bandwidths import (
     AbramsonBandwidth,
+    BaseNetworkBandwidth,
     FixedBandwidth,
+    FixedNetworkBandwidth,
     KNNBandwidth,
     LeastSquaresCVBandwidth,
     LikelihoodCVBandwidth,
+    NetworkKNNBandwidth,
+    NetworkLeastSquaresCVBandwidth,
+    NetworkLikelihoodCVBandwidth,
 )
 from pykdex.core import BandwidthSelectionResult, NetworkField, SpatialKDEResult
 from pykdex.data import (
@@ -70,6 +75,7 @@ from pykdex.network import (
     SnapResult,
     TraversalResult,
     TraversalState,
+    build_event_event_distances,
     build_event_lixel_distances,
     build_network_distance_asset,
     get_junction_policy,
@@ -77,7 +83,13 @@ from pykdex.network import (
     trace_network_propagation,
     truncated_traversal,
 )
-from pykdex.selection import LeastSquaresCV, LikelihoodCV
+from pykdex.selection import (
+    LeastSquaresCV,
+    LikelihoodCV,
+    NetworkLeastSquaresCV,
+    NetworkLikelihoodCV,
+    NetworkSelectionCache,
+)
 
 __all__ = [
     "SpatialKDE",
@@ -111,6 +123,7 @@ __all__ = [
     "NetworkLocations",
     "NetworkDistanceAsset",
     "build_network_distance_asset",
+    "build_event_event_distances",
     "build_event_lixel_distances",
     "TraversalState",
     "TraversalResult",
@@ -127,12 +140,20 @@ __all__ = [
     "from_osmnx_graph",
     "network_from_place",
     "FixedBandwidth",
+    "BaseNetworkBandwidth",
+    "FixedNetworkBandwidth",
+    "NetworkKNNBandwidth",
+    "NetworkLikelihoodCVBandwidth",
+    "NetworkLeastSquaresCVBandwidth",
     "KNNBandwidth",
     "AbramsonBandwidth",
     "LikelihoodCVBandwidth",
     "LeastSquaresCVBandwidth",
     "LikelihoodCV",
     "LeastSquaresCV",
+    "NetworkLikelihoodCV",
+    "NetworkLeastSquaresCV",
+    "NetworkSelectionCache",
     "EuclideanMetric",
     "GaussianKernel",
     "EpanechnikovKernel",

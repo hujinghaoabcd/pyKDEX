@@ -9,15 +9,16 @@ pyKDEX/
 │   ├── network/       topology, snapping, lixels, workspaces, and bundles
 │   ├── adapters/      NetworkX and OSMnx conversion and acquisition
 │   ├── kernels/       normalized radial kernels and registry
-│   ├── bandwidths/    bandwidth strategies
+│   ├── bandwidths/    spatial and network bandwidth strategies
 │   ├── metrics/       distance strategies
 │   ├── estimators/    user-facing estimators
-│   ├── selection/     CV objectives and scalar optimization
+│   ├── selection/     spatial/network CV objectives and scalar optimization
 │   └── py.typed       inline typing marker
 ├── examples/          isolated runnable examples and API coverage map
 ├── tests/             numerical, behavioural, data, and packaging tests
 ├── docs/              MkDocs user and developer documentation
 ├── tools/             coverage and distribution verification utilities
+├── benchmarks/        deterministic opt-in performance scripts
 └── .github/workflows/ continuous integration
 ```
 

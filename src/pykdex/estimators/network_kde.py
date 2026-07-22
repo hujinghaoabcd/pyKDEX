@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Jinghao Hu
 # SPDX-License-Identifier: MIT
 
-"""Fixed-bandwidth kernel density and intensity estimation on linear networks."""
+"""Kernel density and intensity estimation on linear networks."""
 
 from __future__ import annotations
 
@@ -9,8 +9,13 @@ from typing import Optional
 
 import numpy as np
 
+from pykdex.bandwidths.network import (
+    BaseNetworkBandwidth,
+    get_network_bandwidth,
+)
 from pykdex.core.base import BaseKDE
 from pykdex.core.network_results import NetworkField
+from pykdex.core.results import BandwidthSelectionResult
 from pykdex.kernels import BaseKernel, get_kernel
 from pykdex.network.distance import NetworkDistanceAsset
 from pykdex.network.evaluation import evaluate_path_kernel, evaluate_simple_kernel
@@ -25,19 +30,19 @@ from pykdex.network.workspace import NetworkWorkspace
 
 
 class NetworkKDE(BaseKDE):
-    r"""Fixed-bandwidth density or intensity estimation on a linear network.
+    r"""Density or intensity estimation on a prepared linear network.
 
     ``simple`` uses shortest-path distance without splitting mass at vertices.
     ``discontinuous`` uses equal-split non-backtracking propagation.
     ``continuous`` adds signed reflected paths to enforce a common limiting
     value on all incident edges of each undirected vertex.
 
-    Path-based policies currently require a finite-support kernel. Gaussian
-    equal-split smoothing is reserved for the later heat-equation estimator.
+    The bandwidth may be numeric, selected by network cross-validation, or
+    event-specific through :class:`~pykdex.NetworkKNNBandwidth`.
 
     Args:
         kernel: Normalized one-dimensional radial kernel name or instance.
-        bandwidth: Positive fixed network bandwidth.
+        bandwidth: Positive numeric bandwidth or network bandwidth strategy.
         junction_policy: Junction policy name or compatible policy object.
         target: ``"density"`` or ``"intensity"``.
         directed: Respect stored edge direction when true.
@@ -51,7 +56,9 @@ class NetworkKDE(BaseKDE):
     def __init__(
         self,
         kernel: str | BaseKernel = "epanechnikov",
-        bandwidth: float | int | np.floating = 1.0,
+        bandwidth: (
+            float | int | np.floating | BaseNetworkBandwidth
+        ) = 1.0,
         junction_policy: str | JunctionPolicy = "discontinuous",
         target: str = "density",
         directed: bool | None = None,
@@ -62,9 +69,12 @@ class NetworkKDE(BaseKDE):
         verbose: bool = False,
     ) -> None:
         super().__init__(target=target, random_state=random_state, verbose=verbose)
-        bandwidth_value = float(bandwidth)
-        if not np.isfinite(bandwidth_value) or bandwidth_value <= 0.0:
-            raise ValueError("bandwidth must be finite and positive.")
+        if not isinstance(bandwidth, BaseNetworkBandwidth):
+            if isinstance(bandwidth, (bool, np.bool_)):
+                raise TypeError("bandwidth must not be boolean.")
+            bandwidth_value = float(bandwidth)
+            if not np.isfinite(bandwidth_value) or bandwidth_value <= 0.0:
+                raise ValueError("bandwidth must be finite and positive.")
         if directed is not None and not isinstance(directed, (bool, np.bool_)):
             raise TypeError("directed must be boolean or None.")
         coefficient_value = float(coefficient_tolerance)
@@ -80,7 +90,7 @@ class NetworkKDE(BaseKDE):
         if not isinstance(store_propagation, (bool, np.bool_)):
             raise TypeError("store_propagation must be boolean.")
         self.kernel = kernel
-        self.bandwidth = bandwidth_value
+        self.bandwidth = bandwidth
         self.junction_policy = junction_policy
         self.directed = None if directed is None else bool(directed)
         self.coefficient_tolerance = coefficient_value
@@ -100,6 +110,8 @@ class NetworkKDE(BaseKDE):
         self.distance_asset_: NetworkDistanceAsset | None = None
         self.propagation_traces_: tuple[PropagationTrace, ...] | None = None
         self.values_: np.ndarray | None = None
+        self.network_bandwidth_strategy_: BaseNetworkBandwidth | None = None
+        self.bandwidth_selection_: BandwidthSelectionResult | None = None
 
     def fit(self, workspace: NetworkWorkspace) -> "NetworkKDE":
         """Fit and evaluate the estimator on a prepared network workspace."""
@@ -129,6 +141,35 @@ class NetworkKDE(BaseKDE):
                     "Use a compact kernel or junction_policy='simple'."
                 )
 
+            bandwidth_strategy = get_network_bandwidth(self.bandwidth)
+            resolved_bandwidth = bandwidth_strategy.resolve(
+                workspace,
+                kernel=kernel,
+                junction_policy=policy,
+                directed=effective_directed,
+                coefficient_tolerance=self.coefficient_tolerance,
+                max_records_per_event=self.max_records_per_event,
+            )
+            bandwidth_array = np.asarray(resolved_bandwidth, dtype=float)
+            if bandwidth_array.ndim == 0:
+                fitted_bandwidth: float | np.ndarray = float(bandwidth_array)
+            elif (
+                bandwidth_array.ndim == 1
+                and bandwidth_array.shape[0] == events.n_events
+            ):
+                fitted_array = np.ascontiguousarray(bandwidth_array.copy())
+                fitted_array.setflags(write=False)
+                fitted_bandwidth = fitted_array
+            else:
+                raise ValueError(
+                    "network bandwidth strategy must resolve to one scalar or one "
+                    "value per accepted event."
+                )
+            if not np.all(np.isfinite(np.asarray(fitted_bandwidth))) or np.any(
+                np.asarray(fitted_bandwidth) <= 0.0
+            ):
+                raise ValueError("resolved network bandwidths must be finite and positive.")
+
             coefficients = (
                 events.weights / events.weight_sum
                 if self.target == "density"
@@ -142,7 +183,7 @@ class NetworkKDE(BaseKDE):
                     events,
                     kernel,
                     policy,
-                    float(self.bandwidth),
+                    fitted_bandwidth,
                     coefficients,
                     directed=effective_directed,
                     coefficient_tolerance=self.coefficient_tolerance,
@@ -153,7 +194,7 @@ class NetworkKDE(BaseKDE):
                     workspace,
                     events,
                     kernel,
-                    float(self.bandwidth),
+                    fitted_bandwidth,
                     coefficients,
                     directed=effective_directed,
                 )
@@ -169,6 +210,8 @@ class NetworkKDE(BaseKDE):
             owned_values = np.ascontiguousarray(values.copy())
             owned_values.setflags(write=False)
 
+            selection_result = getattr(bandwidth_strategy, "result_", None)
+            bandwidth_values = np.atleast_1d(np.asarray(fitted_bandwidth, dtype=float))
             self.workspace_ = workspace
             self.network_events_ = events
             self.lixels_ = workspace.lixels
@@ -178,7 +221,7 @@ class NetworkKDE(BaseKDE):
             self.dimension_ = 1
             self.coordinate_names_in_ = np.asarray(["network_distance"], dtype=object)
             self.weight_sum_ = events.weight_sum
-            self.bandwidth_ = float(self.bandwidth)
+            self.bandwidth_ = fitted_bandwidth
             self.event_crs_ = events.crs
             self.spatial_unit_ = events.spatial_unit
             self.event_fingerprint_ = events.fingerprint
@@ -188,11 +231,25 @@ class NetworkKDE(BaseKDE):
             self.distance_asset_ = distance_asset
             self.propagation_traces_ = traces if self.store_propagation else None
             self.values_ = owned_values
+            self.network_bandwidth_strategy_ = bandwidth_strategy
+            self.bandwidth_selection_ = (
+                selection_result
+                if isinstance(selection_result, BandwidthSelectionResult)
+                else None
+            )
             self.fit_metadata_ = {
                 "kernel": kernel.name,
                 "target": self.target,
                 "junction_policy": policy.name,
-                "bandwidth": float(self.bandwidth),
+                "bandwidth": (
+                    float(fitted_bandwidth)
+                    if np.asarray(fitted_bandwidth).ndim == 0
+                    else None
+                ),
+                "bandwidth_strategy": bandwidth_strategy.__class__.__name__,
+                "adaptive_bandwidth": bool(np.asarray(fitted_bandwidth).ndim == 1),
+                "bandwidth_min": float(np.min(bandwidth_values)),
+                "bandwidth_max": float(np.max(bandwidth_values)),
                 "n_events": events.n_events,
                 "n_lixels": workspace.lixels.n_lixels,
                 "directed": effective_directed,
@@ -202,6 +259,11 @@ class NetworkKDE(BaseKDE):
                 "path_based": policy.path_based,
                 "n_propagation_records": n_records,
                 "raw_minimum_before_clipping": raw_minimum,
+                "bandwidth_selection_method": (
+                    None
+                    if self.bandwidth_selection_ is None
+                    else self.bandwidth_selection_.method
+                ),
             }
             self._mark_fitted()
             return self
@@ -229,12 +291,13 @@ class NetworkKDE(BaseKDE):
             or self.directed_ is None
             or self.workspace_ is None
             or self.event_fingerprint_ is None
+            or self.bandwidth_ is None
         ):
             raise RuntimeError("Fitted estimator components are unavailable.")
         return NetworkField(
             values=self.values_,
             support=self.lixels_,
-            bandwidth=float(self.bandwidth),
+            bandwidth=self.bandwidth_,
             target=self.target,
             kernel=self.kernel_.name,
             junction_policy=self.junction_policy_.name,

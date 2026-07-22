@@ -26,7 +26,7 @@ class NetworkField:
     Args:
         values: One non-negative estimate per lixel.
         support: Measured lixel support used for evaluation and integration.
-        bandwidth: Positive scalar network bandwidth.
+        bandwidth: Positive scalar or one positive value per source event.
         target: Either ``"density"`` or ``"intensity"``.
         kernel: Canonical radial-kernel name.
         junction_policy: Canonical network junction policy.
@@ -38,7 +38,7 @@ class NetworkField:
 
     values: np.ndarray
     support: LixelSupport
-    bandwidth: float
+    bandwidth: float | np.ndarray
     target: str
     kernel: str
     junction_policy: str
@@ -55,9 +55,23 @@ class NetworkField:
             raise ValueError("values must contain one value per lixel.")
         if not np.all(np.isfinite(values)) or np.any(values < 0.0):
             raise ValueError("values must be finite and non-negative.")
-        bandwidth = float(self.bandwidth)
-        if not np.isfinite(bandwidth) or bandwidth <= 0.0:
-            raise ValueError("bandwidth must be finite and positive.")
+        bandwidth_values = np.asarray(self.bandwidth, dtype=float)
+        if bandwidth_values.ndim == 0:
+            bandwidth: float | np.ndarray = float(bandwidth_values)
+            if not np.isfinite(bandwidth) or bandwidth <= 0.0:
+                raise ValueError("bandwidth must be finite and positive.")
+        elif bandwidth_values.ndim == 1 and bandwidth_values.size > 0:
+            if not np.all(np.isfinite(bandwidth_values)) or np.any(
+                bandwidth_values <= 0.0
+            ):
+                raise ValueError("bandwidth values must be finite and positive.")
+            owned_bandwidth = np.ascontiguousarray(bandwidth_values.copy())
+            owned_bandwidth.setflags(write=False)
+            bandwidth = owned_bandwidth
+        else:
+            raise ValueError(
+                "bandwidth must be scalar or a non-empty one-dimensional array."
+            )
         target = str(self.target).strip().lower()
         if target not in {"density", "intensity"}:
             raise ValueError("target must be either 'density' or 'intensity'.")
@@ -84,6 +98,12 @@ class NetworkField:
         object.__setattr__(self, "network_fingerprint", network_fingerprint)
         object.__setattr__(self, "event_fingerprint", event_fingerprint)
         object.__setattr__(self, "metadata", MappingProxyType(dict(self.metadata)))
+
+    @property
+    def adaptive(self) -> bool:
+        """Whether the field used event-specific bandwidths."""
+        return isinstance(self.bandwidth, np.ndarray)
+
 
     @property
     def n_lixels(self) -> int:

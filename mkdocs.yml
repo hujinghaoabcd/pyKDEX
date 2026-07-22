@@ -67,6 +67,7 @@ nav:
       - Built-in datasets: guides/datasets.md
       - Network data: guides/network-data.md
       - Network distances: guides/network-distances.md
+      - Network bandwidths: guides/network-bandwidths.md
       - Kernels: guides/kernels.md
       - Bandwidths: guides/bandwidths.md
       - Results: guides/results.md
@@ -77,6 +78,7 @@ nav:
       - Graph adapters: api/adapters.md
       - SpatialKDE: api/spatial-kde.md
       - NetworkKDE: api/network-kde.md
+      - Network bandwidths: api/network-bandwidths.md
       - Kernels: api/kernels.md
       - Bandwidths: api/bandwidths.md
       - Selection: api/selection.md
@@ -84,5 +86,7 @@ nav:
   - Development:
       - Architecture: development/architecture.md
       - Testing: development/testing.md
+      - Handoff policy: development/handoff-policy.md
+      - 0.0.7 handoff: development/handoff-0.0.7-network-bandwidths.md
       - Roadmap: development/roadmap.md
   - 中文: zh/index.md
