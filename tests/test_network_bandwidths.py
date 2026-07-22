@@ -195,15 +195,11 @@ def test_network_selection_bandwidth_wrappers_integrate_with_estimator():
         lixel_length=0.1,
     )
     likelihood = NetworkKDE(
-        bandwidth=NetworkLikelihoodCVBandwidth(
-            bounds=(0.2, 1.2), maxiter=30
-        ),
+        bandwidth=NetworkLikelihoodCVBandwidth(bounds=(0.2, 1.2), maxiter=30),
         junction_policy="simple",
     ).fit(workspace)
     least_squares = NetworkKDE(
-        bandwidth=NetworkLeastSquaresCVBandwidth(
-            bounds=(0.3, 1.0), maxiter=30
-        ),
+        bandwidth=NetworkLeastSquaresCVBandwidth(bounds=(0.3, 1.0), maxiter=30),
         junction_policy="continuous",
     ).fit(workspace)
 

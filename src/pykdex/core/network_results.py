@@ -104,7 +104,6 @@ class NetworkField:
         """Whether the field used event-specific bandwidths."""
         return isinstance(self.bandwidth, np.ndarray)
 
-
     @property
     def n_lixels(self) -> int:
         """Number of evaluated lixels."""

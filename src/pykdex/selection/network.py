@@ -139,7 +139,9 @@ class _BaseNetworkSelector:
         if events is None:
             raise ValueError("workspace contains no accepted network events.")
         if events.n_events < 2:
-            raise ValueError("network bandwidth selection requires at least two events.")
+            raise ValueError(
+                "network bandwidth selection requires at least two events."
+            )
         policy = get_junction_policy(junction_policy)
         effective_directed = _effective_directed(workspace, directed)
         if effective_directed and not policy.supports_directed:
@@ -366,9 +368,7 @@ class NetworkLeastSquaresCV(_BaseNetworkSelector):
         normalized = weights / float(np.sum(weights))
 
         def objective(h: float) -> float:
-            event_matrix, lixel_matrix = _kernel_matrices(
-                workspace, cache, kernel, h
-            )
+            event_matrix, lixel_matrix = _kernel_matrices(workspace, cache, kernel, h)
             density = normalized @ lixel_matrix
             integrated_square = float(
                 np.dot(density * density, workspace.lixels.measure)

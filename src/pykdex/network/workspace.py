@@ -182,7 +182,6 @@ class NetworkWorkspace:
         )
         return replace(self, event_distance_asset=asset)
 
-
     @classmethod
     def prepare(
         cls,

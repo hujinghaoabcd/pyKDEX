@@ -56,9 +56,7 @@ class NetworkKDE(BaseKDE):
     def __init__(
         self,
         kernel: str | BaseKernel = "epanechnikov",
-        bandwidth: (
-            float | int | np.floating | BaseNetworkBandwidth
-        ) = 1.0,
+        bandwidth: float | int | np.floating | BaseNetworkBandwidth = 1.0,
         junction_policy: str | JunctionPolicy = "discontinuous",
         target: str = "density",
         directed: bool | None = None,
@@ -168,7 +166,9 @@ class NetworkKDE(BaseKDE):
             if not np.all(np.isfinite(np.asarray(fitted_bandwidth))) or np.any(
                 np.asarray(fitted_bandwidth) <= 0.0
             ):
-                raise ValueError("resolved network bandwidths must be finite and positive.")
+                raise ValueError(
+                    "resolved network bandwidths must be finite and positive."
+                )
 
             coefficients = (
                 events.weights / events.weight_sum

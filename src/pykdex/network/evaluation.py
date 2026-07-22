@@ -106,9 +106,7 @@ def evaluate_propagation_kernel_matrix(
             if not np.any(inside):
                 continue
             target_indices = selected_indices[inside]
-            contribution = (
-                record.coefficient * kernel(distances[inside] / h, 1) / h
-            )
+            contribution = record.coefficient * kernel(distances[inside] / h, 1) / h
             np.add.at(matrix[source_index], target_indices, contribution)
     return matrix
 

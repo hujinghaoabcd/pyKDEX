@@ -1,6 +1,7 @@
 """Select scalar and adaptive bandwidths for NetworkKDE."""
 
 from pykdex import (
+    EpanechnikovKernel,
     NetworkKDE,
     NetworkKNNBandwidth,
     NetworkLeastSquaresCV,
@@ -10,11 +11,9 @@ from pykdex import (
     NetworkSelectionCache,
     NetworkWorkspace,
     SpatialEvents,
-    EpanechnikovKernel,
     build_event_event_distances,
     load_t_junction,
 )
-
 
 dataset = load_t_junction()
 network = dataset.network
