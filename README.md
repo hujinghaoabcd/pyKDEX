@@ -7,9 +7,10 @@ The package follows the engineering conventions of pyGWRx while keeping the
 KDE architecture composition-based: domains, metrics, kernels, bandwidths,
 corrections, supports, and estimators are independent components.
 
-> Status: spatial KDE, structured spatial data, and road-network data foundation.
-> Canonical networks, OSMnx/NetworkX adapters, auditable snapping, lixels, and
-> reusable workspaces are available. Network estimators are not yet exposed.
+> Status: spatial KDE and fixed/adaptive network KDE are available. Canonical
+> networks, OSMnx/NetworkX adapters, auditable snapping, lixels, reusable distance
+> assets, junction policies, network CV bandwidth selection, and kNN network
+> bandwidths are implemented.
 
 ## Installation
 
@@ -93,6 +94,30 @@ selected = SpatialKDE(
 knn = SpatialKDE(bandwidth=KNNBandwidth(k=20)).fit(events)
 adaptive = SpatialKDE(bandwidth=AbramsonBandwidth(0.5)).fit(events)
 ```
+
+
+## Network bandwidth selection and adaptation
+
+```python
+from pykdex import (
+    NetworkKDE,
+    NetworkKNNBandwidth,
+    NetworkLikelihoodCVBandwidth,
+)
+
+selected_network = NetworkKDE(
+    bandwidth=NetworkLikelihoodCVBandwidth(bounds=(100.0, 3000.0)),
+    junction_policy="simple",
+).fit(workspace)
+
+adaptive_network = NetworkKDE(
+    bandwidth=NetworkKNNBandwidth(k=20, minimum_bandwidth=5.0),
+    junction_policy="continuous",
+).fit(workspace)
+```
+
+Network LSCV uses actual lixel lengths for the squared-density integral. Event-to-event
+distance assets and upper-bound propagation traces are reused during optimization.
 
 ## Initial design commitments
 

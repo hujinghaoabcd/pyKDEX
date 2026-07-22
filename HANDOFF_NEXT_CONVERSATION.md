@@ -1,40 +1,30 @@
-# pyKDEX handoff
+# pyKDEX current handoff
 
-## Current status
+The latest development unit is **0.0.7 network bandwidth selection and adaptive NetworkKDE**.
+Read `HANDOFF_0.0.7_NETWORK_BANDWIDTHS.md` first; it contains the full architecture,
+mathematical definitions, changed files, validation contract, exclusions, recovery steps,
+and recommended next unit.
 
-- development version: `0.0.6`;
-- public estimators: `SpatialKDE` and fixed-bandwidth `NetworkKDE`;
-- scalar spatial bandwidths: fixed, likelihood CV, and Gaussian LSCV;
-- event-specific spatial bandwidths: kNN and Abramson;
-- structured spatial data, measured support, boundaries, provenance, and datasets;
-- canonical `LinearNetwork` with directed and parallel edges;
-- GeoDataFrame, NetworkX, and OSMnx conversion;
-- auditable event snapping, measured lixels, and reusable `NetworkWorkspace`;
-- exact directed and undirected event-to-support network distances;
-- simple geodesic, discontinuous equal-split, and continuous equal-split junction policies;
-- immutable signed propagation records and traces;
-- measured `NetworkField` results with integration and tabular/geospatial export;
-- density and intensity targets using accepted snapped-event weights;
-- tests: 118 passed;
-- branch-coverage gate: passed at the required 80% minimum;
-- formatting, linting, typing, documentation, build, and installation checks pass;
-- Linux, Windows, and macOS CI passes on Python 3.11-3.14;
-- no runtime dependency on external KDE implementations.
+## Current repository state
 
-## Next recommended development unit
+- repository: `hujinghaoabcd/pyKDEX`;
+- default branch: `main`;
+- active development branch: `agent/network-bandwidths`;
+- active pull request: `#6`;
+- last stable merged version before this unit: `0.0.6`;
+- development version on the branch: `0.0.7`;
+- reviewed source commit: `9685687764f66a86c19dcd3cde3f1587da9ec236`;
+- formatted source commit: `3fbb6fac3477ea389398347b9194214d434839c4`;
+- finalized handoff commit: `994c59b9ed0cd13391e54bcfc6dd2f96ee947c62`;
+- validation: `137 passed`, branch coverage `81.97%`, and 70 public symbols mapped to examples;
+- clean full CI run #74 (`29902449039`): success;
+- temporary patch fragments, patch-application, source-export, formatter, finalizer, and
+  diagnostic workflows: removed;
+- current unit status: implementation, formatting, validation records, and versioned handoff are
+  complete. The final documentation-only CI triggered by this update must pass before PR #6 is
+  marked ready and squash-merged.
 
-Add network-specific bandwidth selection and adaptive bandwidths without changing
-the validated junction-propagation contract:
+## Permanent process rule
 
-1. add reusable event-to-event network-distance assets;
-2. implement weighted leave-one-out likelihood for fixed network bandwidths;
-3. implement lixel-integrated least-squares cross-validation;
-4. return immutable optimization traces and bandwidth-selection results;
-5. implement network k-nearest-neighbour event bandwidths;
-6. cache compatible event-event and event-lixel neighbourhoods in workspaces;
-7. validate single-line analytical objectives, disconnected components, duplicated
-   locations, weighted events, and directed networks;
-8. add memory, cutoff, and repeated-evaluation benchmarks on generated grids.
-
-Heat-equation Gaussian network KDE, temporal-network KDE, and uncertainty should
-remain separate later development units.
+Every completed development unit must create a new versioned Markdown handoff and update this
+file. See `docs/development/handoff-policy.md`.

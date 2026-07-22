@@ -53,10 +53,12 @@ networks.
 
 ## Kernel and bandwidth scope
 
-`NetworkKDE` currently supports a positive scalar bandwidth. Discontinuous and
-continuous path tracing require compact kernels because an infinite-support
-kernel would require infinitely many cyclic walks. Gaussian equal-split network
-smoothing is deliberately reserved for a later heat-equation estimator.
+`NetworkKDE` accepts a positive scalar bandwidth, a network cross-validation
+strategy, or one source-centred bandwidth per event. Discontinuous and continuous
+path tracing still require compact kernels because an infinite-support kernel would
+require infinitely many cyclic walks. Gaussian equal-split network smoothing is
+deliberately reserved for a later heat-equation estimator. See the
+[network bandwidth guide](../guides/network-bandwidths.md).
 
 ## Density and intensity
 

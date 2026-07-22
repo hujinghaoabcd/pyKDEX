@@ -645,6 +645,30 @@ def build_network_distance_asset(
     )
 
 
+def build_event_event_distances(
+    network: LinearNetwork,
+    events: NetworkEvents,
+    *,
+    cutoff: float | None = None,
+    weight: str = "length",
+    directed: bool | None = None,
+) -> NetworkDistanceAsset:
+    """Build exact distances from every accepted event to every event.
+
+    Self-pairs remain explicit zero-distance entries. Duplicate events at the same
+    network position are distinct off-diagonal zero-distance pairs.
+    """
+    locations = NetworkLocations.from_events(events)
+    return build_network_distance_asset(
+        network,
+        locations,
+        locations,
+        cutoff=cutoff,
+        weight=weight,
+        directed=directed,
+    )
+
+
 def build_event_lixel_distances(
     network: LinearNetwork,
     events: NetworkEvents,

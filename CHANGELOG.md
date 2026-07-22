@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.0.7 - Unreleased
+
+- Add exact reusable event-to-event network-distance assets.
+- Add source-centred `NetworkKNNBandwidth` with duplicate-location floors.
+- Add weighted network leave-one-out likelihood bandwidth selection.
+- Add lixel-integrated network least-squares cross-validation.
+- Add reusable `NetworkSelectionCache` distances and propagation traces.
+- Allow scalar or event-specific bandwidths in `NetworkKDE` and `NetworkField`.
+- Add network bandwidth examples, API documentation, benchmarks, and recovery handoffs.
+
 ## 0.0.6 - Unreleased
 
 - Add public fixed-bandwidth `NetworkKDE` for network density and intensity.

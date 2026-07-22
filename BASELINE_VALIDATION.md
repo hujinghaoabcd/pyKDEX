@@ -1,51 +1,58 @@
-# pyKDEX 0.0.6 validation
+# pyKDEX 0.0.7 validation
 
 Validation date: 2026-07-22
 
 ## Implemented public functionality
 
 - fixed, cross-validated, kNN, and Abramson spatial KDE bandwidths;
-- public `SpatialKDE` and fixed-bandwidth `NetworkKDE` estimators;
+- public `SpatialKDE` and `NetworkKDE` estimators;
 - weighted density and event-intensity targets;
 - structured events, measured supports, boundaries, datasets, and provenance;
 - canonical geometric `LinearNetwork` objects with directed and parallel edges;
 - GeoDataFrame, NetworkX, and OSMnx adapters;
 - auditable event snapping and measured lixel partitions;
-- exact directed and undirected network-distance assets;
-- simple geodesic, discontinuous equal-split, and continuous equal-split junction policies;
-- immutable signed propagation records and traces;
-- measured `NetworkField` integration and tabular/geospatial exports.
+- exact directed and undirected event-to-lixel and event-to-event distance assets;
+- simple geodesic, discontinuous equal-split, and continuous equal-split policies;
+- scalar network likelihood CV and lixel-integrated network LSCV;
+- source-centred event-specific network kNN bandwidths;
+- reusable network selection distances and upper-bound propagation traces;
+- scalar or adaptive `NetworkField` results with measured integration and exports.
 
-## NetworkKDE validation
+## Network bandwidth validation
 
-- the simple policy matches the one-dimensional kernel value at zero network distance;
-- discontinuous propagation divides amplitude equally among valid forward branches;
-- continuous propagation applies transmission coefficient `2/d` and reflection coefficient `2/d - 1`;
-- limiting estimates agree across incident edges at a T-junction;
-- terminal vertices provide reflecting boundaries for continuous propagation;
-- lixel-length integration recovers unit density mass within midpoint-rule tolerance;
-- weighted intensity equals total event weight times the corresponding weighted density;
-- accepted snapped-event weights, network fingerprints, and lixel measures are retained;
-- continuous propagation rejects directed metric networks explicitly;
-- recursive path policies reject infinite-support kernels explicitly;
-- simple geodesic estimation accepts Gaussian kernels;
-- propagation record limits fail explicitly rather than silently truncating cyclic walks;
-- failed fits atomically reset all fitted estimator state.
+- event self-pairs remain explicit zero distances;
+- coincident but distinct events remain off-diagonal zero-distance neighbours;
+- source-event exclusion in LOO uses index rather than zero-distance filtering;
+- weighted LOO denominators use total weight minus the target event weight;
+- directed event-distance assets retain asymmetric reachability;
+- network kNN reports unavailable neighbour ranks instead of using infinite values;
+- duplicate locations require an explicit positive bandwidth floor;
+- sample-point bandwidths use each source event's own scaling and normalization;
+- network LSCV integrates squared density with each lixel's actual length;
+- simple-policy objectives reuse distance assets;
+- path-policy objectives reuse traces prepared at the upper search bound;
+- selector wrappers retain complete deterministic optimization traces;
+- failed adaptive or selection fits atomically reset estimator state.
 
-## Engineering validation
+## Final observed validation
 
-- pytest: 118 passed;
-- branch-coverage gate: passed at the required 80% minimum;
+- pytest: 137 passed;
+- branch coverage: 81.97%, above the required 80% minimum;
+- public API/example coverage: 70 symbols mapped;
 - Black, isort, Ruff, and mypy: passed;
 - MkDocs strict build: passed;
-- public API/example coverage: complete;
-- wheel and sdist build and Twine metadata checks: passed;
-- installed-wheel smoke test: passed;
-- GitHub Actions: passed on Linux, Windows, and macOS with Python 3.11-3.14.
+- wheel, sdist, Twine metadata, and installed-wheel smoke tests: passed;
+- Linux, Windows, and macOS passed with Python 3.11-3.14;
+- deterministic grid-network benchmark completed successfully;
+- final pull-request CI: run #74 (29902449039), conclusion success;
+- temporary patch, source-export, formatter, and diagnostic workflows: removed;
+- PR #6 merge commit: pending squash merge.
 
 ## Deliberate exclusions
 
-- network bandwidth selection and adaptive network bandwidths;
+- network Abramson pilot adaptation and balloon network bandwidths;
 - heat-equation Gaussian network KDE;
 - temporal and network-time data objects and estimators;
-- spatial boundary correction, bandwidth matrices, relative risk, and uncertainty.
+- spatial boundary correction and bandwidth matrices;
+- relative risk, bootstrap uncertainty, and significance envelopes;
+- persistent Zarr/PostGIS workspace serialization and compiled acceleration.
