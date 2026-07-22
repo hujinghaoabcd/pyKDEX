@@ -13,12 +13,14 @@ and recommended next unit.
 - active pull request: `#6`;
 - last stable merged version before this unit: `0.0.6`;
 - development version on the branch: `0.0.7`;
-- source commit: `9685687764f66a86c19dcd3cde3f1587da9ec236`;
+- reviewed source commit: `9685687764f66a86c19dcd3cde3f1587da9ec236`;
+- formatted source commit: `3fbb6fac3477ea389398347b9194214d434839c4`;
 - local validation: `137 passed`, branch coverage `81.97%`, and 70 public symbols mapped to examples;
-- temporary patch fragments, patch-application workflow, and source-export workflow: removed;
-- current unit status: implementation is complete and the clean maintainer-triggered GitHub
-  Actions matrix is pending; do not merge until its final result is recorded in the versioned
-  handoff.
+- temporary patch fragments, patch-application workflow, source-export workflow, and formatter
+  workflow: removed;
+- current unit status: implementation and formatting are complete and the clean
+  maintainer-triggered GitHub Actions matrix is pending; do not merge until its final result is
+  recorded in the versioned handoff.
 
 ## Permanent process rule
 
