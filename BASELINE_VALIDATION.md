@@ -46,7 +46,7 @@ Validation date: 2026-07-22
 - deterministic grid-network benchmark completed successfully;
 - final pull-request CI: run #74 (29902449039), conclusion success;
 - temporary patch, source-export, formatter, and diagnostic workflows: removed;
-- PR #6 merge commit: pending squash merge.
+- PR #6 squash merge commit: `eec1bbee65e6131c942f67adb8286e6a4a56af26`.
 
 ## Deliberate exclusions
 
