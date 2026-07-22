@@ -12,8 +12,13 @@ and recommended next unit.
 - active development branch: `agent/network-bandwidths`;
 - active pull request: `#6`;
 - last stable merged version before this unit: `0.0.6`;
-- current unit status: implementation and local tests in progress until final clean CI and
-  merge are recorded in the versioned handoff.
+- development version on the branch: `0.0.7`;
+- source commit: `9685687764f66a86c19dcd3cde3f1587da9ec236`;
+- local validation: `137 passed`, branch coverage `81.97%`, and 70 public symbols mapped to examples;
+- temporary patch fragments, patch-application workflow, and source-export workflow: removed;
+- current unit status: implementation is complete and the clean maintainer-triggered GitHub
+  Actions matrix is pending; do not merge until its final result is recorded in the versioned
+  handoff.
 
 ## Permanent process rule
 
