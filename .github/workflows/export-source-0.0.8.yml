@@ -3,7 +3,12 @@ name: Apply pyKDEX 0.0.8 source
 on:
   push:
     branches: [agent/spatial-boundary-anisotropy]
+  pull_request:
   workflow_dispatch:
+
+concurrency:
+  group: apply-pykdex-0.0.8
+  cancel-in-progress: true
 
 permissions:
   contents: write
