@@ -83,8 +83,12 @@ Validation date: 2026-07-23
 
 ## GitHub state
 
-- PR: pending;
-- final clean CI: pending;
+- PR: `#11 Add ordinary spatiotemporal KDE foundation`;
+- feature implementation commit:
+  `f3cd409ea84508bf7218ba842dddd4b15b5e3138`;
+- first complete PR CI run `#123` (`29999198427`): success across all
+  quality, coverage, distribution, OS, and Python jobs;
+- final clean CI after the handoff-status update: pending;
 - merge commit: pending.
 
 These fields must be replaced after the feature branch is published, verified,

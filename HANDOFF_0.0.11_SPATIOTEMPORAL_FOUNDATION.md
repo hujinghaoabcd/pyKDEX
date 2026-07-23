@@ -13,9 +13,11 @@ chat history.
 - Version developed: `0.0.11`
 - Stable version before this unit: `0.0.10`
 - Development date: `2026-07-23`
-- Pull request: pending at initial document creation
-- Feature commit: pending at initial document creation
-- Final clean PR CI: pending at initial document creation
+- Pull request: `#11 Add ordinary spatiotemporal KDE foundation`
+- Feature implementation commit:
+  `f3cd409ea84508bf7218ba842dddd4b15b5e3138`
+- First complete PR CI: run `#123` (`29999198427`), conclusion `success`
+- Final clean PR CI: pending after this status update
 - Merge commit: pending at initial document creation
 
 The source tree and tests are authoritative. The GitHub fields above must be
@@ -398,11 +400,12 @@ The following are intentionally not part of 0.0.11:
 
 ## 15. GitHub and merge state
 
-To be replaced after publication:
-
-- PR: pending;
-- feature commit: pending;
-- final clean CI run: pending;
+- PR: `#11 Add ordinary spatiotemporal KDE foundation`;
+- feature implementation commit:
+  `f3cd409ea84508bf7218ba842dddd4b15b5e3138`;
+- first complete PR CI run `#123` (`29999198427`): success across
+  quality, coverage, distributions, Linux/Windows/macOS, and Python 3.11-3.14;
+- final clean CI run: pending after the handoff-status commit;
 - merge commit: pending;
 - post-merge handoff update: pending.
 

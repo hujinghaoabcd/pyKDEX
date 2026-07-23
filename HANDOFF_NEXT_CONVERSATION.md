@@ -13,9 +13,11 @@ next-unit record.
 - development branch: `agent/spatiotemporal-foundation`;
 - version prepared: `0.0.11`;
 - stable merged version before publication: `0.0.10`;
-- pull request: pending;
-- feature commit: pending;
-- final clean CI: pending;
+- pull request: `#11 Add ordinary spatiotemporal KDE foundation`;
+- feature implementation commit:
+  `f3cd409ea84508bf7218ba842dddd4b15b5e3138`;
+- first complete PR CI run `#123` (`29999198427`): success;
+- final clean CI after the handoff-status update: pending;
 - merge commit: pending;
 - observed local validation: `200 passed`, branch coverage `81.41%`;
 - public API/example map: `105 public symbols`, all `13` examples executable;
