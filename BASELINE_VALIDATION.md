@@ -71,7 +71,10 @@ Validation date: 2026-07-23
 - PR #10 first complete GitHub Actions run `#118` (`29996503549`): success
   across quality, coverage, distributions, Linux/Windows/macOS, and Python
   3.11-3.14;
-- final clean CI and merge state: pending final publication.
+- final clean PR CI run `#119` (`29996740029`): success;
+- PR #10 squash merge commit:
+  `49bb6ba36f9ac1dc82a655ee23a06397dba0a529`;
+- PR #10 merged and closed successfully.
 
 ## Deliberate exclusions
 

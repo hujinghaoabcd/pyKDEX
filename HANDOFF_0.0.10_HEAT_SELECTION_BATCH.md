@@ -16,11 +16,11 @@ alone.
 - Pull request: `#10 Add reusable heat plans and time selection`
 - Feature commit: `9342a414f99947137a6cf45051687f15c065c8f2`
 - First complete PR CI: run `#118` (`29996503549`), conclusion `success`
-- Final clean CI: to be recorded after publication
-- Squash merge commit: to be recorded after merge
+- Final clean CI: run `#119` (`29996740029`), conclusion `success`
+- Squash merge commit: `49bb6ba36f9ac1dc82a655ee23a06397dba0a529`
 
-The source tree and tests are authoritative. GitHub fields above and in the
-final status section must be replaced with observed values after CI and merge.
+The source tree and tests are authoritative. The GitHub fields above record the
+observed final CI and squash merge.
 
 ## 2. Permanent project principles
 
@@ -478,7 +478,7 @@ Update this section only with observed GitHub results:
 - feature commit: `9342a414f99947137a6cf45051687f15c065c8f2`;
 - pull request: `#10 Add reusable heat plans and time selection`;
 - first complete CI: run `#118` (`29996503549`), conclusion `success`;
-- final clean CI: pending;
-- squash merge commit: pending;
-- post-merge handoff commit: pending;
-- merged and closed: pending.
+- final clean CI: run `#119` (`29996740029`), conclusion `success`;
+- squash merge commit: `49bb6ba36f9ac1dc82a655ee23a06397dba0a529`;
+- post-merge handoff commit: recorded on `main` after the squash merge;
+- merged and closed: yes.

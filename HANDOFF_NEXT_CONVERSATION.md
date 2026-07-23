@@ -1,7 +1,7 @@
 # pyKDEX current handoff
 
-The latest development unit is **0.0.10 reusable heat plans, batch diffusion
-times, and heat-time selection**. Read
+The latest completed development unit is **0.0.10 reusable heat plans, batch
+diffusion times, and heat-time selection**. Read
 `HANDOFF_0.0.10_HEAT_SELECTION_BATCH.md` first for the complete design,
 mathematics, implementation, validation, limitations, recovery procedure, and
 next-unit record.
@@ -10,18 +10,21 @@ next-unit record.
 
 - repository: `hujinghaoabcd/pyKDEX`;
 - default branch: `main`;
-- development branch: `agent/heat-selection-batch`;
-- version under finalization: `0.0.10`;
+- latest stable version: `0.0.10`;
+- merged feature branch: `agent/heat-selection-batch`;
 - pull request: `#10 Add reusable heat plans and time selection`;
 - feature commit: `9342a414f99947137a6cf45051687f15c065c8f2`;
 - first complete CI run `#118` (`29996503549`): success;
-- final clean CI and merge commit: pending publication;
+- final clean CI run `#119` (`29996740029`): success;
+- PR #10 squash merge commit:
+  `49bb6ba36f9ac1dc82a655ee23a06397dba0a529`;
 - observed local validation: `178 passed`, branch coverage `81.67%`;
 - public API/example map: `91 public symbols`, all `12` examples executable;
 - Black, isort, Ruff, mypy, strict docs, distributions, and isolated wheel
   smoke: passed;
-- final GitHub Actions and merge fields must be updated with observed results;
-- no temporary repository workflow has been added.
+- unit status: implementation, documentation, validation, final CI, and feature
+  merge are complete;
+- no temporary repository workflow was added.
 
 ## Implemented in 0.0.10
 
@@ -38,8 +41,8 @@ next-unit record.
 
 ## Next recommended development unit
 
-After 0.0.10 is merged, build the ordinary temporal and spatiotemporal data
-foundation before temporal-network KDE:
+Build the ordinary temporal and spatiotemporal data foundation before
+temporal-network KDE:
 
 1. explicit linear and cyclic time domains;
 2. immutable space-time events with independent spatial and temporal units;
