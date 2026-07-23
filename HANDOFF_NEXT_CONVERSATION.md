@@ -11,13 +11,13 @@ next-unit record.
 - repository: `hujinghaoabcd/pyKDEX`;
 - development branch: `agent/network-time-bandwidths`;
 - version implemented in this branch: `0.0.13`;
-- latest stable merged version: `0.0.12` until PR merge is observed;
+- latest stable merged version: `0.0.13`;
 - pull request: `#13 Add network-time bandwidth selection and adaptive KDE`;
 - feature implementation commit:
   `1fd7c07902daf14e061491e7af313b1833ea6de3`;
 - first complete PR CI run `#133` (`30014407093`): success;
-- final clean PR CI: pending;
-- squash merge commit: pending;
+- final clean PR CI run `#134` (`30014636526`): success;
+- squash merge commit: `20fccb9bfd6f9f88880f88fb1903f5c8fe2d3597`;
 - post-merge `main` CI: pending;
 - focused neighboring validation: `22 passed`;
 - full local regression: `226 passed`;
@@ -28,6 +28,8 @@ next-unit record.
 - wheel/sdist, Twine, archive verification, and isolated wheel smoke: passed;
 - Linux, Windows, macOS, and Python 3.11-3.14 PR CI: passed;
 - no temporary repository workflow has been added.
+
+PR #13 was merged and closed successfully.
 
 ## Implemented in 0.0.13
 

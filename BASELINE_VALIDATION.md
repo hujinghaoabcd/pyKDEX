@@ -73,12 +73,13 @@ Validation date: 2026-07-23
   `1fd7c07902daf14e061491e7af313b1833ea6de3`;
 - first complete PR CI run `#133` (`30014407093`): success across quality,
   coverage, distributions, Linux/Windows/macOS, and Python 3.11-3.14;
-- final clean PR CI: pending;
-- squash merge commit: pending;
+- final clean PR CI run `#134` (`30014636526`): success;
+- squash merge commit: `20fccb9bfd6f9f88880f88fb1903f5c8fe2d3597`;
 - post-merge handoff commit: pending;
 - post-merge `main` CI: pending.
 
-No GitHub success is claimed before observation.
+PR #13 was merged and closed successfully. Post-merge `main` CI remains
+pending and is not claimed before observation.
 
 ## Deliberate exclusions
 

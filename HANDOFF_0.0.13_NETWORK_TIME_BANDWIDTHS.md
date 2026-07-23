@@ -17,8 +17,9 @@ to chat history.
   `1fd7c07902daf14e061491e7af313b1833ea6de3`
 - First complete pull-request CI: run `#133` (`30014407093`), conclusion
   `success`
-- Final clean pull-request CI: pending
-- Squash merge commit: pending
+- Final clean pull-request CI: run `#134` (`30014636526`), conclusion
+  `success`
+- Squash merge commit: `20fccb9bfd6f9f88880f88fb1903f5c8fe2d3597`
 - Post-merge `main` CI: pending
 
 The source tree and tests are authoritative. Pending GitHub fields must be
@@ -383,9 +384,9 @@ Changed:
 - distribution archive content verification: passed;
 - isolated wheel installation and smoke test: passed.
 
-The first complete GitHub CI matrix passed on Linux, Windows, macOS, and
-Python 3.11-3.14. Final clean CI and merge fields remain pending until
-observed.
+Both complete GitHub PR CI matrices passed on Linux, Windows, macOS, and
+Python 3.11-3.14. PR #13 was merged successfully. Post-merge `main` CI remains
+pending until observed.
 
 ## 16. Deliberate exclusions
 
