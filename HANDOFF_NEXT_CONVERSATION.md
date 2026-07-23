@@ -1,31 +1,33 @@
 # pyKDEX current handoff
 
 The latest completed development unit is **0.0.8 spatial boundary correction, anisotropy,
-and balloon bandwidths**. Read `HANDOFF_0.0.8_SPATIAL_BOUNDARY_ANISOTROPY.md` first. It
-contains the complete architecture, formulas, supported and rejected combinations,
-implementation files, validation results, limitations, recovery procedure, and next unit.
+and balloon bandwidths**. Read `HANDOFF_0.0.8_SPATIAL_BOUNDARY_ANISOTROPY.md` first for
+the full design and implementation record, then read `POSTMERGE_0.0.8_VERIFICATION.md` for
+the exact post-merge repository-state validation.
 
 ## Current repository state
 
 - repository: `hujinghaoabcd/pyKDEX`;
 - default branch: `main`;
 - latest stable development version: `0.0.8`;
-- completed pull request: `#7 Add spatial boundary correction and anisotropic KDE`;
+- completed feature pull request: `#7 Add spatial boundary correction and anisotropic KDE`;
 - PR #7 squash merge commit: `9f0aef9e8be57cc9e1c6beb210225b421501a623`;
 - post-merge handoff-record commit: `a7b1ae9461ab90c3ba7c89b6043693ffcb26e412`;
 - post-merge main verification source commit: `4e73ea1fc2812305f47c702444860e8c90ac9fd4`;
+- completed verification pull request: `#8 Verify pyKDEX 0.0.8 post-merge repository state`;
+- PR #8 squash merge commit: `a865cec65bec76c5dd214b061c15dde32940a4aa`;
 - validation: `145 passed`, branch coverage `81.41%`, 77 public symbols mapped, and all
   10 executable examples completed;
 - final feature pull-request CI run #104 (`29974693141`): success;
-- post-merge exact repository-state verification PR: `#8`;
-- post-merge verification CI run #108 (`29975262281`): success;
+- exact post-merge repository-state CI run #108 (`29975262281`): success;
+- documentation-complete post-merge CI run #109 (`29975400636`): success;
 - Black, isort, Ruff, mypy, strict MkDocs, distributions, installed-wheel smoke tests, and
-  Linux/Windows/macOS on Python 3.11-3.14 passed in the post-merge verification;
+  Linux/Windows/macOS on Python 3.11-3.14 passed;
 - temporary transfer, patch, apply, export, formatting, Ruff-fix, finalizer, merge-recorder,
   and diagnostic infrastructure: removed;
 - permanent CI workflow: restored on `main`;
-- unit status: implementation, merge, recovery records, and exact post-merge repository-state
-  validation are complete; only the documentation-complete verification PR merge remains.
+- unit status: implementation, feature merge, detailed recovery records, exact post-merge
+  repository-state validation, and verification-record merge are complete.
 
 ## Implemented in 0.0.8
 
