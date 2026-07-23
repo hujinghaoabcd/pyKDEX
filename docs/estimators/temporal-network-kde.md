@@ -13,7 +13,9 @@ K^{G}_{h_s}(x_i\rightarrow l)
 
 where \(a_i=w_i/\sum_r w_r\) for density and \(a_i=w_i\) for intensity.
 The network factor \(K^G\) is determined by the selected `JunctionPolicy`;
-time can be linear or cyclic.
+time can be linear or cyclic. Scalar bandwidths use \(h_s,h_t\). Event-specific
+sample-point bandwidths replace these with \(h_{s,i},h_{t,i}\), so both
+normalizing factors belong to source event \(i\).
 
 This is a separable product model. It does not replace the network distance
 with a Euclidean distance, concatenate road coordinates with time, or solve a
@@ -146,9 +148,91 @@ propagation and rebuilds only when the cutoff or directed mode is insufficient.
 `time_chunk_size` bounds the result multiplication by temporal slices without
 changing numerical results.
 
+## Candidate experiments
+
+`NetworkTimeBandwidthExperiment` evaluates an ordered spatial-by-temporal
+candidate grid. It prepares exact event-event network distances, signed
+event-event and support-event temporal offsets, and either event-lixel
+distances or maximum-bandwidth propagation traces once.
+
+```python
+from pykdex import NetworkTimeBandwidthExperiment, NetworkTimeBandwidths
+
+experiment = NetworkTimeBandwidthExperiment(
+    spatial_candidates=[200.0, 350.0, 500.0, 800.0],
+    temporal_candidates=[0.5, 1.0, 2.0, 4.0],
+    objective="least_squares",
+    mode="joint",
+    junction_policy="continuous",
+)
+selection = experiment.run(workspace)
+bandwidths = NetworkTimeBandwidths(
+    spatial=selection.spatial_bandwidth,
+    temporal=selection.temporal_bandwidth,
+)
+```
+
+Weighted product-kernel leave-one-out likelihood uses
+
+\[
+\hat f_{-i}(x_i,t_i)=
+\frac{\sum_{r\ne i}w_r
+K^G_{h_s}(x_r\rightarrow x_i)
+K^T_{h_t}(t_i-t_r)}
+{\sum_{r\ne i}w_r}.
+\]
+
+Only the event's own index is removed. A distinct event at the same network
+location and time remains a valid zero-distance observation.
+
+Network-time LSCV uses the actual arixel measure:
+
+\[
+CV(h_s,h_t)=
+\sum_{q,j}\hat f(l_j,t_q)^2\Delta l_j\Delta t_q
+-2\sum_i p_i\hat f_{-i}(x_i,t_i),
+\qquad p_i=\frac{w_i}{\sum_r w_r}.
+\]
+
+`mode="joint"` chooses the first row-major minimum of this complete grid.
+`mode="separate"` chooses spatial and temporal marginal minima independently,
+then reports the joint score at that pair. Candidate order is retained and
+ties are deterministic.
+
+## Event-specific kNN bandwidths
+
+`NetworkTimeKNNBandwidth` resolves independent source-event bandwidths:
+
+\[
+h_{s,i}=c_s d_G(x_i,x_{i,(k_s)}), \qquad
+h_{t,i}=c_t d_T(t_i,t_{i,(k_t)}).
+\]
+
+```python
+from pykdex import NetworkTimeKNNBandwidth
+
+adaptive = NetworkTimeKNNBandwidth(
+    spatial_k=5,
+    temporal_k=3,
+    minimum_spatial_bandwidth=20.0,
+    minimum_temporal_bandwidth=0.25,
+)
+field = TemporalNetworkKDE(
+    bandwidths=adaptive,
+    junction_policy="continuous",
+).fit_predict(workspace)
+```
+
+The diagonal is excluded by index, not by distance. Other colocated events and
+duplicate times are legitimate neighbours, so a meaningful positive floor is
+required if their selected distance is zero. Directed spatial kNN reports
+events that cannot reach the requested neighbour rank instead of substituting
+Euclidean distance.
+
 ## Current scope
 
-Version 0.0.12 intentionally includes fixed spatial and temporal bandwidths
-only. Adaptive temporal-network bandwidths, heat diffusion in network-time,
+Version 0.0.13 includes scalar candidate selection and independent
+sample-point spatial/temporal kNN bandwidths. It does not estimate a fully
+coupled per-event bandwidth matrix. Heat diffusion in network-time,
 exposure-adjusted risk, persistence, and out-of-core execution remain separate
 development units.

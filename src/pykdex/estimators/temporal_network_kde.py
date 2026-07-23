@@ -9,6 +9,10 @@ from typing import Optional
 
 import numpy as np
 
+from pykdex.bandwidths.network_time import (
+    NetworkTimeBandwidths,
+    NetworkTimeKNNBandwidth,
+)
 from pykdex.core.base import BaseKDE
 from pykdex.core.network_time_results import NetworkTimeField
 from pykdex.kernels import BaseKernel, get_kernel
@@ -31,17 +35,8 @@ from pykdex.network_time import (
 from pykdex.spatiotemporal import evaluate_temporal_kernel
 
 
-def _positive(value: float, *, name: str) -> float:
-    if isinstance(value, (bool, np.bool_)):
-        raise TypeError(f"{name} must not be boolean.")
-    resolved = float(value)
-    if not np.isfinite(resolved) or resolved <= 0.0:
-        raise ValueError(f"{name} must be finite and positive.")
-    return resolved
-
-
 class TemporalNetworkKDE(BaseKDE):
-    r"""Fixed-bandwidth separable KDE on a linear network and time.
+    r"""Fixed or sample-point adaptive KDE on a linear network and time.
 
     The spatial factor follows the selected network junction policy. The
     temporal factor follows the event time domain, including normalized
@@ -50,9 +45,10 @@ class TemporalNetworkKDE(BaseKDE):
 
     def __init__(
         self,
-        spatial_bandwidth: float = 1.0,
-        temporal_bandwidth: float = 1.0,
+        spatial_bandwidth: float | np.ndarray = 1.0,
+        temporal_bandwidth: float | np.ndarray = 1.0,
         *,
+        bandwidths: NetworkTimeBandwidths | NetworkTimeKNNBandwidth | None = None,
         spatial_kernel: str | BaseKernel = "epanechnikov",
         temporal_kernel: str | BaseKernel = "gaussian",
         junction_policy: str | JunctionPolicy = "continuous",
@@ -67,10 +63,20 @@ class TemporalNetworkKDE(BaseKDE):
         verbose: bool = False,
     ) -> None:
         super().__init__(target=target, random_state=random_state, verbose=verbose)
-        self.spatial_bandwidth = _positive(spatial_bandwidth, name="spatial_bandwidth")
-        self.temporal_bandwidth = _positive(
-            temporal_bandwidth, name="temporal_bandwidth"
+        fixed_bandwidths = NetworkTimeBandwidths(
+            spatial=spatial_bandwidth,
+            temporal=temporal_bandwidth,
         )
+        if bandwidths is not None and not isinstance(
+            bandwidths, (NetworkTimeBandwidths, NetworkTimeKNNBandwidth)
+        ):
+            raise TypeError(
+                "bandwidths must be NetworkTimeBandwidths, "
+                "NetworkTimeKNNBandwidth, or None."
+            )
+        self.spatial_bandwidth = fixed_bandwidths.spatial
+        self.temporal_bandwidth = fixed_bandwidths.temporal
+        self.bandwidths = bandwidths
         if directed is not None and not isinstance(directed, (bool, np.bool_)):
             raise TypeError("directed must be boolean or None.")
         if time_chunk_size is not None:
@@ -117,6 +123,7 @@ class TemporalNetworkKDE(BaseKDE):
         self.directed_: bool | None = None
         self.distance_asset_: NetworkTimeDistanceAsset | None = None
         self.propagation_traces_: tuple[PropagationTrace, ...] | None = None
+        self.network_time_bandwidths_: NetworkTimeBandwidths | None = None
         self.values_: np.ndarray | None = None
 
     @staticmethod
@@ -169,6 +176,21 @@ class TemporalNetworkKDE(BaseKDE):
                     "spatial kernel."
                 )
             events = workspace.events
+            if isinstance(self.bandwidths, NetworkTimeKNNBandwidth):
+                fitted_bandwidths = self.bandwidths.resolve(
+                    workspace, directed=effective_directed
+                )
+            elif isinstance(self.bandwidths, NetworkTimeBandwidths):
+                fitted_bandwidths = self.bandwidths
+            else:
+                fitted_bandwidths = NetworkTimeBandwidths(
+                    spatial=self.spatial_bandwidth,
+                    temporal=self.temporal_bandwidth,
+                )
+            fitted_bandwidths.validate_for(events.n_events)
+            spatial_bandwidth = fitted_bandwidths.spatial
+            temporal_bandwidth = fitted_bandwidths.temporal
+            maximum_spatial_bandwidth = float(np.max(spatial_bandwidth))
             traces: tuple[PropagationTrace, ...] | None = None
             distance_asset: NetworkTimeDistanceAsset | None = None
             if policy.path_based:
@@ -177,7 +199,7 @@ class TemporalNetworkKDE(BaseKDE):
                         workspace.network,
                         int(events.edge_indices[index]),
                         float(events.offsets[index]),
-                        cutoff=self.spatial_bandwidth,
+                        cutoff=maximum_spatial_bandwidth,
                         junction_policy=policy,
                         directed=effective_directed,
                         coefficient_tolerance=self.coefficient_tolerance,
@@ -190,14 +212,14 @@ class TemporalNetworkKDE(BaseKDE):
                     traces,
                     NetworkLocations.from_lixels(workspace.arixels.lixels),
                     spatial_kernel,
-                    self.spatial_bandwidth,
+                    spatial_bandwidth,
                 )
                 temporal_offsets = (
                     workspace.arixels.time_centers[:, None] - events.times[None, :]
                 )
             else:
                 cutoff = (
-                    self.spatial_bandwidth if spatial_kernel.finite_support else None
+                    maximum_spatial_bandwidth if spatial_kernel.finite_support else None
                 )
                 distance_asset = workspace.distance_asset
                 if not self._asset_usable(
@@ -217,14 +239,14 @@ class TemporalNetworkKDE(BaseKDE):
                 spatial_matrix = evaluate_distance_kernel_matrix(
                     distance_asset.network_distances,
                     spatial_kernel,
-                    self.spatial_bandwidth,
+                    spatial_bandwidth,
                 )
                 temporal_offsets = distance_asset.temporal_offsets
             temporal_matrix = evaluate_temporal_kernel(
                 temporal_offsets,
                 domain=events.temporal.domain,
                 kernel=temporal_kernel,
-                bandwidth=self.temporal_bandwidth,
+                bandwidth=temporal_bandwidth,
                 tail_tolerance=self.cyclic_tail_tolerance,
             )
             coefficients = (
@@ -258,10 +280,22 @@ class TemporalNetworkKDE(BaseKDE):
                 ["network_distance", "time"], dtype=object
             )
             self.weight_sum_ = events.weight_sum
-            self.bandwidth_ = np.asarray(
-                [self.spatial_bandwidth, self.temporal_bandwidth],
-                dtype=float,
-            )
+            if not fitted_bandwidths.adaptive:
+                self.bandwidth_ = np.asarray(
+                    [spatial_bandwidth, temporal_bandwidth], dtype=float
+                )
+            else:
+                spatial_values = np.broadcast_to(
+                    np.asarray(spatial_bandwidth, dtype=float), (events.n_events,)
+                )
+                temporal_values = np.broadcast_to(
+                    np.asarray(temporal_bandwidth, dtype=float), (events.n_events,)
+                )
+                bandwidth_matrix = np.ascontiguousarray(
+                    np.vstack((spatial_values, temporal_values))
+                )
+                bandwidth_matrix.setflags(write=False)
+                self.bandwidth_ = bandwidth_matrix
             self.event_crs_ = events.network_events.crs
             self.spatial_unit_ = events.network_events.spatial_unit
             self.event_fingerprint_ = events.fingerprint
@@ -271,12 +305,32 @@ class TemporalNetworkKDE(BaseKDE):
             self.directed_ = effective_directed
             self.distance_asset_ = distance_asset
             self.propagation_traces_ = traces if self.store_propagation else None
+            self.network_time_bandwidths_ = fitted_bandwidths
             self.values_ = values
             self.fit_metadata_ = {
                 "spatial_kernel": spatial_kernel.name,
                 "temporal_kernel": temporal_kernel.name,
-                "spatial_bandwidth": self.spatial_bandwidth,
-                "temporal_bandwidth": self.temporal_bandwidth,
+                "spatial_bandwidth_min": float(np.min(spatial_bandwidth)),
+                "spatial_bandwidth_max": float(np.max(spatial_bandwidth)),
+                "temporal_bandwidth_min": float(np.min(temporal_bandwidth)),
+                "temporal_bandwidth_max": float(np.max(temporal_bandwidth)),
+                "spatial_bandwidth": (
+                    float(spatial_bandwidth)
+                    if not fitted_bandwidths.adaptive_spatial
+                    else None
+                ),
+                "temporal_bandwidth": (
+                    float(temporal_bandwidth)
+                    if not fitted_bandwidths.adaptive_temporal
+                    else None
+                ),
+                "adaptive_spatial_bandwidth": fitted_bandwidths.adaptive_spatial,
+                "adaptive_temporal_bandwidth": fitted_bandwidths.adaptive_temporal,
+                "bandwidth_strategy": (
+                    "NetworkTimeBandwidths"
+                    if self.bandwidths is None
+                    else self.bandwidths.__class__.__name__
+                ),
                 "junction_policy": policy.name,
                 "target": self.target,
                 "directed": effective_directed,
@@ -324,13 +378,14 @@ class TemporalNetworkKDE(BaseKDE):
             or self.junction_policy_ is None
             or self.directed_ is None
             or self.event_fingerprint_ is None
+            or self.network_time_bandwidths_ is None
         ):
             raise RuntimeError("Fitted estimator components are unavailable.")
         return NetworkTimeField(
             values=self.values_,
             support=self.workspace_.arixels,
-            spatial_bandwidth=self.spatial_bandwidth,
-            temporal_bandwidth=self.temporal_bandwidth,
+            spatial_bandwidth=self.network_time_bandwidths_.spatial,
+            temporal_bandwidth=self.network_time_bandwidths_.temporal,
             target=self.target,
             spatial_kernel=self.spatial_kernel_.name,
             temporal_kernel=self.temporal_kernel_.name,

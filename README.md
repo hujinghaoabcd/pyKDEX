@@ -7,7 +7,7 @@ The package follows the engineering conventions of pyGWRx while keeping the
 KDE architecture composition-based: domains, metrics, kernels, bandwidths,
 corrections, supports, and estimators are independent components.
 
-> Status: spatial KDE includes scalar, sample-point, balloon, matrix, and boundary-corrected estimators. Ordinary product-kernel spatiotemporal KDE supports linear/cyclic time and measured space-time grids. Fixed/adaptive radial network KDE, measured finite-element heat-equation NetworkKDE, and fixed-bandwidth temporal-network KDE are implemented alongside canonical networks, auditable snapping, reusable assets, and bandwidth selection.
+> Status: spatial KDE includes scalar, sample-point, balloon, matrix, and boundary-corrected estimators. Ordinary product-kernel spatiotemporal KDE supports linear/cyclic time and measured space-time grids. Fixed/adaptive radial network KDE, measured finite-element heat-equation NetworkKDE, and fixed/adaptive temporal-network KDE are implemented alongside canonical networks, auditable snapping, reusable assets, and bandwidth selection.
 
 ## Installation
 

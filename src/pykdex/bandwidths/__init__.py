@@ -23,6 +23,10 @@ from pykdex.bandwidths.network import (
     NetworkLikelihoodCVBandwidth,
     get_network_bandwidth,
 )
+from pykdex.bandwidths.network_time import (
+    NetworkTimeBandwidths,
+    NetworkTimeKNNBandwidth,
+)
 from pykdex.bandwidths.selection import (
     LeastSquaresCVBandwidth,
     LikelihoodCVBandwidth,
@@ -45,6 +49,8 @@ __all__ = [
     "NetworkLikelihoodCVBandwidth",
     "NetworkLeastSquaresCVBandwidth",
     "get_network_bandwidth",
+    "NetworkTimeBandwidths",
+    "NetworkTimeKNNBandwidth",
     "BaseHeatTime",
     "FixedHeatTime",
     "HeatLikelihoodCVTime",

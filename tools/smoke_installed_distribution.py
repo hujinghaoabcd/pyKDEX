@@ -6,7 +6,7 @@ import numpy as np
 
 import pykdex
 
-assert pykdex.__version__ == "0.0.12"
+assert pykdex.__version__ == "0.0.13"
 assert files("pykdex").joinpath("py.typed").is_file()
 events = pykdex.SpatialEvents.from_array([[0.0, 0.0], [1.0, 1.0]])
 support = pykdex.GridSupport.from_bounds((0.0, 0.0, 1.0, 1.0), resolution=0.5)
