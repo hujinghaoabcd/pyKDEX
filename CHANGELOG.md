@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.0.8 - 2026-07-23
+
+- Add polygon boundary renormalization with analytical rectangular Gaussian mass and deterministic measured-cell quadrature.
+- Add explicit one-generation reflection correction for axis-aligned rectangular boundaries.
+- Add global symmetric positive-definite `BandwidthMatrix` anisotropic kernels.
+- Add query-centred `BalloonKNNBandwidth` and support-bandwidth result metadata.
+- Enforce boundary CRS, units, event containment, support containment, and atomic failure contracts.
+- Add analytical equivalence, multivariate-normal, mass, orientation, and restriction tests.
+- Add examples, API documentation, guides, and a versioned recovery handoff.
+
 ## 0.0.7 - Unreleased
 
 - Add exact reusable event-to-event network-distance assets.

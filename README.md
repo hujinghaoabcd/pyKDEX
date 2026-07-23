@@ -7,10 +7,7 @@ The package follows the engineering conventions of pyGWRx while keeping the
 KDE architecture composition-based: domains, metrics, kernels, bandwidths,
 corrections, supports, and estimators are independent components.
 
-> Status: spatial KDE and fixed/adaptive network KDE are available. Canonical
-> networks, OSMnx/NetworkX adapters, auditable snapping, lixels, reusable distance
-> assets, junction policies, network CV bandwidth selection, and kNN network
-> bandwidths are implemented.
+> Status: spatial KDE includes scalar, sample-point, balloon, matrix, and boundary-corrected estimators. Fixed/adaptive network KDE, canonical networks, OSMnx/NetworkX adapters, auditable snapping, lixels, reusable distance assets, junction policies, network CV bandwidth selection, and kNN network bandwidths are implemented.
 
 ## Installation
 
@@ -95,6 +92,35 @@ knn = SpatialKDE(bandwidth=KNNBandwidth(k=20)).fit(events)
 adaptive = SpatialKDE(bandwidth=AbramsonBandwidth(0.5)).fit(events)
 ```
 
+
+## Spatial boundaries, matrices, and balloon bandwidths
+
+```python
+import numpy as np
+from pykdex import (
+    BalloonKNNBandwidth,
+    BandwidthMatrix,
+    SpatialBoundary,
+    SpatialKDE,
+)
+
+boundary = SpatialBoundary.from_bounds((0.0, 0.0, 1000.0, 1000.0))
+corrected = SpatialKDE(
+    bandwidth=100.0,
+    boundary=boundary,
+    boundary_correction="renormalization",
+).fit(events)
+
+anisotropic = SpatialKDE(
+    bandwidth=BandwidthMatrix(np.array([[40000.0, 12000.0], [12000.0, 16000.0]]))
+).fit(events)
+
+balloon = SpatialKDE(
+    bandwidth=BalloonKNNBandwidth(k=20, minimum_bandwidth=10.0)
+).fit(events)
+```
+
+Renormalization supports Polygon/MultiPolygon study areas. Rectangular Gaussian domains use analytical probabilities; general polygons use deterministic measured-cell quadrature. Reflection is explicit and restricted to axis-aligned rectangles with scalar, event-specific scalar, or diagonal matrix bandwidths.
 
 ## Network bandwidth selection and adaptation
 

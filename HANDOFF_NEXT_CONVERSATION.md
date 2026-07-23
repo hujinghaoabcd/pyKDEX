@@ -1,41 +1,40 @@
 # pyKDEX current handoff
 
-The latest completed development unit is **0.0.7 network bandwidth selection and adaptive
-NetworkKDE**. Read `HANDOFF_0.0.7_NETWORK_BANDWIDTHS.md` first; it contains the full
-architecture, mathematical definitions, changed files, validation contract, exclusions,
-recovery steps, and recommended next unit.
+The active development unit is **0.0.8 spatial boundary correction, anisotropy, and balloon
+bandwidths**. Read `HANDOFF_0.0.8_SPATIAL_BOUNDARY_ANISOTROPY.md` first. It records the
+architecture, formulas, supported combinations, rejected combinations, implementation files,
+validation results, limitations, recovery procedure, and next recommended unit.
 
 ## Current repository state
 
 - repository: `hujinghaoabcd/pyKDEX`;
 - default branch: `main`;
-- latest stable development version: `0.0.7`;
-- completed pull request: `#6 Add network bandwidth selection and adaptive NetworkKDE`;
-- PR #6 squash merge commit: `eec1bbee65e6131c942f67adb8286e6a4a56af26`;
-- post-merge handoff-record commit: `0a5adc6ae21052f6dcd1bd0eb7c53595ed766ae0`;
-- validation: `137 passed`, branch coverage `81.97%`, and 70 public symbols mapped to examples;
-- final documentation-complete PR CI run #77 (`29902827180`): success;
+- active development branch: `agent/spatial-boundary-anisotropy`;
+- active pull request: `#7 Add spatial boundary correction and anisotropic KDE`;
+- last stable completed version: `0.0.7`;
+- development version: `0.0.8`;
+- initial reviewed source commit: `c55188f1a80bb53f68ed081d7dd7e4a0f21991f4`;
+- formatted source and installed-wheel smoke-test commit: `91733f5519472401c54b01fee074562e50897d46`;
+- Ruff-safe-fix commit: `412fad6cf4133ae7412b9db1430c400d45e2faff`;
+- finalized validation and versioned handoff commit: `cef3b28526d1337eba83f493febd9c291e75bf8e`;
+- validation: `145 passed`, branch coverage `81.41%`, 77 public symbols mapped, and all
+  10 executable examples completed;
+- final clean pull-request CI run #101 (`29974418301`): success;
 - Black, isort, Ruff, mypy, strict MkDocs, distributions, installed-wheel smoke tests, and the
   Linux/Windows/macOS Python 3.11-3.14 matrix passed;
-- temporary patch fragments and all patch, source-export, formatter, finalizer, merge-recorder,
-  and diagnostic workflows were removed;
-- unit status: complete and merged into `main`.
+- temporary transfer, apply, export, formatting, Ruff-fix, finalizer, and diagnostic
+  infrastructure: removed;
+- permanent CI workflow: restored;
+- current status: implementation, validation, and recovery records are complete; the final
+  documentation-complete CI and PR #7 squash merge remain pending.
 
-## Next recommended development unit
+## Next recommended unit after 0.0.8
 
-Return to the unfinished ordinary spatial KDE family in a new dedicated branch:
-
-1. polygon boundary renormalization;
-2. reflection correction for explicitly supported boundary geometries;
-3. positive-definite bandwidth matrices and anisotropic transformations;
-4. balloon kNN bandwidths;
-5. boundary-aware analytical and mass-conservation tests;
-6. a new detailed versioned Markdown handoff before merge.
-
-Heat-equation Gaussian NKDE remains a separate later numerical engine and must not be exposed as
-an ordinary radial-kernel name.
+Implement `HeatNetworkKDE` as a separate metric-graph heat-equation engine. Do not expose it as an
+ordinary Gaussian radial-kernel name. The detailed implementation order is in the versioned handoff.
 
 ## Permanent process rule
 
-Every completed development unit must create a new versioned Markdown handoff and update this
-file. See `docs/development/handoff-policy.md`.
+Every completed development unit must create a new versioned root Markdown handoff, add/update the
+corresponding `docs/development` page, update this file, and record actual final CI and merge state.
+See `docs/development/handoff-policy.md`.

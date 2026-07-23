@@ -7,7 +7,7 @@
 5. ~~network-distance assets, traversal states, and junction policies~~;
 6. ~~simple, discontinuous, and continuous fixed-bandwidth NetworkKDE~~;
 7. ~~network likelihood CV, lixel LSCV, and sample-point kNN bandwidths~~;
-8. boundary correction, bandwidth matrices, and balloon spatial KDE;
+8. ~~boundary correction, bandwidth matrices, and balloon spatial KDE~~;
 9. heat-equation Gaussian NKDE and advanced network adaptation;
 10. separable, cyclic, and adaptive spatiotemporal KDE;
 11. arixel and temporal-network KDE;
