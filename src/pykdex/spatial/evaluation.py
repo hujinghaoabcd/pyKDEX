@@ -40,9 +40,7 @@ def validate_spatial_bandwidth(
         return owned
     if array.ndim == 2:
         if array.shape != (dimension, dimension):
-            raise ValueError(
-                "bandwidth matrix must have shape (dimension, dimension)."
-            )
+            raise ValueError("bandwidth matrix must have shape (dimension, dimension).")
         if not np.all(np.isfinite(array)):
             raise ValueError("bandwidth matrix must contain finite values.")
         if not np.allclose(array, array.T, rtol=1e-10, atol=1e-12):
@@ -100,9 +98,7 @@ def evaluate_sample_point_kernel(
     distances = metric.pairwise(support, events)
     if array.ndim == 1:
         standardized = distances / array[None, :]
-        return kernel(standardized, dimension) / (
-            array[None, :] ** dimension
-        )
+        return kernel(standardized, dimension) / (array[None, :] ** dimension)
     h = float(array)
     return kernel(distances / h, dimension) / h**dimension
 
@@ -124,6 +120,4 @@ def evaluate_balloon_kernel(
     dimension = int(events.shape[1])
     distances = metric.pairwise(support, events)
     standardized = distances / bandwidths[:, None]
-    return kernel(standardized, dimension) / (
-        bandwidths[:, None] ** dimension
-    )
+    return kernel(standardized, dimension) / (bandwidths[:, None] ** dimension)

@@ -270,7 +270,9 @@ class SpatialKDE(BaseKDE):
                 raise ValueError("boundary correction requires a SpatialBoundary.")
             return
         if events.shape[1] != 2:
-            raise ValueError("SpatialBoundary requires two-dimensional event coordinates.")
+            raise ValueError(
+                "SpatialBoundary requires two-dimensional event coordinates."
+            )
         validate_spatial_metadata(
             event_crs=event_crs,
             support_crs=boundary.crs,
@@ -330,13 +332,13 @@ class SpatialKDE(BaseKDE):
         )
         for start in range(0, support.shape[0], chunk_size):
             stop = min(start + chunk_size, support.shape[0])
-            chunk_values, chunk_bandwidths = self._evaluate_chunk(
-                support[start:stop]
-            )
+            chunk_values, chunk_bandwidths = self._evaluate_chunk(support[start:stop])
             values[start:stop] = chunk_values
             if support_bandwidths is not None:
                 if chunk_bandwidths is None:
-                    raise RuntimeError("balloon bandwidth evaluation returned no values.")
+                    raise RuntimeError(
+                        "balloon bandwidth evaluation returned no values."
+                    )
                 support_bandwidths[start:stop] = chunk_bandwidths
         if support_bandwidths is not None:
             support_bandwidths.setflags(write=False)

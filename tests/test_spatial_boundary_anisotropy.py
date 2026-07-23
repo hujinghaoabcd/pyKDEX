@@ -41,7 +41,9 @@ def test_matrix_gaussian_matches_scipy_multivariate_normal():
         bandwidth=BandwidthMatrix(covariance),
     ).fit(event)
     expected = multivariate_normal.pdf(support, mean=event[0], cov=covariance)
-    np.testing.assert_allclose(model.evaluate(support), expected, rtol=1e-12, atol=1e-14)
+    np.testing.assert_allclose(
+        model.evaluate(support), expected, rtol=1e-12, atol=1e-14
+    )
     assert model.fit_metadata_["bandwidth_kind"] == "matrix"
 
 
@@ -49,16 +51,18 @@ def test_isotropic_matrix_equals_scalar_bandwidth():
     events = np.array([[-0.5, 0.2], [0.8, -0.1]])
     support = np.array([[0.0, 0.0], [1.0, 1.0]])
     scalar = SpatialKDE(bandwidth=0.7).fit(events).evaluate(support)
-    matrix = SpatialKDE(
-        bandwidth=BandwidthMatrix(np.eye(2) * 0.7**2)
-    ).fit(events).evaluate(support)
+    matrix = (
+        SpatialKDE(bandwidth=BandwidthMatrix(np.eye(2) * 0.7**2))
+        .fit(events)
+        .evaluate(support)
+    )
     np.testing.assert_allclose(matrix, scalar, rtol=1e-13, atol=1e-15)
 
 
 def test_anisotropic_matrix_has_expected_orientation():
-    model = SpatialKDE(
-        bandwidth=BandwidthMatrix(np.diag([4.0, 0.25]))
-    ).fit(np.array([[0.0, 0.0]]))
+    model = SpatialKDE(bandwidth=BandwidthMatrix(np.diag([4.0, 0.25]))).fit(
+        np.array([[0.0, 0.0]])
+    )
     values = model.evaluate(np.array([[1.5, 0.0], [0.0, 1.5]]))
     assert values[0] > values[1] * 20.0
 
@@ -84,9 +88,9 @@ def test_balloon_knn_requires_floor_for_coincident_first_rank():
     model = SpatialKDE(bandwidth=BalloonKNNBandwidth(1)).fit(events)
     with pytest.raises(ValueError, match="minimum_bandwidth"):
         model.evaluate(np.array([[0.0]]))
-    floored = SpatialKDE(
-        bandwidth=BalloonKNNBandwidth(1, minimum_bandwidth=0.2)
-    ).fit(events)
+    floored = SpatialKDE(bandwidth=BalloonKNNBandwidth(1, minimum_bandwidth=0.2)).fit(
+        events
+    )
     assert np.isfinite(floored.evaluate(np.array([[0.0]]))).all()
     with pytest.raises(ValueError, match="cannot exceed"):
         SpatialKDE(bandwidth=BalloonKNNBandwidth(3)).fit(events)
@@ -175,9 +179,7 @@ def test_boundary_context_and_atomic_failure_contracts():
     with pytest.raises(ValueError, match="outside"):
         model.fit(np.array([[2.0, 2.0]]))
     assert not model.is_fitted_
-    fitted = SpatialKDE(bandwidth=0.2, boundary=boundary).fit(
-        np.array([[0.5, 0.5]])
-    )
+    fitted = SpatialKDE(bandwidth=0.2, boundary=boundary).fit(np.array([[0.5, 0.5]]))
     with pytest.raises(ValueError, match="support"):
         fitted.evaluate(np.array([[2.0, 2.0]]))
     with pytest.raises(ValueError, match="cannot yet be combined"):
@@ -218,9 +220,7 @@ def test_balloon_support_validation_and_boundary_correction_names():
             metric=EuclideanMetric(),
         )
     with pytest.raises(ValueError, match="requires a SpatialBoundary"):
-        SpatialKDE(boundary_correction="renormalization").fit(
-            np.array([[0.0, 0.0]])
-        )
+        SpatialKDE(boundary_correction="renormalization").fit(np.array([[0.0, 0.0]]))
     with pytest.raises(ValueError, match="Unknown boundary correction"):
         SpatialKDE(boundary_correction="invented").fit(np.array([[0.0, 0.0]]))
     with pytest.raises(TypeError, match="boundary_correction"):

@@ -34,7 +34,12 @@ class BoundaryCorrectionState:
     expanded_bandwidth: float | np.ndarray | None = None
 
     def __post_init__(self) -> None:
-        for name in ("masses", "expanded_events", "source_indices", "expanded_bandwidth"):
+        for name in (
+            "masses",
+            "expanded_events",
+            "source_indices",
+            "expanded_bandwidth",
+        ):
             value = getattr(self, name)
             if isinstance(value, np.ndarray):
                 owned = np.ascontiguousarray(value.copy())
@@ -146,7 +151,9 @@ class RenormalizationCorrection(BaseBoundaryCorrection):
         if boundary is None:
             raise ValueError("renormalization correction requires a boundary.")
         if events.shape[1] != 2:
-            raise ValueError("boundary correction currently supports planar events only.")
+            raise ValueError(
+                "boundary correction currently supports planar events only."
+            )
         masses = self._analytical_rectangle_gaussian_mass(
             events,
             boundary=boundary,
@@ -202,7 +209,9 @@ class RenormalizationCorrection(BaseBoundaryCorrection):
             ) from exc
         reference = box(*boundary.bounds)
         tolerance = max(1.0, boundary.area) * 1e-12
-        return float(reference.symmetric_difference(boundary.geometry).area) <= tolerance
+        return (
+            float(reference.symmetric_difference(boundary.geometry).area) <= tolerance
+        )
 
     def _analytical_rectangle_gaussian_mass(
         self,

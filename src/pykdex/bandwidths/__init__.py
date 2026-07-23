@@ -4,7 +4,7 @@
 """Fixed, selected, and adaptive bandwidth strategies."""
 
 from pykdex.bandwidths.adaptive import AbramsonBandwidth, KNNBandwidth
-from pykdex.bandwidths.balloon import BaseBalloonBandwidth, BalloonKNNBandwidth
+from pykdex.bandwidths.balloon import BalloonKNNBandwidth, BaseBalloonBandwidth
 from pykdex.bandwidths.base import BaseBandwidth
 from pykdex.bandwidths.fixed import FixedBandwidth, get_bandwidth
 from pykdex.bandwidths.matrix import BandwidthMatrix
