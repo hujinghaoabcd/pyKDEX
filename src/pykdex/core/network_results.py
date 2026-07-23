@@ -21,10 +21,10 @@ from pykdex.network.support import LixelSupport
 
 @dataclass(frozen=True)
 class NetworkField:
-    """Density or intensity values evaluated at lixel centres.
+    """Density or intensity values represented on measured lixel support.
 
     Args:
-        values: One non-negative estimate per lixel.
+        values: One non-negative point estimate or cell average per lixel.
         support: Measured lixel support used for evaluation and integration.
         bandwidth: Positive scalar or one positive value per source event.
         target: Either ``"density"`` or ``"intensity"``.

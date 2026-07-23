@@ -62,6 +62,7 @@ nav:
   - Estimators:
       - Spatial KDE: estimators/spatial-kde.md
       - Network KDE: estimators/network-kde.md
+      - Heat-equation network KDE: estimators/heat-network-kde.md
   - Guides:
       - Data objects: guides/data.md
       - Built-in datasets: guides/datasets.md
@@ -79,6 +80,7 @@ nav:
       - Graph adapters: api/adapters.md
       - SpatialKDE: api/spatial-kde.md
       - NetworkKDE: api/network-kde.md
+      - HeatNetworkKDE: api/heat-network-kde.md
       - Network bandwidths: api/network-bandwidths.md
       - Boundary corrections: api/corrections.md
       - Kernels: api/kernels.md
@@ -91,5 +93,6 @@ nav:
       - Handoff policy: development/handoff-policy.md
       - 0.0.7 handoff: development/handoff-0.0.7-network-bandwidths.md
       - 0.0.8 handoff: development/handoff-0.0.8-spatial-boundary-anisotropy.md
+      - 0.0.9 handoff: development/handoff-0.0.9-heat-network-kde.md
       - Roadmap: development/roadmap.md
   - 中文: zh/index.md

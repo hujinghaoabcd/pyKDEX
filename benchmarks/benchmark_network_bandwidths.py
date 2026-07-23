@@ -59,9 +59,11 @@ def main() -> None:
             "n_edges": network.n_edges,
             "n_events": prepared.events.n_events if prepared.events else 0,
             "n_lixels": prepared.lixels.n_lixels,
-            "event_distance_pairs": prepared.event_distance_asset.n_pairs
-            if prepared.event_distance_asset
-            else 0,
+            "event_distance_pairs": (
+                prepared.event_distance_asset.n_pairs
+                if prepared.event_distance_asset
+                else 0
+            ),
             "distance_seconds": round(distance_seconds, 6),
             "adaptive_seconds": round(adaptive_seconds, 6),
             "selection_seconds": round(selection_seconds, 6),

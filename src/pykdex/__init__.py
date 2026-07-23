@@ -11,7 +11,7 @@ from __future__ import annotations
 
 __author__ = "Jinghao Hu"
 __license__ = "MIT"
-__version__ = "0.0.8"
+__version__ = "0.0.9"
 
 from pykdex.adapters import from_networkx_graph, from_osmnx_graph, network_from_place
 from pykdex.bandwidths import (
@@ -56,7 +56,7 @@ from pykdex.datasets import (
     make_bimodal_events,
     make_grid_network,
 )
-from pykdex.estimators import NetworkKDE, SpatialKDE
+from pykdex.estimators import HeatNetworkKDE, NetworkKDE, SpatialKDE
 from pykdex.kernels import (
     EpanechnikovKernel,
     ExponentialKernel,
@@ -76,6 +76,7 @@ from pykdex.network import (
     NetworkDataset,
     NetworkDistanceAsset,
     NetworkEvents,
+    NetworkHeatOperator,
     NetworkLocations,
     NetworkWorkspace,
     PropagationRecord,
@@ -87,6 +88,7 @@ from pykdex.network import (
     build_event_event_distances,
     build_event_lixel_distances,
     build_network_distance_asset,
+    build_network_heat_operator,
     get_junction_policy,
     snap_events,
     trace_network_propagation,
@@ -103,6 +105,7 @@ from pykdex.selection import (
 __all__ = [
     "SpatialKDE",
     "NetworkKDE",
+    "HeatNetworkKDE",
     "SpatialKDEResult",
     "NetworkField",
     "BandwidthSelectionResult",
@@ -124,6 +127,8 @@ __all__ = [
     "make_grid_network",
     "LinearNetwork",
     "NetworkEvents",
+    "NetworkHeatOperator",
+    "build_network_heat_operator",
     "SnapResult",
     "snap_events",
     "LixelSupport",

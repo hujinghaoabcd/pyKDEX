@@ -1,56 +1,43 @@
 # pyKDEX current handoff
 
-The latest completed development unit is **0.0.8 spatial boundary correction, anisotropy,
-and balloon bandwidths**. Read `HANDOFF_0.0.8_SPATIAL_BOUNDARY_ANISOTROPY.md` first for
-the full design and implementation record, then read `POSTMERGE_0.0.8_VERIFICATION.md` for
-the exact post-merge repository-state validation.
+The active development unit is **0.0.9 heat-equation KDE on measured metric
+graphs**. Read `HANDOFF_0.0.9_HEAT_NETWORK_KDE.md` first for the full design,
+implementation, validation, limitation, recovery, and next-unit record.
 
 ## Current repository state
 
 - repository: `hujinghaoabcd/pyKDEX`;
 - default branch: `main`;
-- latest stable development version: `0.0.8`;
-- completed feature pull request: `#7 Add spatial boundary correction and anisotropic KDE`;
-- PR #7 squash merge commit: `9f0aef9e8be57cc9e1c6beb210225b421501a623`;
-- post-merge handoff-record commit: `a7b1ae9461ab90c3ba7c89b6043693ffcb26e412`;
-- post-merge main verification source commit: `4e73ea1fc2812305f47c702444860e8c90ac9fd4`;
-- completed verification pull request: `#8 Verify pyKDEX 0.0.8 post-merge repository state`;
-- PR #8 squash merge commit: `a865cec65bec76c5dd214b061c15dde32940a4aa`;
-- validation: `145 passed`, branch coverage `81.41%`, 77 public symbols mapped, and all
-  10 executable examples completed;
-- final feature pull-request CI run #104 (`29974693141`): success;
-- exact post-merge repository-state CI run #108 (`29975262281`): success;
-- documentation-complete post-merge CI run #109 (`29975400636`): success;
-- Black, isort, Ruff, mypy, strict MkDocs, distributions, installed-wheel smoke tests, and
-  Linux/Windows/macOS on Python 3.11-3.14 passed;
-- temporary transfer, patch, apply, export, formatting, Ruff-fix, finalizer, merge-recorder,
-  and diagnostic infrastructure: removed;
-- permanent CI workflow: restored on `main`;
-- unit status: implementation, feature merge, detailed recovery records, exact post-merge
-  repository-state validation, and verification-record merge are complete.
+- stable base version: `0.0.8`;
+- active branch: `agent/heat-network-kde`;
+- source version: `0.0.9`;
+- pull request: `#9 Add heat-equation network KDE`;
+- feature commit: `16bc4ba79d861b2651c227033be1b24bce7f5b9e`;
+- complete PR CI run `#113` (`29979483652`): success;
+- squash merge commit: pending final clean CI;
+- observed local validation: `161 passed`, branch coverage `81.76%`,
+  80 public symbols mapped, all 11 examples, formatting, lint, typing, strict
+  docs, distributions, and isolated wheel smoke passed;
+- final clean metadata CI and merge fields: pending;
+- no temporary repository workflow has been added.
 
-## Implemented in 0.0.8
+## Implemented in 0.0.9
 
-- polygon boundary renormalization with exact rectangular Gaussian mass and deterministic
-  measured-cell Polygon/MultiPolygon quadrature;
-- one-generation reflection correction for explicitly supported axis-aligned rectangles;
-- global symmetric positive-definite bandwidth matrices with Cholesky anisotropic transforms;
-- query-centred balloon kNN bandwidths with support-bandwidth result metadata;
-- strict boundary CRS, unit, containment, compatibility, and atomic failed-fit contracts.
+- separate public `HeatNetworkKDE`;
+- reusable read-only `NetworkHeatOperator`;
+- measured piecewise-linear metric-graph finite elements;
+- exact event and lixel-boundary mesh insertion;
+- shared vertex continuity and Kirchhoff flux balance;
+- natural Neumann terminal conditions;
+- density/intensity and per-component mass conservation;
+- exact lixel cell-average output;
+- analytical interval and ring references plus T-junction/disconnected tests.
 
 ## Next recommended development unit
 
-Implement `HeatNetworkKDE` as a separate metric-graph heat-equation engine:
-
-1. define the metric-graph Laplacian and vertex conditions;
-2. build a measured sparse edge discretization;
-3. map event mass without losing along-edge offsets;
-4. solve diffusion using a validated stable sparse method;
-5. return `NetworkField` mass and continuity diagnostics;
-6. validate line, terminal interval, T-junction, ring, and disconnected references;
-7. create `HANDOFF_0.0.9_HEAT_NETWORK_KDE.md` before merge.
-
-Heat KDE must not be exposed as an ordinary Gaussian radial-kernel alias.
+After 0.0.9 is merged, implement reusable heat solver plans, batched
+diffusion-time evaluation, heat likelihood/LSCV selection, and large-grid
+benchmarks. Then proceed to temporal data objects and separable STKDE.
 
 ## Permanent process rule
 
