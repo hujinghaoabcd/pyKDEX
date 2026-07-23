@@ -12,6 +12,7 @@ implementation files, validation results, limitations, recovery procedure, and n
 - latest stable development version: `0.0.8`;
 - completed pull request: `#7 Add spatial boundary correction and anisotropic KDE`;
 - PR #7 squash merge commit: `9f0aef9e8be57cc9e1c6beb210225b421501a623`;
+- post-merge handoff-record commit: `a7b1ae9461ab90c3ba7c89b6043693ffcb26e412`;
 - validation: `145 passed`, branch coverage `81.41%`, 77 public symbols mapped, and all
   10 executable examples completed;
 - final documentation-complete pull-request CI run #104 (`29974693141`): success;
@@ -19,7 +20,9 @@ implementation files, validation results, limitations, recovery procedure, and n
   Linux/Windows/macOS on Python 3.11-3.14 passed;
 - temporary transfer, patch, apply, export, formatting, Ruff-fix, finalizer, merge-recorder,
   and diagnostic infrastructure: removed;
-- unit status: complete and merged into `main`.
+- permanent CI workflow: restored on `main`;
+- unit status: complete and merged into `main`; post-merge main-branch CI is the final
+  repository-state verification.
 
 ## Implemented in 0.0.8
 
