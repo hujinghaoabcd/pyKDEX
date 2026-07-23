@@ -13,13 +13,16 @@ validation contract, limitations, recovery procedure, and next recommended unit.
 - active pull request: `#7 Add spatial boundary correction and anisotropic KDE`;
 - last stable completed version: `0.0.7`;
 - development version: `0.0.8`;
-- local validation: `145 passed`, branch coverage `81.41%`;
+- reviewed source commit on the development branch: `c55188f1a80bb53f68ed081d7dd7e4a0f21991f4`;
+- local validation: `145 passed`, branch coverage `81.41%`, 77 public symbols mapped, and all
+  10 executable examples completed;
 - new public functionality: polygon renormalization, rectangular reflection, positive-definite
   bandwidth matrices, and query-centred balloon kNN;
-- current status: implementation, tests, examples, and recovery documentation are prepared;
-  formal quality checks and clean cross-platform GitHub Actions remain pending;
-- do not merge until temporary source-export infrastructure is removed and final CI results are
-  written into the versioned handoff.
+- temporary transfer fragments and all temporary apply/export workflows: removed;
+- current status: implementation, tests, examples, documentation, and recovery records are complete;
+  the clean maintainer-triggered GitHub Actions quality, distribution, coverage, and platform matrix
+  is pending;
+- do not merge until final CI results are written into the versioned handoff.
 
 ## Next recommended unit after 0.0.8
 
