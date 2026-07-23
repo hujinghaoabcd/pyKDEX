@@ -48,14 +48,22 @@ Validation date: 2026-07-23
 - strict MkDocs: passed;
 - wheel, sdist, Twine, archive-content verification, and isolated wheel smoke:
   passed;
-- GitHub CI and merge evidence: pending.
+- corrected complete GitHub PR CI: passed;
+- final clean CI after handoff update and merge evidence: pending.
 
 ## GitHub state
 
 - development branch: `agent/workspace-persistence`;
-- PR: pending;
-- feature commit: pending;
-- PR CI: pending;
+- PR: `#14 Add portable workspace persistence`;
+- initial feature commit:
+  `35f333812e0e938c2ef11ced9c907b042b2fb346`;
+- Windows fsync fix commit:
+  `6a851e167d796eea02b28414a7d289aab8953888`;
+- first PR CI run `#138` (`30017443733`): failed on Windows Python 3.14
+  because a read-only descriptor cannot be fsynced on Windows;
+- corrected PR CI run `#139` (`30017717273`): success across quality,
+  coverage, distributions, Linux/Windows/macOS, and Python 3.11-3.14;
+- final clean PR CI after documentation update: pending;
 - squash merge commit: pending;
 - post-merge `main` CI: pending.
 

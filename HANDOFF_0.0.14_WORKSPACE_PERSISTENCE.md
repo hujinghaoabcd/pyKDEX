@@ -13,14 +13,20 @@ chat history.
 - Development worktree:
   `/workspace/scratch/660de0f0af7d/pykdex-workspace-persistence`
 - Base stable version: `0.0.13`
-- Pull request: pending at the time this first record was written
-- Feature commit: pending
-- CI runs: pending
+- Pull request: `#14 Add portable workspace persistence`
+- Initial feature commit:
+  `35f333812e0e938c2ef11ced9c907b042b2fb346`
+- Windows fsync fix commit:
+  `6a851e167d796eea02b28414a7d289aab8953888`
+- First PR CI run `#138` (`30017443733`): failed on Windows Python
+  3.14 because Windows rejects `fsync` on a read-only descriptor
+- Corrected complete PR CI run `#139` (`30017717273`): success
+- Final clean PR CI after handoff update: pending
 - Squash merge commit: pending
 
-Do not replace pending fields with guesses. After GitHub observes a real PR,
-checks, and merge, update this file and `HANDOFF_NEXT_CONVERSATION.md` with the
-actual identifiers.
+Do not replace the remaining pending fields with guesses. After GitHub observes
+the final clean checks and merge, update this file and
+`HANDOFF_NEXT_CONVERSATION.md` with the actual identifiers.
 
 ## 2. Why this development unit exists
 
@@ -546,7 +552,12 @@ Final local evidence before GitHub publication:
 - distribution archive content: passed;
 - isolated wheel installation and smoke test: passed.
 
-GitHub cross-platform CI and merge evidence remain pending until observed.
+Corrected PR CI run `#139` (`30017717273`) passed quality, coverage,
+distributions, Linux, Windows, macOS, and Python 3.11-3.14. The first run
+identified a real Windows portability defect: `os.fsync` requires a writable
+file handle on Windows. Opening the complete temporary archive as `r+b`
+preserves the durability step and passes all platforms. Final clean CI after
+this handoff update and merge evidence remain pending until observed.
 
 ## 18. Deliberate exclusions
 

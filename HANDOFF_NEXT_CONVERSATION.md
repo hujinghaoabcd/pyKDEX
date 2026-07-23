@@ -13,9 +13,16 @@ recovery, and next-unit record.
   `/workspace/scratch/660de0f0af7d/pykdex-workspace-persistence`;
 - version implemented in this branch: `0.0.14`;
 - latest stable merged version when development began: `0.0.13`;
-- pull request: pending;
-- feature commit: pending;
-- CI: pending;
+- pull request: `#14 Add portable workspace persistence`;
+- initial feature commit:
+  `35f333812e0e938c2ef11ced9c907b042b2fb346`;
+- Windows fsync fix commit:
+  `6a851e167d796eea02b28414a7d289aab8953888`;
+- first PR CI run `#138` (`30017443733`): failed on Windows Python 3.14
+  and exposed read-only-descriptor `fsync` incompatibility;
+- corrected PR CI run `#139` (`30017717273`): success across quality,
+  coverage, distributions, Linux/Windows/macOS, and Python 3.11-3.14;
+- final clean PR CI after handoff update: pending;
 - merge commit: pending;
 - focused persistence validation: `10 passed`;
 - full regression: `236 passed`;
@@ -24,11 +31,11 @@ recovery, and next-unit record.
 - executable examples: `16`;
 - Black, isort, Ruff, mypy, strict docs, distributions, and isolated wheel:
   passed;
-- final PR CI and merge: pending final observation;
+- merge: pending final observation;
 - no temporary repository workflow has been added.
 
-Update pending fields only after they are observed. Do not infer CI or merge
-success from local state.
+Update the remaining pending fields only after they are observed. Do not infer
+CI or merge success from local state.
 
 ## Implemented in 0.0.14
 
