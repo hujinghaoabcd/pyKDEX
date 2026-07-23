@@ -7,6 +7,12 @@ from pykdex.data.boundary import SpatialBoundary
 from pykdex.data.dataset import KDEDataset
 from pykdex.data.events import SpatialEvents
 from pykdex.data.provenance import DataProvenance
+from pykdex.data.spatiotemporal import (
+    SpatiotemporalEvents,
+    SpatiotemporalGridSupport,
+    SpatiotemporalPointSupport,
+    TemporalCoordinates,
+)
 from pykdex.data.support import GridSupport, PointSupport
 from pykdex.data.validation import DataIssue, DataValidationReport
 
@@ -19,4 +25,8 @@ __all__ = [
     "DataProvenance",
     "DataIssue",
     "DataValidationReport",
+    "TemporalCoordinates",
+    "SpatiotemporalEvents",
+    "SpatiotemporalPointSupport",
+    "SpatiotemporalGridSupport",
 ]

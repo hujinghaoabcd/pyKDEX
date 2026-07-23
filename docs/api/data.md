@@ -11,3 +11,11 @@
 ::: pykdex.data.DataProvenance
 
 ::: pykdex.data.DataValidationReport
+
+::: pykdex.data.TemporalCoordinates
+
+::: pykdex.data.SpatiotemporalEvents
+
+::: pykdex.data.SpatiotemporalPointSupport
+
+::: pykdex.data.SpatiotemporalGridSupport

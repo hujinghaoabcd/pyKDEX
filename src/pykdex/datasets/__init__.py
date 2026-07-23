@@ -15,10 +15,12 @@ from pykdex.datasets.synthetic import (
     load_bimodal_points,
     load_bounded_square,
     make_bimodal_events,
+    make_moving_hotspot_events,
 )
 
 __all__ = [
     "make_bimodal_events",
+    "make_moving_hotspot_events",
     "load_bimodal_points",
     "load_bounded_square",
     "load_t_junction",

@@ -7,10 +7,12 @@ from pykdex.estimators.heat_experiment import HeatNetworkExperiment
 from pykdex.estimators.heat_network_kde import HeatNetworkKDE
 from pykdex.estimators.network_kde import NetworkKDE
 from pykdex.estimators.spatial_kde import SpatialKDE
+from pykdex.estimators.spatiotemporal_kde import SpatiotemporalKDE
 
 __all__ = [
     "SpatialKDE",
     "NetworkKDE",
     "HeatNetworkKDE",
     "HeatNetworkExperiment",
+    "SpatiotemporalKDE",
 ]

@@ -7,7 +7,7 @@ The package follows the engineering conventions of pyGWRx while keeping the
 KDE architecture composition-based: domains, metrics, kernels, bandwidths,
 corrections, supports, and estimators are independent components.
 
-> Status: spatial KDE includes scalar, sample-point, balloon, matrix, and boundary-corrected estimators. Fixed/adaptive radial network KDE and a measured finite-element heat-equation NetworkKDE are implemented alongside canonical networks, auditable snapping, lixels, reusable distance assets, junction policies, and network bandwidth selection.
+> Status: spatial KDE includes scalar, sample-point, balloon, matrix, and boundary-corrected estimators. Ordinary product-kernel spatiotemporal KDE supports linear/cyclic time and measured space-time grids. Fixed/adaptive radial network KDE and measured finite-element heat-equation NetworkKDE are implemented alongside canonical networks, auditable snapping, reusable assets, and bandwidth selection.
 
 ## Installation
 
@@ -162,6 +162,41 @@ Heat smoothing is an independent metric-graph engine, not a kernel name passed
 to `NetworkKDE`. Shared finite-element vertex values enforce continuity,
 Kirchhoff balance controls junction flux, and terminal vertices use zero-flux
 Neumann conditions. The output contains exactly integrated lixel cell averages.
+
+## Ordinary spatiotemporal KDE
+
+```python
+from pykdex import (
+    CyclicTimeDomain,
+    SpatiotemporalEvents,
+    SpatiotemporalKDE,
+    SpatiotemporalPointSupport,
+)
+
+time_of_day = CyclicTimeDomain(period=24.0)
+events_st = SpatiotemporalEvents.from_arrays(
+    coordinates,
+    event_hours,
+    spatial_unit="km",
+    temporal_unit="hours",
+    time_domain=time_of_day,
+)
+support_st = SpatiotemporalPointSupport.from_arrays(
+    query_coordinates,
+    query_hours,
+    spatial_unit="km",
+    temporal_unit="hours",
+    time_domain=time_of_day,
+)
+result_st = SpatiotemporalKDE(
+    spatial_bandwidth=0.5,
+    temporal_bandwidth=2.0,
+).fit_predict(events_st, support_st)
+```
+
+Spatial and temporal units remain independent. Cyclic kernels use periodic
+image sums, and measured space-time grids can be exported with the optional
+`pyKDEX[array]` dependencies.
 
 ## Initial design commitments
 

@@ -11,7 +11,7 @@ from __future__ import annotations
 
 __author__ = "Jinghao Hu"
 __license__ = "MIT"
-__version__ = "0.0.10"
+__version__ = "0.0.11"
 
 from pykdex.adapters import from_networkx_graph, from_osmnx_graph, network_from_place
 from pykdex.bandwidths import (
@@ -38,6 +38,8 @@ from pykdex.core import (
     HeatNetworkBatchResult,
     NetworkField,
     SpatialKDEResult,
+    SpatiotemporalBandwidthSelectionResult,
+    SpatiotemporalKDEResult,
 )
 from pykdex.corrections import (
     BaseBoundaryCorrection,
@@ -53,6 +55,10 @@ from pykdex.data import (
     PointSupport,
     SpatialBoundary,
     SpatialEvents,
+    SpatiotemporalEvents,
+    SpatiotemporalGridSupport,
+    SpatiotemporalPointSupport,
+    TemporalCoordinates,
 )
 from pykdex.datasets import (
     load_bimodal_points,
@@ -64,12 +70,14 @@ from pykdex.datasets import (
     load_t_junction,
     make_bimodal_events,
     make_grid_network,
+    make_moving_hotspot_events,
 )
 from pykdex.estimators import (
     HeatNetworkExperiment,
     HeatNetworkKDE,
     NetworkKDE,
     SpatialKDE,
+    SpatiotemporalKDE,
 )
 from pykdex.kernels import (
     EpanechnikovKernel,
@@ -119,10 +127,17 @@ from pykdex.selection import (
     NetworkLeastSquaresCV,
     NetworkLikelihoodCV,
     NetworkSelectionCache,
+    SpatiotemporalBandwidthExperiment,
 )
+from pykdex.spatiotemporal import (
+    SpatiotemporalDistanceAsset,
+    build_spatiotemporal_distance_asset,
+)
+from pykdex.temporal import BaseTimeDomain, CyclicTimeDomain, LinearTimeDomain
 
 __all__ = [
     "SpatialKDE",
+    "SpatiotemporalKDE",
     "NetworkKDE",
     "HeatNetworkKDE",
     "HeatNetworkExperiment",
@@ -130,7 +145,18 @@ __all__ = [
     "SpatialKDEResult",
     "NetworkField",
     "BandwidthSelectionResult",
+    "SpatiotemporalKDEResult",
+    "SpatiotemporalBandwidthSelectionResult",
     "SpatialEvents",
+    "TemporalCoordinates",
+    "SpatiotemporalEvents",
+    "SpatiotemporalPointSupport",
+    "SpatiotemporalGridSupport",
+    "BaseTimeDomain",
+    "LinearTimeDomain",
+    "CyclicTimeDomain",
+    "SpatiotemporalDistanceAsset",
+    "build_spatiotemporal_distance_asset",
     "PointSupport",
     "GridSupport",
     "SpatialBoundary",
@@ -138,6 +164,7 @@ __all__ = [
     "DataProvenance",
     "DataValidationReport",
     "make_bimodal_events",
+    "make_moving_hotspot_events",
     "load_bimodal_points",
     "load_bounded_square",
     "load_t_junction",
@@ -201,6 +228,7 @@ __all__ = [
     "HeatLikelihoodCV",
     "HeatLeastSquaresCV",
     "HeatSelectionCache",
+    "SpatiotemporalBandwidthExperiment",
     "BaseBoundaryCorrection",
     "NoBoundaryCorrection",
     "RenormalizationCorrection",
