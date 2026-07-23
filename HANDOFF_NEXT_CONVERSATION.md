@@ -1,6 +1,6 @@
 # pyKDEX current handoff
 
-The active development unit is **0.0.9 heat-equation KDE on measured metric
+The latest completed development unit is **0.0.9 heat-equation KDE on measured metric
 graphs**. Read `HANDOFF_0.0.9_HEAT_NETWORK_KDE.md` first for the full design,
 implementation, validation, limitation, recovery, and next-unit record.
 
@@ -8,9 +8,8 @@ implementation, validation, limitation, recovery, and next-unit record.
 
 - repository: `hujinghaoabcd/pyKDEX`;
 - default branch: `main`;
-- stable base version: `0.0.8`;
-- active branch: `agent/heat-network-kde`;
-- source version: `0.0.9`;
+- latest stable version: `0.0.9`;
+- merged feature branch: `agent/heat-network-kde`;
 - pull request: `#9 Add heat-equation network KDE`;
 - feature commit: `16bc4ba79d861b2651c227033be1b24bce7f5b9e`;
 - complete PR CI run `#113` (`29979483652`): success;
