@@ -12,10 +12,10 @@ model = SpatialKDE(bandwidth=FixedBandwidth(500.0))
 
 ## Cross-validated scalar bandwidths
 
-`LikelihoodCVBandwidth` minimizes the weighted negative leave-one-out log
-likelihood and works with every normalized radial kernel. `LeastSquaresCVBandwidth`
-uses the exact Gaussian convolution identity and currently requires the Gaussian
-kernel.
+`LikelihoodCVBandwidth` minimizes weighted negative leave-one-out log
+likelihood and works with every normalized radial kernel.
+`LeastSquaresCVBandwidth` uses the exact Gaussian convolution identity and
+currently requires the Gaussian kernel.
 
 ```python
 from pykdex import LikelihoodCVBandwidth, SpatialKDE
@@ -23,22 +23,14 @@ from pykdex import LikelihoodCVBandwidth, SpatialKDE
 model = SpatialKDE(
     bandwidth=LikelihoodCVBandwidth(bounds=(100.0, 3000.0))
 ).fit(events)
-
-print(model.bandwidth_)
 print(model.bandwidth_selection_.to_frame())
 ```
 
-The optimizer works on log bandwidth, retains the complete objective trace, and
-returns a `BandwidthSelectionResult`.
+## Sample-point k-nearest-neighbour bandwidth
 
-## k-nearest-neighbour bandwidth
-
-`KNNBandwidth(k)` assigns each event its distance to the k-th other event. It is
-a sample-point adaptive strategy: dense areas receive smaller bandwidths and
-sparse areas receive larger bandwidths.
-
-Duplicate event locations can produce zero neighbour distances. Supply a
-meaningful `minimum_bandwidth` in coordinate units when duplicates are expected.
+`KNNBandwidth(k)` assigns each source event its distance to the k-th other
+event. Dense areas receive smaller bandwidths and sparse areas receive larger
+bandwidths. Duplicate locations may require a positive `minimum_bandwidth`.
 
 ## Abramson bandwidth
 
@@ -49,4 +41,17 @@ h_i = h_0\left(\frac{\tilde f(x_i)}{g}\right)^{-1/2}.
 \]
 
 The pilot bandwidth may be numeric or a scalar selection strategy. Optional
-multiplier clipping limits extremely small or large local bandwidths.
+multiplier clipping limits extreme local bandwidths.
+
+## Global matrix bandwidth
+
+`BandwidthMatrix(H)` supplies one symmetric positive-definite covariance/shape
+matrix. Matrix orientation is defined in coordinate space and therefore
+requires the Euclidean metric.
+
+## Query-centred balloon bandwidth
+
+`BalloonKNNBandwidth(k)` computes one bandwidth per support point from the k-th
+fitted-event distance. It is not interchangeable with sample-point kNN:
+normalization uses the query-specific `h(x)` for all source kernels at that
+query.

@@ -1,58 +1,60 @@
-# pyKDEX 0.0.7 validation
+# pyKDEX 0.0.8 validation
 
-Validation date: 2026-07-22
+Validation date: 2026-07-23
 
 ## Implemented public functionality
 
-- fixed, cross-validated, kNN, and Abramson spatial KDE bandwidths;
-- public `SpatialKDE` and `NetworkKDE` estimators;
-- weighted density and event-intensity targets;
-- structured events, measured supports, boundaries, datasets, and provenance;
-- canonical geometric `LinearNetwork` objects with directed and parallel edges;
-- GeoDataFrame, NetworkX, and OSMnx adapters;
-- auditable event snapping and measured lixel partitions;
-- exact directed and undirected event-to-lixel and event-to-event distance assets;
-- simple geodesic, discontinuous equal-split, and continuous equal-split policies;
-- scalar network likelihood CV and lixel-integrated network LSCV;
-- source-centred event-specific network kNN bandwidths;
-- reusable network selection distances and upper-bound propagation traces;
-- scalar or adaptive `NetworkField` results with measured integration and exports.
+- scalar, cross-validated, sample-point kNN, and Abramson spatial bandwidths;
+- global positive-definite bandwidth matrices;
+- query-centred balloon kNN bandwidths;
+- polygon study-domain validation;
+- rectangular analytical Gaussian boundary renormalization;
+- deterministic measured-cell Polygon/MultiPolygon renormalization;
+- one-generation axis-aligned rectangular reflection correction;
+- public `SpatialKDE` and fixed/adaptive `NetworkKDE` estimators;
+- structured spatial/network data, support measures, provenance, snapping, distance assets,
+  network policies, network CV, and network kNN bandwidths from 0.0.1-0.0.7.
 
-## Network bandwidth validation
+## Spatial numerical validation
 
-- event self-pairs remain explicit zero distances;
-- coincident but distinct events remain off-diagonal zero-distance neighbours;
-- source-event exclusion in LOO uses index rather than zero-distance filtering;
-- weighted LOO denominators use total weight minus the target event weight;
-- directed event-distance assets retain asymmetric reachability;
-- network kNN reports unavailable neighbour ranks instead of using infinite values;
-- duplicate locations require an explicit positive bandwidth floor;
-- sample-point bandwidths use each source event's own scaling and normalization;
-- network LSCV integrates squared density with each lixel's actual length;
-- simple-policy objectives reuse distance assets;
-- path-policy objectives reuse traces prepared at the upper search bound;
-- selector wrappers retain complete deterministic optimization traces;
-- failed adaptive or selection fits atomically reset estimator state.
+- scalar `h` and matrix `H = h**2 I` agree numerically;
+- full covariance Gaussian KDE agrees with SciPy multivariate-normal density;
+- anisotropic matrices produce the expected directional decay;
+- bandwidth matrices reject non-square, non-finite, asymmetric, and non-positive-definite input;
+- balloon kNN uses the k-th fitted-event distance at every support row;
+- balloon duplicate/coincident zero bandwidth requires an explicit positive floor;
+- rectangular Gaussian renormalization restores in-domain measured mass near one;
+- general polygon quadrature is deterministic and uses exact clipped-cell area measures;
+- reflection increases near-boundary density and approximately preserves mass at small bandwidth;
+- unsupported reflection geometry/covariance combinations fail explicitly;
+- boundary CRS, units, event coverage, and support coverage are enforced;
+- failed fits atomically clear fitted state.
 
-## Final observed validation
+## Current observed local validation
 
-- pytest: 137 passed;
-- branch coverage: 81.97%, above the required 80% minimum;
-- public API/example coverage: 70 symbols mapped;
-- Black, isort, Ruff, and mypy: passed;
-- MkDocs strict build: passed;
-- wheel, sdist, Twine metadata, and installed-wheel smoke tests: passed;
-- Linux, Windows, and macOS passed with Python 3.11-3.14;
-- deterministic grid-network benchmark completed successfully;
-- final pull-request CI: run #74 (29902449039), conclusion success;
-- temporary patch, source-export, formatter, and diagnostic workflows: removed;
-- PR #6 squash merge commit: `eec1bbee65e6131c942f67adb8286e6a4a56af26`.
+- pytest: `145 passed`;
+- branch coverage: `81.41%`, above the required `80%` minimum;
+- public API/example map: pending final count after CI;
+- existing 0.0.1-0.0.7 regression suite: passed.
+
+## Required final release checks
+
+Record after the final clean pull-request CI:
+
+- Black, isort, Ruff, and mypy;
+- public API/example coverage count;
+- strict MkDocs build;
+- wheel/sdist, Twine, distribution-content, and installed-wheel smoke checks;
+- Linux, Windows, and macOS on Python 3.11-3.14;
+- exact final test and branch-coverage counts;
+- removal of temporary source-export and any diagnostic/formatting workflows;
+- PR #7 squash merge commit.
 
 ## Deliberate exclusions
 
-- network Abramson pilot adaptation and balloon network bandwidths;
-- heat-equation Gaussian network KDE;
-- temporal and network-time data objects and estimators;
-- spatial boundary correction and bandwidth matrices;
-- relative risk, bootstrap uncertainty, and significance envelopes;
-- persistent Zarr/PostGIS workspace serialization and compiled acceleration.
+- balloon boundary correction;
+- event-specific full matrices and plug-in matrix selectors;
+- infinite-series or irregular-polygon reflection;
+- heat-equation Gaussian NetworkKDE;
+- spatiotemporal and network-time KDE;
+- relative risk, bootstrap uncertainty, persistent workspace serialization, and compiled acceleration.

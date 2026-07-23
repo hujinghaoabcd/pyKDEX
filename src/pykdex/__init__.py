@@ -11,11 +11,14 @@ from __future__ import annotations
 
 __author__ = "Jinghao Hu"
 __license__ = "MIT"
-__version__ = "0.0.7"
+__version__ = "0.0.8"
 
 from pykdex.adapters import from_networkx_graph, from_osmnx_graph, network_from_place
 from pykdex.bandwidths import (
     AbramsonBandwidth,
+    BalloonKNNBandwidth,
+    BandwidthMatrix,
+    BaseBalloonBandwidth,
     BaseNetworkBandwidth,
     FixedBandwidth,
     FixedNetworkBandwidth,
@@ -27,6 +30,12 @@ from pykdex.bandwidths import (
     NetworkLikelihoodCVBandwidth,
 )
 from pykdex.core import BandwidthSelectionResult, NetworkField, SpatialKDEResult
+from pykdex.corrections import (
+    BaseBoundaryCorrection,
+    NoBoundaryCorrection,
+    ReflectionCorrection,
+    RenormalizationCorrection,
+)
 from pykdex.data import (
     DataProvenance,
     DataValidationReport,
@@ -140,6 +149,9 @@ __all__ = [
     "from_osmnx_graph",
     "network_from_place",
     "FixedBandwidth",
+    "BaseBalloonBandwidth",
+    "BandwidthMatrix",
+    "BalloonKNNBandwidth",
     "BaseNetworkBandwidth",
     "FixedNetworkBandwidth",
     "NetworkKNNBandwidth",
@@ -154,6 +166,10 @@ __all__ = [
     "NetworkLikelihoodCV",
     "NetworkLeastSquaresCV",
     "NetworkSelectionCache",
+    "BaseBoundaryCorrection",
+    "NoBoundaryCorrection",
+    "RenormalizationCorrection",
+    "ReflectionCorrection",
     "EuclideanMetric",
     "GaussianKernel",
     "EpanechnikovKernel",
