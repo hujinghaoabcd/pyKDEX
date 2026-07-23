@@ -49,7 +49,9 @@ Validation date: 2026-07-23
 - wheel, sdist, Twine, archive-content verification, and isolated wheel smoke:
   passed;
 - corrected complete GitHub PR CI: passed;
-- final clean CI after handoff update and merge evidence: pending.
+- final clean PR CI: passed;
+- PR merge: successful;
+- post-merge `main` CI: pending.
 
 ## GitHub state
 
@@ -63,11 +65,15 @@ Validation date: 2026-07-23
   because a read-only descriptor cannot be fsynced on Windows;
 - corrected PR CI run `#139` (`30017717273`): success across quality,
   coverage, distributions, Linux/Windows/macOS, and Python 3.11-3.14;
-- final clean PR CI after documentation update: pending;
-- squash merge commit: pending;
+- final clean PR CI run `#140` (`30018184507`): success;
+- final PR head:
+  `17f73ff44f447d31470250545c8265060dc0f9b6`;
+- squash merge commit:
+  `979a2f3ada7e68e8f850d33b0722bb993c369e66`;
 - post-merge `main` CI: pending.
 
-These fields must be replaced only with observed GitHub results.
+PR #14 was merged and closed successfully. The post-merge field must be
+replaced only with an observed GitHub result.
 
 ## Deliberate exclusions
 

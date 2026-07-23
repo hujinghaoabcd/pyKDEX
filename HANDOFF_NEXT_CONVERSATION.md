@@ -12,7 +12,7 @@ recovery, and next-unit record.
 - development worktree:
   `/workspace/scratch/660de0f0af7d/pykdex-workspace-persistence`;
 - version implemented in this branch: `0.0.14`;
-- latest stable merged version when development began: `0.0.13`;
+- latest stable merged version: `0.0.14`;
 - pull request: `#14 Add portable workspace persistence`;
 - initial feature commit:
   `35f333812e0e938c2ef11ced9c907b042b2fb346`;
@@ -22,8 +22,12 @@ recovery, and next-unit record.
   and exposed read-only-descriptor `fsync` incompatibility;
 - corrected PR CI run `#139` (`30017717273`): success across quality,
   coverage, distributions, Linux/Windows/macOS, and Python 3.11-3.14;
-- final clean PR CI after handoff update: pending;
-- merge commit: pending;
+- final clean PR CI run `#140` (`30018184507`): success;
+- final PR head:
+  `17f73ff44f447d31470250545c8265060dc0f9b6`;
+- squash merge commit:
+  `979a2f3ada7e68e8f850d33b0722bb993c369e66`;
+- post-merge `main` CI: pending;
 - focused persistence validation: `10 passed`;
 - full regression: `236 passed`;
 - branch coverage: `80.86%`;
@@ -31,11 +35,11 @@ recovery, and next-unit record.
 - executable examples: `16`;
 - Black, isort, Ruff, mypy, strict docs, distributions, and isolated wheel:
   passed;
-- merge: pending final observation;
+- PR #14 merge: successful;
 - no temporary repository workflow has been added.
 
-Update the remaining pending fields only after they are observed. Do not infer
-CI or merge success from local state.
+PR #14 was merged and closed successfully. Update post-merge CI only after it
+is observed.
 
 ## Implemented in 0.0.14
 
@@ -127,7 +131,7 @@ execution, or remote storage into the exposure foundation.
 6. Run `tests/test_workspace_persistence.py`.
 7. Run full coverage, API map, 16 examples, format, lint, types, strict docs,
    distributions, and isolated wheel checks.
-8. Finish the 0.0.14 PR and merge if any pending fields remain.
+8. Confirm the post-merge `main` state and CI.
 9. Start 0.0.15 only from final merged `main`.
 
 ## Permanent process rule

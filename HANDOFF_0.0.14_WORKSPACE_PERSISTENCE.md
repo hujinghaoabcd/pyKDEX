@@ -21,12 +21,15 @@ chat history.
 - First PR CI run `#138` (`30017443733`): failed on Windows Python
   3.14 because Windows rejects `fsync` on a read-only descriptor
 - Corrected complete PR CI run `#139` (`30017717273`): success
-- Final clean PR CI after handoff update: pending
-- Squash merge commit: pending
+- Final clean PR CI run `#140` (`30018184507`): success
+- Final PR head:
+  `17f73ff44f447d31470250545c8265060dc0f9b6`
+- Squash merge commit:
+  `979a2f3ada7e68e8f850d33b0722bb993c369e66`
+- Post-merge `main` CI: pending
 
-Do not replace the remaining pending fields with guesses. After GitHub observes
-the final clean checks and merge, update this file and
-`HANDOFF_NEXT_CONVERSATION.md` with the actual identifiers.
+PR #14 was merged and closed successfully. Do not replace the remaining
+post-merge CI field with a guess; update it only after GitHub observes a run.
 
 ## 2. Why this development unit exists
 
@@ -552,12 +555,13 @@ Final local evidence before GitHub publication:
 - distribution archive content: passed;
 - isolated wheel installation and smoke test: passed.
 
-Corrected PR CI run `#139` (`30017717273`) passed quality, coverage,
-distributions, Linux, Windows, macOS, and Python 3.11-3.14. The first run
-identified a real Windows portability defect: `os.fsync` requires a writable
-file handle on Windows. Opening the complete temporary archive as `r+b`
-preserves the durability step and passes all platforms. Final clean CI after
-this handoff update and merge evidence remain pending until observed.
+Corrected PR CI run `#139` (`30017717273`) and final clean PR CI run `#140`
+(`30018184507`) passed quality, coverage, distributions, Linux, Windows,
+macOS, and Python 3.11-3.14. The first run identified a real Windows
+portability defect: `os.fsync` requires a writable file handle on Windows.
+Opening the complete temporary archive as `r+b` preserves the durability step
+and passes all platforms. PR #14 was merged successfully as
+`979a2f3ada7e68e8f850d33b0722bb993c369e66`.
 
 ## 18. Deliberate exclusions
 
