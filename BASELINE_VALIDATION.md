@@ -68,7 +68,10 @@ Validation date: 2026-07-23
   approximately 3.14x batch speedup excluding plan construction;
 - Black, isort, Ruff, mypy, strict MkDocs, distributions, and isolated wheel
   smoke: passed;
-- GitHub Actions and merge state: pending final publication and must be updated.
+- PR #10 first complete GitHub Actions run `#118` (`29996503549`): success
+  across quality, coverage, distributions, Linux/Windows/macOS, and Python
+  3.11-3.14;
+- final clean CI and merge state: pending final publication.
 
 ## Deliberate exclusions
 

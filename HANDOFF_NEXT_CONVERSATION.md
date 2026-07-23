@@ -12,7 +12,10 @@ next-unit record.
 - default branch: `main`;
 - development branch: `agent/heat-selection-batch`;
 - version under finalization: `0.0.10`;
-- pull request, feature commit, final CI, and merge commit: pending publication;
+- pull request: `#10 Add reusable heat plans and time selection`;
+- feature commit: `9342a414f99947137a6cf45051687f15c065c8f2`;
+- first complete CI run `#118` (`29996503549`): success;
+- final clean CI and merge commit: pending publication;
 - observed local validation: `178 passed`, branch coverage `81.67%`;
 - public API/example map: `91 public symbols`, all `12` examples executable;
 - Black, isort, Ruff, mypy, strict docs, distributions, and isolated wheel

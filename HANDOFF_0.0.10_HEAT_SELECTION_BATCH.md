@@ -13,8 +13,9 @@ alone.
 - Version developed: `0.0.10`
 - Stable version before this unit: `0.0.9`
 - Development date: `2026-07-23`
-- Pull request: to be recorded after publication
-- Feature commit: to be recorded after publication
+- Pull request: `#10 Add reusable heat plans and time selection`
+- Feature commit: `9342a414f99947137a6cf45051687f15c065c8f2`
+- First complete PR CI: run `#118` (`29996503549`), conclusion `success`
 - Final clean CI: to be recorded after publication
 - Squash merge commit: to be recorded after merge
 
@@ -474,9 +475,9 @@ TNKDE remain later units.
 
 Update this section only with observed GitHub results:
 
-- feature commit: pending;
-- pull request: pending;
-- first complete CI: pending;
+- feature commit: `9342a414f99947137a6cf45051687f15c065c8f2`;
+- pull request: `#10 Add reusable heat plans and time selection`;
+- first complete CI: run `#118` (`29996503549`), conclusion `success`;
 - final clean CI: pending;
 - squash merge commit: pending;
 - post-merge handoff commit: pending;
