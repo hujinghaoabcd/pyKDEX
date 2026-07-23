@@ -331,9 +331,9 @@ After the heat engine, proceed to spatiotemporal data objects and separable STKD
 ## 13. Finalization fields
 
 - Final version: `0.0.8`
-- Final test count: pending clean CI
-- Final branch coverage: pending clean CI
-- Public API/example count: pending clean CI
-- Final CI run: pending
+- Final test count: `145 passed`
+- Final branch coverage: `81.41%`
+- Public API/example count: `77 symbols mapped to executable examples`
+- Final CI run: GitHub Actions run `#101` (`29974418301`), conclusion `success`
 - PR #7 squash merge commit: pending
-- Temporary workflow removal: pending
+- Temporary workflow removal: completed

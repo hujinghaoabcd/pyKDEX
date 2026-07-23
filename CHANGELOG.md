@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.0.8 - Unreleased
+## 0.0.8 - 2026-07-23
 
 - Add polygon boundary renormalization with analytical rectangular Gaussian mass and deterministic measured-cell quadrature.
 - Add explicit one-generation reflection correction for axis-aligned rectangular boundaries.

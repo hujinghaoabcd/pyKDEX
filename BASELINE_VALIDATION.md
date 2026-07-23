@@ -30,25 +30,19 @@ Validation date: 2026-07-23
 - boundary CRS, units, event coverage, and support coverage are enforced;
 - failed fits atomically clear fitted state.
 
-## Current observed local validation
+## Final observed validation
 
 - pytest: `145 passed`;
 - branch coverage: `81.41%`, above the required `80%` minimum;
-- public API/example map: pending final count after CI;
-- existing 0.0.1-0.0.7 regression suite: passed.
-
-## Required final release checks
-
-Record after the final clean pull-request CI:
-
-- Black, isort, Ruff, and mypy;
-- public API/example coverage count;
-- strict MkDocs build;
-- wheel/sdist, Twine, distribution-content, and installed-wheel smoke checks;
-- Linux, Windows, and macOS on Python 3.11-3.14;
-- exact final test and branch-coverage counts;
-- removal of temporary source-export and any diagnostic/formatting workflows;
-- PR #7 squash merge commit.
+- public API/example map: `77 symbols mapped to executable examples`;
+- Black, isort, Ruff, and mypy: passed;
+- strict MkDocs build: passed;
+- wheel, sdist, Twine metadata, distribution-content, and installed-wheel smoke checks: passed;
+- Linux, Windows, and macOS passed on Python 3.11-3.14;
+- final clean pull-request CI: run `#101` (`29974418301`), conclusion `success`;
+- temporary transfer, apply, export, formatter, Ruff-fix, and finalizer infrastructure: removed;
+- existing 0.0.1-0.0.7 regression suite: passed;
+- PR #7 squash merge commit: pending.
 
 ## Deliberate exclusions
 
