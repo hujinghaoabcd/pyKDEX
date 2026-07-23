@@ -10,6 +10,7 @@
 8. ~~boundary correction, bandwidth matrices, and balloon spatial KDE~~;
 9. ~~heat-equation Gaussian NKDE on measured metric graphs~~;
 10. ~~batched heat times, heat bandwidth selection, and reusable solver plans~~;
-11. separable, cyclic, and adaptive spatiotemporal KDE;
-12. arixel and temporal-network KDE;
-13. exposure-adjusted risk, uncertainty, separability, and scalable estimators.
+11. ~~separable and cyclic ordinary spatiotemporal KDE with bandwidth experiments~~;
+12. ~~arixel support and fixed-bandwidth temporal-network KDE~~;
+13. network-time bandwidth selection and adaptive temporal-network KDE;
+14. exposure-adjusted risk, uncertainty, separability, persistence, and scalable estimators.

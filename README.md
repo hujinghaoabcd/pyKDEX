@@ -7,7 +7,7 @@ The package follows the engineering conventions of pyGWRx while keeping the
 KDE architecture composition-based: domains, metrics, kernels, bandwidths,
 corrections, supports, and estimators are independent components.
 
-> Status: spatial KDE includes scalar, sample-point, balloon, matrix, and boundary-corrected estimators. Ordinary product-kernel spatiotemporal KDE supports linear/cyclic time and measured space-time grids. Fixed/adaptive radial network KDE and measured finite-element heat-equation NetworkKDE are implemented alongside canonical networks, auditable snapping, reusable assets, and bandwidth selection.
+> Status: spatial KDE includes scalar, sample-point, balloon, matrix, and boundary-corrected estimators. Ordinary product-kernel spatiotemporal KDE supports linear/cyclic time and measured space-time grids. Fixed/adaptive radial network KDE, measured finite-element heat-equation NetworkKDE, and fixed-bandwidth temporal-network KDE are implemented alongside canonical networks, auditable snapping, reusable assets, and bandwidth selection.
 
 ## Installation
 
@@ -197,6 +197,34 @@ result_st = SpatiotemporalKDE(
 Spatial and temporal units remain independent. Cyclic kernels use periodic
 image sums, and measured space-time grids can be exported with the optional
 `pyKDEX[array]` dependencies.
+
+## Temporal-network KDE
+
+```python
+from pykdex import NetworkTimeWorkspace, TemporalNetworkKDE
+
+network_time = NetworkTimeWorkspace.prepare(
+    network,
+    spatial_events,
+    event_times,
+    temporal_unit="hours",
+    lixel_length=25.0,
+    temporal_resolution=1.0,
+    temporal_bounds=(0.0, 24.0),
+    max_snap_distance=50.0,
+)
+field = TemporalNetworkKDE(
+    spatial_bandwidth=500.0,
+    temporal_bandwidth=2.0,
+    junction_policy="continuous",
+).fit_predict(network_time)
+
+print(field.integral())
+```
+
+`ArixelSupport` uses actual lixel length multiplied by actual temporal-cell
+width. Network distances and temporal offsets are stored as a factorized
+reusable asset rather than an expanded event-by-arixel matrix.
 
 ## Initial design commitments
 

@@ -64,11 +64,13 @@ nav:
       - Network KDE: estimators/network-kde.md
       - Heat-equation network KDE: estimators/heat-network-kde.md
       - Spatiotemporal KDE: estimators/spatiotemporal-kde.md
+      - Temporal network KDE: estimators/temporal-network-kde.md
   - Guides:
       - Data objects: guides/data.md
       - Built-in datasets: guides/datasets.md
       - Network data: guides/network-data.md
       - Network distances: guides/network-distances.md
+      - Network-time data: guides/network-time-data.md
       - Network bandwidths: guides/network-bandwidths.md
       - Spatial boundary and anisotropy: guides/spatial-boundary-anisotropy.md
       - Kernels: guides/kernels.md
@@ -83,6 +85,7 @@ nav:
       - NetworkKDE: api/network-kde.md
       - HeatNetworkKDE: api/heat-network-kde.md
       - Spatiotemporal: api/spatiotemporal.md
+      - Network-time: api/network-time.md
       - Network bandwidths: api/network-bandwidths.md
       - Boundary corrections: api/corrections.md
       - Kernels: api/kernels.md
@@ -98,5 +101,6 @@ nav:
       - 0.0.9 handoff: development/handoff-0.0.9-heat-network-kde.md
       - 0.0.10 handoff: development/handoff-0.0.10-heat-selection-batch.md
       - 0.0.11 handoff: development/handoff-0.0.11-spatiotemporal-foundation.md
+      - 0.0.12 handoff: development/handoff-0.0.12-network-time-foundation.md
       - Roadmap: development/roadmap.md
   - 中文: zh/index.md

@@ -11,7 +11,7 @@ from __future__ import annotations
 
 __author__ = "Jinghao Hu"
 __license__ = "MIT"
-__version__ = "0.0.11"
+__version__ = "0.0.12"
 
 from pykdex.adapters import from_networkx_graph, from_osmnx_graph, network_from_place
 from pykdex.bandwidths import (
@@ -37,6 +37,7 @@ from pykdex.core import (
     BandwidthSelectionResult,
     HeatNetworkBatchResult,
     NetworkField,
+    NetworkTimeField,
     SpatialKDEResult,
     SpatiotemporalBandwidthSelectionResult,
     SpatiotemporalKDEResult,
@@ -78,6 +79,7 @@ from pykdex.estimators import (
     NetworkKDE,
     SpatialKDE,
     SpatiotemporalKDE,
+    TemporalNetworkKDE,
 )
 from pykdex.kernels import (
     EpanechnikovKernel,
@@ -118,6 +120,13 @@ from pykdex.network import (
     trace_network_propagation,
     truncated_traversal,
 )
+from pykdex.network_time import (
+    ArixelSupport,
+    NetworkTimeDistanceAsset,
+    NetworkTimeEvents,
+    NetworkTimeWorkspace,
+    build_network_time_distance_asset,
+)
 from pykdex.selection import (
     HeatLeastSquaresCV,
     HeatLikelihoodCV,
@@ -138,12 +147,14 @@ from pykdex.temporal import BaseTimeDomain, CyclicTimeDomain, LinearTimeDomain
 __all__ = [
     "SpatialKDE",
     "SpatiotemporalKDE",
+    "TemporalNetworkKDE",
     "NetworkKDE",
     "HeatNetworkKDE",
     "HeatNetworkExperiment",
     "HeatNetworkBatchResult",
     "SpatialKDEResult",
     "NetworkField",
+    "NetworkTimeField",
     "BandwidthSelectionResult",
     "SpatiotemporalKDEResult",
     "SpatiotemporalBandwidthSelectionResult",
@@ -184,6 +195,11 @@ __all__ = [
     "LixelSupport",
     "NetworkWorkspace",
     "NetworkDataset",
+    "NetworkTimeEvents",
+    "ArixelSupport",
+    "NetworkTimeDistanceAsset",
+    "build_network_time_distance_asset",
+    "NetworkTimeWorkspace",
     "NetworkLocations",
     "NetworkDistanceAsset",
     "build_network_distance_asset",
