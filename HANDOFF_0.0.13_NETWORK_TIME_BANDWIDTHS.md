@@ -12,9 +12,12 @@ to chat history.
 - Version developed: `0.0.13`
 - Stable version before this unit: `0.0.12`
 - Development date: `2026-07-23`
-- Pull request: pending
-- Feature implementation commit: pending
-- Clean pull-request CI: pending
+- Pull request: `#13 Add network-time bandwidth selection and adaptive KDE`
+- Feature implementation commit:
+  `1fd7c07902daf14e061491e7af313b1833ea6de3`
+- First complete pull-request CI: run `#133` (`30014407093`), conclusion
+  `success`
+- Final clean pull-request CI: pending
 - Squash merge commit: pending
 - Post-merge `main` CI: pending
 
@@ -380,7 +383,9 @@ Changed:
 - distribution archive content verification: passed;
 - isolated wheel installation and smoke test: passed.
 
-GitHub CI and merge fields remain pending until observed.
+The first complete GitHub CI matrix passed on Linux, Windows, macOS, and
+Python 3.11-3.14. Final clean CI and merge fields remain pending until
+observed.
 
 ## 16. Deliberate exclusions
 
