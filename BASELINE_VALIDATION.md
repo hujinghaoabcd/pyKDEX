@@ -88,11 +88,12 @@ Validation date: 2026-07-23
   `f3cd409ea84508bf7218ba842dddd4b15b5e3138`;
 - first complete PR CI run `#123` (`29999198427`): success across all
   quality, coverage, distribution, OS, and Python jobs;
-- final clean CI after the handoff-status update: pending;
-- merge commit: pending.
+- final clean CI run `#124` (`29999408464`): success;
+- PR #11 squash merge commit:
+  `0ab1291a41eddd8dd4e6709ed92c5307b3e4b3e0`;
+- post-merge handoff update: pending.
 
-These fields must be replaced after the feature branch is published, verified,
-and merged.
+PR #11 was merged and closed successfully.
 
 ## Deliberate exclusions
 

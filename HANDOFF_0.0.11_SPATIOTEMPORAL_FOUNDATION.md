@@ -17,8 +17,8 @@ chat history.
 - Feature implementation commit:
   `f3cd409ea84508bf7218ba842dddd4b15b5e3138`
 - First complete PR CI: run `#123` (`29999198427`), conclusion `success`
-- Final clean PR CI: pending after this status update
-- Merge commit: pending at initial document creation
+- Final clean PR CI: run `#124` (`29999408464`), conclusion `success`
+- Squash merge commit: `0ab1291a41eddd8dd4e6709ed92c5307b3e4b3e0`
 
 The source tree and tests are authoritative. The GitHub fields above must be
 replaced with observed values after the final clean CI and merge.
@@ -405,8 +405,8 @@ The following are intentionally not part of 0.0.11:
   `f3cd409ea84508bf7218ba842dddd4b15b5e3138`;
 - first complete PR CI run `#123` (`29999198427`): success across
   quality, coverage, distributions, Linux/Windows/macOS, and Python 3.11-3.14;
-- final clean CI run: pending after the handoff-status commit;
-- merge commit: pending;
+- final clean CI run `#124` (`29999408464`): success;
+- squash merge commit: `0ab1291a41eddd8dd4e6709ed92c5307b3e4b3e0`;
 - post-merge handoff update: pending.
 
 No temporary repository workflow should be added. If any diagnostic workflow

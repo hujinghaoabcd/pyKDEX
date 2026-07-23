@@ -1,6 +1,6 @@
 # pyKDEX current handoff
 
-The latest completed local development unit is **0.0.11 ordinary
+The latest completed development unit is **0.0.11 ordinary
 spatiotemporal foundation**. Read
 `HANDOFF_0.0.11_SPATIOTEMPORAL_FOUNDATION.md` first for the complete design,
 mathematics, implementation, validation, limitations, recovery procedure, and
@@ -11,14 +11,15 @@ next-unit record.
 - repository: `hujinghaoabcd/pyKDEX`;
 - default branch: `main`;
 - development branch: `agent/spatiotemporal-foundation`;
-- version prepared: `0.0.11`;
-- stable merged version before publication: `0.0.10`;
+- latest stable merged version: `0.0.11`;
 - pull request: `#11 Add ordinary spatiotemporal KDE foundation`;
 - feature implementation commit:
   `f3cd409ea84508bf7218ba842dddd4b15b5e3138`;
 - first complete PR CI run `#123` (`29999198427`): success;
-- final clean CI after the handoff-status update: pending;
-- merge commit: pending;
+- final clean CI run `#124` (`29999408464`): success;
+- PR #11 squash merge commit:
+  `0ab1291a41eddd8dd4e6709ed92c5307b3e4b3e0`;
+- post-merge handoff update: pending;
 - observed local validation: `200 passed`, branch coverage `81.41%`;
 - public API/example map: `105 public symbols`, all `13` examples executable;
 - Black, isort, Ruff, mypy, strict docs, distributions, and archive checks:
