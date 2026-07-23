@@ -18,6 +18,8 @@ next-unit record.
 - final clean CI run `#119` (`29996740029`): success;
 - PR #10 squash merge commit:
   `49bb6ba36f9ac1dc82a655ee23a06397dba0a529`;
+- post-merge handoff commit:
+  `7459ce3666955caded92b2b7eecb82afb321f439`;
 - observed local validation: `178 passed`, branch coverage `81.67%`;
 - public API/example map: `91 public symbols`, all `12` examples executable;
 - Black, isort, Ruff, mypy, strict docs, distributions, and isolated wheel

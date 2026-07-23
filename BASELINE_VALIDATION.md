@@ -74,6 +74,8 @@ Validation date: 2026-07-23
 - final clean PR CI run `#119` (`29996740029`): success;
 - PR #10 squash merge commit:
   `49bb6ba36f9ac1dc82a655ee23a06397dba0a529`;
+- post-merge handoff commit:
+  `7459ce3666955caded92b2b7eecb82afb321f439`;
 - PR #10 merged and closed successfully.
 
 ## Deliberate exclusions

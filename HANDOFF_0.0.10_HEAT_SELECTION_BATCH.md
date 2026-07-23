@@ -480,5 +480,6 @@ Update this section only with observed GitHub results:
 - first complete CI: run `#118` (`29996503549`), conclusion `success`;
 - final clean CI: run `#119` (`29996740029`), conclusion `success`;
 - squash merge commit: `49bb6ba36f9ac1dc82a655ee23a06397dba0a529`;
-- post-merge handoff commit: recorded on `main` after the squash merge;
+- post-merge handoff commit:
+  `7459ce3666955caded92b2b7eecb82afb321f439`;
 - merged and closed: yes.
