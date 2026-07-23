@@ -16,15 +16,16 @@ implementation files, validation results, limitations, recovery procedure, and n
 - post-merge main verification source commit: `4e73ea1fc2812305f47c702444860e8c90ac9fd4`;
 - validation: `145 passed`, branch coverage `81.41%`, 77 public symbols mapped, and all
   10 executable examples completed;
-- final documentation-complete pull-request CI run #104 (`29974693141`): success;
+- final feature pull-request CI run #104 (`29974693141`): success;
+- post-merge exact repository-state verification PR: `#8`;
+- post-merge verification CI run #108 (`29975262281`): success;
 - Black, isort, Ruff, mypy, strict MkDocs, distributions, installed-wheel smoke tests, and
-  Linux/Windows/macOS on Python 3.11-3.14 passed;
+  Linux/Windows/macOS on Python 3.11-3.14 passed in the post-merge verification;
 - temporary transfer, patch, apply, export, formatting, Ruff-fix, finalizer, merge-recorder,
   and diagnostic infrastructure: removed;
 - permanent CI workflow: restored on `main`;
-- post-merge verification PR: pending full permanent-CI result;
-- unit status: complete and merged into `main`; this verification PR records the final exact
-  repository-state check without adding a temporary workflow.
+- unit status: implementation, merge, recovery records, and exact post-merge repository-state
+  validation are complete; only the documentation-complete verification PR merge remains.
 
 ## Implemented in 0.0.8
 
