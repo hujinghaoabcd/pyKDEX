@@ -55,7 +55,9 @@ Validation date: 2026-07-23
   isolated installed-wheel checks: passed;
 - PR #9 GitHub Actions run `#113` (`29979483652`): success across quality,
   coverage, distributions, Linux/Windows/macOS, and Python 3.11-3.14;
-- final clean metadata CI and squash merge commit: pending;
+- final clean PR CI run `#114` (`29979609465`): success;
+- PR #9 squash merge commit:
+  `51cdc8740f462bea7a7f0a3ee3302ceff963d26f`;
 - existing 0.0.1-0.0.8 regression suite: passed.
 
 ## Deliberate exclusions

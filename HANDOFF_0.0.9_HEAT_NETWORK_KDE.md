@@ -15,7 +15,8 @@ development order without access to earlier chat messages.
 - Pull request: `#9 Add heat-equation network KDE`
 - Feature commit: `16bc4ba79d861b2651c227033be1b24bce7f5b9e`
 - First complete PR CI: run `#113` (`29979483652`), conclusion `success`
-- Merge commit: pending final squash merge
+- Final clean PR CI: run `#114` (`29979609465`), conclusion `success`
+- PR #9 squash merge commit: `51cdc8740f462bea7a7f0a3ee3302ceff963d26f`
 
 The source of truth is the repository. Final CI and merge fields at the end of
 this document must be updated after the clean GitHub workflow.
@@ -400,9 +401,10 @@ Also observed locally:
 - Twine and distribution-content checks passed;
 - an isolated installed-wheel smoke test passed.
 
-GitHub Actions run `#113` (`29979483652`) passed quality, coverage,
-distributions, and Linux/Windows/macOS tests on Python 3.11-3.14. A final clean
-run after recording these identifiers remains required before merge.
+GitHub Actions runs `#113` (`29979483652`) and final metadata run `#114`
+(`29979609465`) passed quality, coverage, distributions, and
+Linux/Windows/macOS tests on Python 3.11-3.14. PR #9 was squash merged only
+after the final run succeeded.
 
 ## 10. Known limitations
 
@@ -480,6 +482,6 @@ and separable STKDE.
 - Public API/example count: `80 symbols; 11 examples`
 - Final pull request: `#9 Add heat-equation network KDE`
 - First complete CI run: `#113` (`29979483652`), `success`
-- Final clean CI run after this metadata update: pending
-- Squash merge commit: pending
+- Final clean CI run: `#114` (`29979609465`), `success`
+- Squash merge commit: `51cdc8740f462bea7a7f0a3ee3302ceff963d26f`
 - Temporary workflow removal: no temporary repository workflow added

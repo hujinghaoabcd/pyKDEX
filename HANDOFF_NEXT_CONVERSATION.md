@@ -14,11 +14,13 @@ implementation, validation, limitation, recovery, and next-unit record.
 - pull request: `#9 Add heat-equation network KDE`;
 - feature commit: `16bc4ba79d861b2651c227033be1b24bce7f5b9e`;
 - complete PR CI run `#113` (`29979483652`): success;
-- squash merge commit: pending final clean CI;
+- final clean PR CI run `#114` (`29979609465`): success;
+- PR #9 squash merge commit: `51cdc8740f462bea7a7f0a3ee3302ceff963d26f`;
 - observed local validation: `161 passed`, branch coverage `81.76%`,
   80 public symbols mapped, all 11 examples, formatting, lint, typing, strict
   docs, distributions, and isolated wheel smoke passed;
-- final clean metadata CI and merge fields: pending;
+- unit status: implementation, documentation, validation, final CI, and feature
+  merge are complete;
 - no temporary repository workflow has been added.
 
 ## Implemented in 0.0.9
