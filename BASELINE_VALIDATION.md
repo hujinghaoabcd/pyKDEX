@@ -1,72 +1,84 @@
-# pyKDEX 0.0.9 validation
+# pyKDEX 0.0.10 validation
 
 Validation date: 2026-07-23
 
 ## Implemented public functionality
 
 - scalar, cross-validated, sample-point kNN, and Abramson spatial bandwidths;
-- global positive-definite bandwidth matrices;
-- query-centred balloon kNN bandwidths;
-- polygon study-domain validation;
-- rectangular analytical Gaussian boundary renormalization;
-- deterministic measured-cell Polygon/MultiPolygon renormalization;
-- one-generation axis-aligned rectangular reflection correction;
-- public `SpatialKDE` and fixed/adaptive `NetworkKDE` estimators;
-- public finite-element `HeatNetworkKDE` for undirected metric graphs;
-- reusable sparse `NetworkHeatOperator` assets;
-- structured spatial/network data, support measures, provenance, snapping, distance assets,
-  network policies, network CV, and network kNN bandwidths from 0.0.1-0.0.7.
+- global positive-definite bandwidth matrices and query-centred balloon kNN;
+- polygon study-domain validation, renormalization, and rectangular reflection;
+- public fixed/adaptive `NetworkKDE` with three junction policies;
+- exact reusable network distances, propagation traces, network CV, and network kNN;
+- finite-element `HeatNetworkKDE` on undirected measured metric graphs;
+- reusable `NetworkHeatOperator` and `HeatComputePlan` assets;
+- ordered batched heat diffusion-time experiments;
+- heat likelihood and exact finite-element least-squares diffusion-time selection;
+- structured spatial/network data, support measures, provenance, snapping, and
+  deterministic fingerprints.
 
-## Spatial numerical validation
+## Heat-plan and batch validation
 
-- scalar `h` and matrix `H = h**2 I` agree numerically;
-- full covariance Gaussian KDE agrees with SciPy multivariate-normal density;
-- anisotropic matrices produce the expected directional decay;
-- bandwidth matrices reject non-square, non-finite, asymmetric, and non-positive-definite input;
-- balloon kNN uses the k-th fitted-event distance at every support row;
-- balloon duplicate/coincident zero bandwidth requires an explicit positive floor;
-- rectangular Gaussian renormalization restores in-domain measured mass near one;
-- general polygon quadrature is deterministic and uses exact clipped-cell area measures;
-- reflection increases near-boundary density and approximately preserves mass at small bandwidth;
-- unsupported reflection geometry/covariance combinations fail explicitly;
-- boundary CRS, units, event coverage, and support coverage are enforced;
-- failed fits atomically clear fitted state.
+- dense plans reuse one read-only symmetric eigendecomposition;
+- sparse plans retain a read-only generator and use Krylov exponential products;
+- multi-source/multi-time output preserves requested order and duplicate times;
+- sparse and dense routes agree numerically on the same measured operator;
+- event heat-transition matrices are symmetric on undirected measured graphs;
+- compute plans reject incompatible network, accepted-event, and lixel fingerprints;
+- explicit estimator/experiment mesh size must agree with the supplied plan;
+- batch fields equal independent `HeatNetworkKDE` fits;
+- every density batch field integrates to one at numerical precision;
+- long-form batch output records batch index and diffusion time;
+- plan memory accounting covers sparse generator and optional spectral arrays.
 
-## Heat-network numerical validation
+## Heat-selection validation
 
-- finite-interval lixel averages agree with the analytical Neumann heat kernel;
-- square-ring lixel averages agree with the analytical periodic heat kernel;
-- shared junction degrees of freedom enforce exact vertex continuity;
-- the weak form supplies Kirchhoff junction balance and Neumann terminals;
-- accepted event offsets are inserted exactly in the heat mesh;
-- near-duplicate floating breakpoints are coalesced before element assembly;
-- density and intensity conserve mass independently in each connected component;
-- empty disconnected components remain exactly zero;
-- heat outputs are exact piecewise-linear lixel cell averages;
-- directed networks and unsupported self-loop records fail explicitly;
-- failed fits atomically clear all heat-estimator state.
+- heat likelihood deletes only an event's own diagonal contribution;
+- weighted LOO normalization uses total weight minus the target event weight;
+- coincident distinct events remain valid contributors;
+- heat LSCV integrates the squared piecewise-linear field exactly;
+- explicit diffusion-time bounds are validated and searched on a log scale;
+- automatic bounds derive from positive finite event network distances and map
+  distance scale through \(t=h^2/2\);
+- likelihood and LSCV selection are deterministic;
+- both selection strategies integrate with `HeatNetworkKDE`;
+- fitted metadata records selected time, equivalent Gaussian distance, plan
+  identity, solver, memory, and mass diagnostics.
+
+## Existing numerical validation retained
+
+- scalar and matrix spatial bandwidth equivalence;
+- SciPy multivariate-normal agreement for anisotropic Gaussian KDE;
+- rectangular analytical and general-polygon measured boundary renormalization;
+- reflection mass behavior and explicit unsupported-combination failures;
+- event/lixel exact network distances and path propagation contracts;
+- simple, discontinuous, and continuous `NetworkKDE` reference behavior;
+- finite-interval Neumann and periodic-ring heat-kernel references;
+- shared-junction continuity and Kirchhoff/Neumann heat conditions;
+- per-component density/intensity mass conservation;
+- atomic failed-fit state reset.
 
 ## Final observed validation
 
-- pytest: `161 passed` in the latest development run;
-- branch coverage: `81.76%`, above the required `80%` minimum;
-- public API/example map: `80 symbols mapped to executable examples`;
-- Black, isort, Ruff, mypy, strict MkDocs, all examples, distributions, and
-  isolated installed-wheel checks: passed;
-- PR #9 GitHub Actions run `#113` (`29979483652`): success across quality,
-  coverage, distributions, Linux/Windows/macOS, and Python 3.11-3.14;
-- final clean PR CI run `#114` (`29979609465`): success;
-- PR #9 squash merge commit:
-  `51cdc8740f462bea7a7f0a3ee3302ceff963d26f`;
-- existing 0.0.1-0.0.8 regression suite: passed.
+- pytest: `178 passed`;
+- branch coverage: `81.67%`, above required `80%`;
+- public API/example map: `91 public symbols`;
+- executable examples: `12`;
+- deterministic 6x6 grid benchmark: batch and independent fields differ by `0.0`;
+- local sample benchmark: 81 heat DOFs, 116 segments, 57,220 plan bytes,
+  approximately 3.14x batch speedup excluding plan construction;
+- Black, isort, Ruff, mypy, strict MkDocs, distributions, and isolated wheel
+  smoke: passed;
+- PR #10 first complete GitHub Actions run `#118` (`29996503549`): success
+  across quality, coverage, distributions, Linux/Windows/macOS, and Python
+  3.11-3.14;
+- final clean CI and merge state: pending final publication.
 
 ## Deliberate exclusions
 
-- balloon boundary correction;
-- event-specific full matrices and plug-in matrix selectors;
-- infinite-series or irregular-polygon reflection;
-- directed heat flow, self-loop heat elements, variable diffusivity, and
-  alternative terminal boundary conditions;
-- heat-time selection, batched heat evaluation, and reusable decompositions;
+- directed heat flow and self-loop heat elements;
+- variable diffusivity, drift, absorption, and alternate vertex/terminal conditions;
+- persistent heat-plan serialization and incremental event-source updates;
+- sparse multi-time Krylov interval acceleration beyond generator reuse;
 - spatiotemporal and network-time KDE;
-- relative risk, bootstrap uncertainty, persistent workspace serialization, and compiled acceleration.
+- exposure-adjusted risk, bootstrap uncertainty, workspace persistence, and
+  compiled acceleration.

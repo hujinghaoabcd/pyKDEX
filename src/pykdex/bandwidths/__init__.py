@@ -7,6 +7,13 @@ from pykdex.bandwidths.adaptive import AbramsonBandwidth, KNNBandwidth
 from pykdex.bandwidths.balloon import BalloonKNNBandwidth, BaseBalloonBandwidth
 from pykdex.bandwidths.base import BaseBandwidth
 from pykdex.bandwidths.fixed import FixedBandwidth, get_bandwidth
+from pykdex.bandwidths.heat import (
+    BaseHeatTime,
+    FixedHeatTime,
+    HeatLeastSquaresCVTime,
+    HeatLikelihoodCVTime,
+    get_heat_time,
+)
 from pykdex.bandwidths.matrix import BandwidthMatrix
 from pykdex.bandwidths.network import (
     BaseNetworkBandwidth,
@@ -38,4 +45,9 @@ __all__ = [
     "NetworkLikelihoodCVBandwidth",
     "NetworkLeastSquaresCVBandwidth",
     "get_network_bandwidth",
+    "BaseHeatTime",
+    "FixedHeatTime",
+    "HeatLikelihoodCVTime",
+    "HeatLeastSquaresCVTime",
+    "get_heat_time",
 ]

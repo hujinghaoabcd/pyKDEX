@@ -9,7 +9,7 @@
 7. ~~network likelihood CV, lixel LSCV, and sample-point kNN bandwidths~~;
 8. ~~boundary correction, bandwidth matrices, and balloon spatial KDE~~;
 9. ~~heat-equation Gaussian NKDE on measured metric graphs~~;
-10. batched heat times, heat bandwidth selection, and reusable solver plans;
+10. ~~batched heat times, heat bandwidth selection, and reusable solver plans~~;
 11. separable, cyclic, and adaptive spatiotemporal KDE;
 12. arixel and temporal-network KDE;
 13. exposure-adjusted risk, uncertainty, separability, and scalable estimators.

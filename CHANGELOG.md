@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.0.10 - 2026-07-23
+
+- Add reusable `HeatComputePlan` generator and dense spectral assets.
+- Add ordered multi-source, multi-time heat evolution with sparse Krylov fallback.
+- Add `HeatNetworkExperiment` and immutable `HeatNetworkBatchResult`.
+- Add weighted heat leave-one-out likelihood diffusion-time selection.
+- Add exact finite-element heat least-squares cross-validation.
+- Add fixed, likelihood-selected, and LSCV-selected heat-time strategies.
+- Validate plan compatibility through network, event, support, and mesh fingerprints.
+- Add a deterministic grid benchmark, executable example, API docs, and detailed handoff.
+
 ## 0.0.9 - 2026-07-23
 
 - Add `HeatNetworkKDE` as a separate metric-graph heat-equation estimator.

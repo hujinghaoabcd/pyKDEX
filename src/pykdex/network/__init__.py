@@ -15,7 +15,12 @@ from pykdex.network.distance import (
     truncated_traversal,
 )
 from pykdex.network.events import NetworkEvents, SnapResult, snap_events
-from pykdex.network.heat import NetworkHeatOperator, build_network_heat_operator
+from pykdex.network.heat import (
+    HeatComputePlan,
+    NetworkHeatOperator,
+    build_heat_compute_plan,
+    build_network_heat_operator,
+)
 from pykdex.network.linear_network import LinearNetwork
 from pykdex.network.propagation import (
     ContinuousJunctionPolicy,
@@ -34,7 +39,9 @@ __all__ = [
     "LinearNetwork",
     "NetworkEvents",
     "NetworkHeatOperator",
+    "HeatComputePlan",
     "build_network_heat_operator",
+    "build_heat_compute_plan",
     "SnapResult",
     "snap_events",
     "LixelSupport",

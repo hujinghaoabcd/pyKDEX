@@ -94,5 +94,6 @@ nav:
       - 0.0.7 handoff: development/handoff-0.0.7-network-bandwidths.md
       - 0.0.8 handoff: development/handoff-0.0.8-spatial-boundary-anisotropy.md
       - 0.0.9 handoff: development/handoff-0.0.9-heat-network-kde.md
+      - 0.0.10 handoff: development/handoff-0.0.10-heat-selection-batch.md
       - Roadmap: development/roadmap.md
   - 中文: zh/index.md
