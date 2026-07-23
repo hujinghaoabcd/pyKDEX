@@ -59,8 +59,12 @@ jobs:
           base64 --decode /tmp/pykdex008.patch.gz.b64 > /tmp/pykdex008.patch.gz
           gzip --decompress --stdout /tmp/pykdex008.patch.gz > /tmp/pykdex008.patch
           echo "8dd1d51c9b221a0096d8e34192556119f56bfbd04ff1ae2c8e6331bc1176d943  /tmp/pykdex008.patch" | sha256sum -c -
-          git apply --check /tmp/pykdex008.patch
-          git apply /tmp/pykdex008.patch
+          git apply --check \
+            --exclude=.github/workflows/export-source-0.0.8.yml \
+            /tmp/pykdex008.patch
+          git apply \
+            --exclude=.github/workflows/export-source-0.0.8.yml \
+            /tmp/pykdex008.patch
           rm -f \
             .tmp/pykdex008.part.00 \
             .tmp/pykdex008.part.01 \
