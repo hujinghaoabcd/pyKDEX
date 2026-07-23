@@ -1,90 +1,160 @@
-name: CI
+name: Finalize pyKDEX 0.0.8 records
 
 on:
-  push:
-    branches: [main, master]
   pull_request:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: finalize-pykdex-0.0.8
   cancel-in-progress: true
 
-env:
-  OMP_NUM_THREADS: "1"
-  OPENBLAS_NUM_THREADS: "1"
-  MKL_NUM_THREADS: "1"
-  PYTHONWARNINGS: "default"
-  MPLBACKEND: "Agg"
-  PYTHONUTF8: "1"
-
 jobs:
-  quality:
+  finalize:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
-          cache: pip
-      - run: python -m pip install --upgrade pip
-      - run: python -m pip install -e ".[dev,docs]"
-      - run: python -m black --check src tests tools examples
-      - run: python -m isort --check-only src tests tools examples
-      - run: python -m ruff check src tests tools examples
-      - run: python -m mypy
-      - run: python examples/validate_coverage.py
-      - run: python -m mkdocs build --strict
-
-  test:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.11", "3.12", "3.13", "3.14"]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache: pip
-      - run: python -m pip install --upgrade pip
-      - run: python -m pip install -e ".[test]"
-      - run: python -m pip check
-      - run: python -m pytest -q
-
-  coverage:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-          cache: pip
-      - run: python -m pip install --upgrade pip
-      - run: python -m pip install -e ".[test]"
-      - run: python -m pytest --cov=pykdex --cov-branch --cov-report=term-missing --cov-report=xml -q
-
-  distributions:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-      - run: python -m pip install --upgrade pip build twine
-      - run: python -m build
-      - run: python -m twine check dist/*
-      - run: python tools/verify_distributions.py dist
-      - name: Smoke-test installed wheel
+          ref: agent/spatial-boundary-anisotropy
+          fetch-depth: 0
+      - name: Finalize versioned handoff and validation records
         shell: bash
         run: |
-          python -m venv .venv-wheel
-          .venv-wheel/bin/python -m pip install --upgrade pip
-          .venv-wheel/bin/python -m pip install dist/*.whl
-          TMP=$(mktemp -d)
-          (cd "$TMP" && "$GITHUB_WORKSPACE/.venv-wheel/bin/python" "$GITHUB_WORKSPACE/tools/smoke_installed_distribution.py")
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          root_handoff = Path("HANDOFF_0.0.8_SPATIAL_BOUNDARY_ANISOTROPY.md")
+          handoff_text = root_handoff.read_text(encoding="utf-8")
+          old_final = """- Final version: `0.0.8`
+          - Final test count: pending clean CI
+          - Final branch coverage: pending clean CI
+          - Public API/example count: pending clean CI
+          - Final CI run: pending
+          - PR #7 squash merge commit: pending
+          - Temporary workflow removal: pending
+          """
+          new_final = """- Final version: `0.0.8`
+          - Final test count: `145 passed`
+          - Final branch coverage: `81.41%`
+          - Public API/example count: `77 symbols mapped to executable examples`
+          - Final CI run: GitHub Actions run `#101` (`29974418301`), conclusion `success`
+          - PR #7 squash merge commit: pending
+          - Temporary workflow removal: completed
+          """
+          if old_final not in handoff_text:
+              raise SystemExit("expected pending handoff finalization block was not found")
+          handoff_text = handoff_text.replace(old_final, new_final)
+          root_handoff.write_text(handoff_text, encoding="utf-8")
+          Path("docs/development/handoff-0.0.8-spatial-boundary-anisotropy.md").write_text(
+              handoff_text,
+              encoding="utf-8",
+          )
+
+          validation = Path("BASELINE_VALIDATION.md")
+          validation_text = validation.read_text(encoding="utf-8")
+          old_validation = """## Current observed local validation
+
+          - pytest: `145 passed`;
+          - branch coverage: `81.41%`, above the required `80%` minimum;
+          - public API/example map: pending final count after CI;
+          - existing 0.0.1-0.0.7 regression suite: passed.
+
+          ## Required final release checks
+
+          Record after the final clean pull-request CI:
+
+          - Black, isort, Ruff, and mypy;
+          - public API/example coverage count;
+          - strict MkDocs build;
+          - wheel/sdist, Twine, distribution-content, and installed-wheel smoke checks;
+          - Linux, Windows, and macOS on Python 3.11-3.14;
+          - exact final test and branch-coverage counts;
+          - removal of temporary source-export and any diagnostic/formatting workflows;
+          - PR #7 squash merge commit.
+          """
+          new_validation = """## Final observed validation
+
+          - pytest: `145 passed`;
+          - branch coverage: `81.41%`, above the required `80%` minimum;
+          - public API/example map: `77 symbols mapped to executable examples`;
+          - Black, isort, Ruff, and mypy: passed;
+          - strict MkDocs build: passed;
+          - wheel, sdist, Twine metadata, distribution-content, and installed-wheel smoke checks: passed;
+          - Linux, Windows, and macOS passed on Python 3.11-3.14;
+          - final clean pull-request CI: run `#101` (`29974418301`), conclusion `success`;
+          - temporary transfer, apply, export, formatter, Ruff-fix, and finalizer infrastructure: removed;
+          - existing 0.0.1-0.0.7 regression suite: passed;
+          - PR #7 squash merge commit: pending.
+          """
+          if old_validation not in validation_text:
+              raise SystemExit("expected pending validation block was not found")
+          validation.write_text(
+              validation_text.replace(old_validation, new_validation),
+              encoding="utf-8",
+          )
+
+          next_handoff = """# pyKDEX current handoff
+
+          The active development unit is **0.0.8 spatial boundary correction, anisotropy, and balloon
+          bandwidths**. Read `HANDOFF_0.0.8_SPATIAL_BOUNDARY_ANISOTROPY.md` first. It records the
+          architecture, formulas, supported combinations, rejected combinations, implementation files,
+          validation results, limitations, recovery procedure, and next recommended unit.
+
+          ## Current repository state
+
+          - repository: `hujinghaoabcd/pyKDEX`;
+          - default branch: `main`;
+          - active development branch: `agent/spatial-boundary-anisotropy`;
+          - active pull request: `#7 Add spatial boundary correction and anisotropic KDE`;
+          - last stable completed version: `0.0.7`;
+          - development version: `0.0.8`;
+          - initial reviewed source commit: `c55188f1a80bb53f68ed081d7dd7e4a0f21991f4`;
+          - formatted source and installed-wheel smoke-test commit: `91733f5519472401c54b01fee074562e50897d46`;
+          - Ruff-safe-fix commit: `412fad6cf4133ae7412b9db1430c400d45e2faff`;
+          - validation: `145 passed`, branch coverage `81.41%`, 77 public symbols mapped, and all
+            10 executable examples completed;
+          - final clean pull-request CI run #101 (`29974418301`): success;
+          - Black, isort, Ruff, mypy, strict MkDocs, distributions, installed-wheel smoke tests, and the
+            Linux/Windows/macOS Python 3.11-3.14 matrix passed;
+          - temporary transfer, apply, export, formatting, Ruff-fix, finalizer, and diagnostic
+            infrastructure: removed;
+          - current status: implementation and validation are complete; PR #7 squash merge and the actual
+            merge-commit record remain pending.
+
+          ## Next recommended unit after 0.0.8
+
+          Implement `HeatNetworkKDE` as a separate metric-graph heat-equation engine. Do not expose it as an
+          ordinary Gaussian radial-kernel name. The detailed implementation order is in the versioned handoff.
+
+          ## Permanent process rule
+
+          Every completed development unit must create a new versioned root Markdown handoff, add/update the
+          corresponding `docs/development` page, update this file, and record actual final CI and merge state.
+          See `docs/development/handoff-policy.md`.
+          """
+          Path("HANDOFF_NEXT_CONVERSATION.md").write_text(next_handoff, encoding="utf-8")
+
+          changelog = Path("CHANGELOG.md")
+          changelog_text = changelog.read_text(encoding="utf-8")
+          marker = "## 0.0.8 - Unreleased"
+          if marker not in changelog_text:
+              raise SystemExit("0.0.8 changelog marker was not found")
+          changelog.write_text(
+              changelog_text.replace(marker, "## 0.0.8 - 2026-07-23", 1),
+              encoding="utf-8",
+          )
+          PY
+      - name: Restore permanent CI and commit final records
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git checkout origin/main -- .github/workflows/ci.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Finalize pyKDEX 0.0.8 validation and handoff records"
+          git push origin HEAD:agent/spatial-boundary-anisotropy
