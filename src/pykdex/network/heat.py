@@ -13,6 +13,8 @@ from dataclasses import dataclass
 
 import numpy as np
 from scipy import sparse
+from scipy.linalg import eigh
+from scipy.sparse.linalg import expm_multiply
 
 from pykdex.data._utils import readonly_array, stable_fingerprint
 from pykdex.network.workspace import NetworkWorkspace
@@ -195,6 +197,308 @@ class NetworkHeatOperator:
             averages[index] = integral / (end - start)
         return averages
 
+    def integrate_squared(self, nodal_values: np.ndarray) -> float:
+        r"""Integrate the square of a piecewise-linear nodal field exactly.
+
+        On a segment of length :math:`\ell` with endpoint values ``a`` and
+        ``b``, the exact contribution is
+
+        .. math::
+
+            \frac{\ell}{3}(a^2 + ab + b^2).
+        """
+        values = np.asarray(nodal_values, dtype=float)
+        if values.shape != self.mass.shape:
+            raise ValueError("nodal_values must contain one value per heat DOF.")
+        if not np.all(np.isfinite(values)):
+            raise ValueError("nodal_values must contain only finite values.")
+        result = 0.0
+        for offsets, dofs in zip(self.edge_offsets, self.edge_dofs, strict=True):
+            widths = np.diff(offsets)
+            edge_values = values[dofs]
+            left = edge_values[:-1]
+            right = edge_values[1:]
+            result += float(
+                np.sum(widths * (left * left + left * right + right * right) / 3.0)
+            )
+        return result
+
+
+def _validate_diffusion_times(diffusion_times: np.ndarray) -> np.ndarray:
+    values = np.asarray(diffusion_times, dtype=float)
+    if values.ndim == 0:
+        values = values.reshape(1)
+    if values.ndim != 1 or values.size == 0:
+        raise ValueError("diffusion_times must be a non-empty one-dimensional array.")
+    if not np.all(np.isfinite(values)) or np.any(values <= 0.0):
+        raise ValueError("diffusion_times must contain finite positive values.")
+    return values
+
+
+def normalize_heat_solution(
+    operator: NetworkHeatOperator,
+    raw_values: np.ndarray,
+    event_coefficients: np.ndarray,
+    *,
+    negative_tolerance: float = 1e-10,
+) -> tuple[np.ndarray, float, float]:
+    """Clip solver roundoff and restore exact occupied-component mass."""
+    values = np.asarray(raw_values, dtype=float)
+    coefficients = np.asarray(event_coefficients, dtype=float)
+    if values.shape != operator.mass.shape:
+        raise ValueError("raw_values must contain one value per heat DOF.")
+    if coefficients.shape != operator.event_dofs.shape:
+        raise ValueError("event_coefficients must contain one value per event.")
+    if not np.all(np.isfinite(values)) or not np.all(np.isfinite(coefficients)):
+        raise ValueError("heat values and event coefficients must be finite.")
+    tolerance = float(negative_tolerance)
+    if not np.isfinite(tolerance) or tolerance <= 0.0:
+        raise ValueError("negative_tolerance must be finite and positive.")
+    raw_minimum = float(np.min(values))
+    if raw_minimum < -tolerance:
+        raise FloatingPointError(
+            "heat evolution exceeded the configured negative roundoff tolerance."
+        )
+    normalized_values = np.maximum(values, 0.0)
+    event_components = operator.dof_component_labels[operator.event_dofs]
+    component_errors: list[float] = []
+    for component in np.unique(operator.dof_component_labels):
+        dof_mask = operator.dof_component_labels == component
+        desired = float(np.sum(coefficients[event_components == component]))
+        actual = float(np.dot(operator.mass[dof_mask], normalized_values[dof_mask]))
+        component_errors.append(abs(actual - desired))
+        if desired == 0.0:
+            normalized_values[dof_mask] = 0.0
+        elif actual <= 0.0:
+            raise FloatingPointError(
+                "heat evolution lost all mass in an occupied component."
+            )
+        else:
+            normalized_values[dof_mask] *= desired / actual
+    return (
+        np.asarray(normalized_values, dtype=float),
+        max(component_errors, default=0.0),
+        raw_minimum,
+    )
+
+
+@dataclass(frozen=True)
+class HeatComputePlan:
+    """Reusable heat generator and optional dense eigendecomposition.
+
+    A plan belongs to exactly one network, event pattern, lixel support, and
+    heat mesh. Dense plans diagonalize the symmetric generator once and reuse
+    that decomposition for every source vector and diffusion time. Larger
+    sparse plans retain the assembled generator and use Krylov exponential
+    products without materializing a dense transition matrix.
+    """
+
+    operator: NetworkHeatOperator
+    generator: sparse.csr_matrix
+    solver: str
+    dense_threshold: int
+    eigenvalues: np.ndarray | None = None
+    eigenvectors: np.ndarray | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.operator, NetworkHeatOperator):
+            raise TypeError("operator must be a NetworkHeatOperator instance.")
+        generator = _readonly_csr(self.generator)
+        expected = (self.operator.n_dofs, self.operator.n_dofs)
+        if generator.shape != expected:
+            raise ValueError("generator shape must match the heat operator.")
+        if isinstance(self.dense_threshold, (bool, np.bool_)) or not isinstance(
+            self.dense_threshold, (int, np.integer)
+        ):
+            raise TypeError("dense_threshold must be a positive integer.")
+        threshold = int(self.dense_threshold)
+        if threshold <= 0:
+            raise ValueError("dense_threshold must be greater than zero.")
+        solver = str(self.solver).strip()
+        valid_solvers = {
+            "dense_symmetric_eigendecomposition",
+            "sparse_expm_multiply",
+        }
+        if solver not in valid_solvers:
+            raise ValueError("solver is not a supported heat-plan solver.")
+
+        eigenvalues: np.ndarray | None = None
+        eigenvectors: np.ndarray | None = None
+        if solver == "dense_symmetric_eigendecomposition":
+            if self.eigenvalues is None or self.eigenvectors is None:
+                raise ValueError(
+                    "dense heat plans require eigenvalues and eigenvectors."
+                )
+            eigenvalues = readonly_array(
+                self.eigenvalues, dtype=float, ndim=1, name="eigenvalues"
+            )
+            eigenvectors = readonly_array(
+                self.eigenvectors, dtype=float, ndim=2, name="eigenvectors"
+            )
+            if eigenvalues.shape != (self.operator.n_dofs,) or eigenvectors.shape != (
+                self.operator.n_dofs,
+                self.operator.n_dofs,
+            ):
+                raise ValueError("dense spectral assets have incompatible shapes.")
+            if not np.all(np.isfinite(eigenvalues)) or not np.all(
+                np.isfinite(eigenvectors)
+            ):
+                raise ValueError("dense spectral assets must contain finite values.")
+        elif self.eigenvalues is not None or self.eigenvectors is not None:
+            raise ValueError("sparse heat plans must not store dense spectral assets.")
+
+        object.__setattr__(self, "generator", generator)
+        object.__setattr__(self, "solver", solver)
+        object.__setattr__(self, "dense_threshold", threshold)
+        object.__setattr__(self, "eigenvalues", eigenvalues)
+        object.__setattr__(self, "eigenvectors", eigenvectors)
+
+    @classmethod
+    def from_workspace(
+        cls,
+        workspace: NetworkWorkspace,
+        *,
+        mesh_size: float | None = None,
+        dense_threshold: int = 1_024,
+    ) -> "HeatComputePlan":
+        """Build a reusable plan from one prepared network workspace."""
+        operator = build_network_heat_operator(workspace, mesh_size=mesh_size)
+        return cls.from_operator(operator, dense_threshold=dense_threshold)
+
+    @classmethod
+    def from_operator(
+        cls,
+        operator: NetworkHeatOperator,
+        *,
+        dense_threshold: int = 1_024,
+    ) -> "HeatComputePlan":
+        """Build a reusable plan from an already assembled heat operator."""
+        if not isinstance(operator, NetworkHeatOperator):
+            raise TypeError("operator must be a NetworkHeatOperator instance.")
+        if isinstance(dense_threshold, (bool, np.bool_)) or not isinstance(
+            dense_threshold, (int, np.integer)
+        ):
+            raise TypeError("dense_threshold must be a positive integer.")
+        threshold = int(dense_threshold)
+        if threshold <= 0:
+            raise ValueError("dense_threshold must be greater than zero.")
+        generator = operator.symmetric_generator()
+        if operator.n_dofs <= threshold:
+            eigenvalues, eigenvectors = eigh(
+                generator.toarray(),
+                check_finite=False,
+                driver="evr",
+            )
+            return cls(
+                operator=operator,
+                generator=generator,
+                solver="dense_symmetric_eigendecomposition",
+                dense_threshold=threshold,
+                eigenvalues=np.maximum(eigenvalues, 0.0),
+                eigenvectors=eigenvectors,
+            )
+        return cls(
+            operator=operator,
+            generator=generator,
+            solver="sparse_expm_multiply",
+            dense_threshold=threshold,
+        )
+
+    @property
+    def fingerprint(self) -> str:
+        """Deterministic identity of the operator and compute route."""
+        return stable_fingerprint(
+            self.operator.fingerprint,
+            self.solver,
+            self.dense_threshold,
+            self.eigenvalues,
+            self.eigenvectors,
+        )
+
+    @property
+    def memory_bytes(self) -> int:
+        """Bytes owned by the reusable generator and spectral arrays."""
+        size = (
+            self.generator.data.nbytes
+            + self.generator.indices.nbytes
+            + self.generator.indptr.nbytes
+        )
+        if self.eigenvalues is not None:
+            size += self.eigenvalues.nbytes
+        if self.eigenvectors is not None:
+            size += self.eigenvectors.nbytes
+        return int(size)
+
+    def validate_workspace(self, workspace: NetworkWorkspace) -> None:
+        """Raise when a workspace is incompatible with this plan."""
+        if not isinstance(workspace, NetworkWorkspace):
+            raise TypeError("workspace must be a NetworkWorkspace instance.")
+        events = workspace.events
+        if events is None:
+            raise ValueError("workspace contains no accepted network events.")
+        if workspace.network.fingerprint != self.operator.network_fingerprint:
+            raise ValueError("heat compute plan belongs to a different network.")
+        if events.fingerprint != self.operator.event_fingerprint:
+            raise ValueError("heat compute plan belongs to different network events.")
+        if workspace.lixels.fingerprint != self.operator.support_fingerprint:
+            raise ValueError("heat compute plan belongs to a different lixel support.")
+
+    def evolve(
+        self,
+        source_mass: np.ndarray,
+        diffusion_times: np.ndarray | list[float] | tuple[float, ...] | float,
+    ) -> np.ndarray:
+        """Evolve one or many source columns at one or many diffusion times.
+
+        Returns an array shaped ``(n_times, n_dofs, n_sources)``. A one-
+        dimensional source vector is represented by a final axis of length one.
+        Requested times retain their original order and duplicates.
+        """
+        sources = np.asarray(source_mass, dtype=float)
+        if sources.ndim == 1:
+            sources = sources[:, None]
+        if sources.ndim != 2 or sources.shape[0] != self.operator.n_dofs:
+            raise ValueError(
+                "source_mass must have one row per heat DOF and optional source columns."
+            )
+        if not np.all(np.isfinite(sources)):
+            raise ValueError("source_mass must contain only finite values.")
+        times = _validate_diffusion_times(np.asarray(diffusion_times, dtype=float))
+        inverse_root = 1.0 / np.sqrt(self.operator.mass)
+        transformed_sources = inverse_root[:, None] * sources
+        results: list[np.ndarray] = []
+        if self.solver == "dense_symmetric_eigendecomposition":
+            if self.eigenvalues is None or self.eigenvectors is None:
+                raise RuntimeError("dense heat plan lost its spectral assets.")
+            coefficients = self.eigenvectors.T @ transformed_sources
+            for time in times:
+                evolved = self.eigenvectors @ (
+                    np.exp(-float(time) * self.eigenvalues)[:, None] * coefficients
+                )
+                results.append(inverse_root[:, None] * evolved)
+        else:
+            for time in times:
+                evolved = expm_multiply(
+                    -float(time) * self.generator, transformed_sources
+                )
+                results.append(inverse_root[:, None] * np.asarray(evolved, dtype=float))
+        return np.asarray(results, dtype=float)
+
+    def event_nodal_kernels(self, diffusion_time: float) -> np.ndarray:
+        """Return nodal heat fields with one unit point source per event."""
+        sources = np.zeros(
+            (self.operator.n_dofs, self.operator.event_dofs.size), dtype=float
+        )
+        sources[self.operator.event_dofs, np.arange(self.operator.event_dofs.size)] = (
+            1.0
+        )
+        return self.evolve(sources, diffusion_time)[0]
+
+    def event_kernel_matrix(self, diffusion_time: float) -> np.ndarray:
+        """Return source-event by target-event heat-kernel values."""
+        nodal = self.event_nodal_kernels(diffusion_time)
+        return np.asarray(nodal[self.operator.event_dofs, :].T, dtype=float)
+
 
 def build_network_heat_operator(
     workspace: NetworkWorkspace,
@@ -295,4 +599,18 @@ def build_network_heat_operator(
         network_fingerprint=network.fingerprint,
         event_fingerprint=events.fingerprint,
         support_fingerprint=workspace.lixels.fingerprint,
+    )
+
+
+def build_heat_compute_plan(
+    workspace: NetworkWorkspace,
+    *,
+    mesh_size: float | None = None,
+    dense_threshold: int = 1_024,
+) -> HeatComputePlan:
+    """Build a workspace-compatible reusable heat computation plan."""
+    return HeatComputePlan.from_workspace(
+        workspace,
+        mesh_size=mesh_size,
+        dense_threshold=dense_threshold,
     )

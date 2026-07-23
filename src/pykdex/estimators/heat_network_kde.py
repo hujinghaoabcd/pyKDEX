@@ -8,37 +8,20 @@ from __future__ import annotations
 from typing import Optional
 
 import numpy as np
-from scipy.linalg import eigh
-from scipy.sparse.linalg import expm_multiply
 
+from pykdex.bandwidths.heat import BaseHeatTime, get_heat_time
 from pykdex.core.base import BaseKDE
 from pykdex.core.network_results import NetworkField
+from pykdex.core.results import BandwidthSelectionResult
 from pykdex.network.events import NetworkEvents
-from pykdex.network.heat import NetworkHeatOperator, build_network_heat_operator
+from pykdex.network.heat import (
+    HeatComputePlan,
+    NetworkHeatOperator,
+    build_heat_compute_plan,
+    normalize_heat_solution,
+)
 from pykdex.network.support import LixelSupport
 from pykdex.network.workspace import NetworkWorkspace
-
-
-def _evolve_heat(
-    operator: NetworkHeatOperator,
-    transformed_initial: np.ndarray,
-    diffusion_time: float,
-) -> tuple[np.ndarray, str]:
-    generator = operator.symmetric_generator()
-    if operator.n_dofs <= 1_024:
-        eigenvalues, eigenvectors = eigh(
-            generator.toarray(),
-            check_finite=False,
-            driver="evr",
-        )
-        spectral_coefficients = eigenvectors.T @ transformed_initial
-        evolved = eigenvectors @ (
-            np.exp(-diffusion_time * np.maximum(eigenvalues, 0.0))
-            * spectral_coefficients
-        )
-        return np.asarray(evolved, dtype=float), "dense_symmetric_eigendecomposition"
-    evolved = expm_multiply(-diffusion_time * generator, transformed_initial)
-    return np.asarray(evolved, dtype=float), "sparse_expm_multiply"
 
 
 class HeatNetworkKDE(BaseKDE):
@@ -55,7 +38,7 @@ class HeatNetworkKDE(BaseKDE):
     Kirchhoff flux balance and natural zero flux at terminal vertices.
 
     Args:
-        diffusion_time: Positive heat diffusion time.
+        diffusion_time: Positive heat diffusion time or a heat-time strategy.
         mesh_size: Maximum finite-element length. Defaults to the workspace
             lixel target length. Event offsets and lixel boundaries are always
             inserted, even when closer than this value.
@@ -67,7 +50,7 @@ class HeatNetworkKDE(BaseKDE):
 
     def __init__(
         self,
-        diffusion_time: float = 1.0,
+        diffusion_time: float | BaseHeatTime = 1.0,
         *,
         mesh_size: float | None = None,
         target: str = "density",
@@ -76,11 +59,7 @@ class HeatNetworkKDE(BaseKDE):
         verbose: bool = False,
     ) -> None:
         super().__init__(target=target, random_state=random_state, verbose=verbose)
-        if isinstance(diffusion_time, (bool, np.bool_)):
-            raise TypeError("diffusion_time must not be boolean.")
-        time = float(diffusion_time)
-        if not np.isfinite(time) or time <= 0.0:
-            raise ValueError("diffusion_time must be finite and positive.")
+        strategy = get_heat_time(diffusion_time)
         if mesh_size is not None:
             if isinstance(mesh_size, (bool, np.bool_)):
                 raise TypeError("mesh_size must not be boolean.")
@@ -92,7 +71,8 @@ class HeatNetworkKDE(BaseKDE):
         tolerance = float(negative_tolerance)
         if not np.isfinite(tolerance) or tolerance <= 0.0:
             raise ValueError("negative_tolerance must be finite and positive.")
-        self.diffusion_time = time
+        self.diffusion_time = diffusion_time
+        self.diffusion_time_strategy = strategy
         self.mesh_size = None if mesh_size is None else float(mesh_size)
         self.negative_tolerance = tolerance
         self._reset_fit_state()
@@ -104,13 +84,21 @@ class HeatNetworkKDE(BaseKDE):
         self.network_events_: NetworkEvents | None = None
         self.lixels_: LixelSupport | None = None
         self.heat_operator_: NetworkHeatOperator | None = None
+        self.heat_compute_plan_: HeatComputePlan | None = None
+        self.diffusion_time_: float | None = None
+        self.diffusion_time_selection_: BandwidthSelectionResult | None = None
         self.nodal_values_: np.ndarray | None = None
         self.values_: np.ndarray | None = None
         self.component_mass_error_: float | None = None
         self.raw_minimum_: float | None = None
         self.vertex_continuity_error_: float | None = None
 
-    def fit(self, workspace: NetworkWorkspace) -> "HeatNetworkKDE":
+    def fit(
+        self,
+        workspace: NetworkWorkspace,
+        *,
+        compute_plan: HeatComputePlan | None = None,
+    ) -> "HeatNetworkKDE":
         """Fit and evaluate the heat kernel on a prepared workspace."""
         self._reset_fit_state()
         try:
@@ -120,7 +108,28 @@ class HeatNetworkKDE(BaseKDE):
             events = workspace.events
             if events is None:
                 raise ValueError("workspace contains no accepted network events.")
-            operator = build_network_heat_operator(workspace, mesh_size=self.mesh_size)
+            plan = (
+                build_heat_compute_plan(workspace, mesh_size=self.mesh_size)
+                if compute_plan is None
+                else compute_plan
+            )
+            if not isinstance(plan, HeatComputePlan):
+                raise TypeError("compute_plan must be a HeatComputePlan or None.")
+            plan.validate_workspace(workspace)
+            if self.mesh_size is not None and not np.isclose(
+                plan.operator.mesh_size, self.mesh_size
+            ):
+                raise ValueError(
+                    "compute_plan mesh_size does not match the estimator mesh_size."
+                )
+            operator = plan.operator
+            diffusion_time = self.diffusion_time_strategy.resolve(
+                workspace,
+                compute_plan=plan,
+            )
+            self.diffusion_time_selection_ = (
+                self.diffusion_time_strategy.selection_result
+            )
             coefficients = (
                 events.weights / events.weight_sum
                 if self.target == "density"
@@ -128,40 +137,13 @@ class HeatNetworkKDE(BaseKDE):
             )
             source_mass = np.zeros(operator.n_dofs, dtype=float)
             np.add.at(source_mass, operator.event_dofs, coefficients)
-            transformed_initial = source_mass / np.sqrt(operator.mass)
-            transformed, solver = _evolve_heat(
+            raw_values = plan.evolve(source_mass, diffusion_time)[0, :, 0]
+            nodal_values, component_error, raw_minimum = normalize_heat_solution(
                 operator,
-                transformed_initial,
-                self.diffusion_time,
+                raw_values,
+                coefficients,
+                negative_tolerance=self.negative_tolerance,
             )
-            raw_values = np.asarray(transformed, dtype=float) / np.sqrt(operator.mass)
-            if not np.all(np.isfinite(raw_values)):
-                raise FloatingPointError(
-                    "HeatNetworkKDE evolution produced non-finite values."
-                )
-            raw_minimum = float(np.min(raw_values))
-            if raw_minimum < -self.negative_tolerance:
-                raise FloatingPointError(
-                    "HeatNetworkKDE exceeded the configured negative roundoff "
-                    "tolerance."
-                )
-            nodal_values = np.maximum(raw_values, 0.0)
-
-            component_errors: list[float] = []
-            event_components = operator.dof_component_labels[operator.event_dofs]
-            for component in np.unique(operator.dof_component_labels):
-                dof_mask = operator.dof_component_labels == component
-                desired = float(np.sum(coefficients[event_components == component]))
-                actual = float(np.dot(operator.mass[dof_mask], nodal_values[dof_mask]))
-                component_errors.append(abs(actual - desired))
-                if desired == 0.0:
-                    nodal_values[dof_mask] = 0.0
-                elif actual <= 0.0:
-                    raise FloatingPointError(
-                        "HeatNetworkKDE lost all mass in an occupied component."
-                    )
-                else:
-                    nodal_values[dof_mask] *= desired / actual
 
             lixel_values = operator.lixel_averages(nodal_values, workspace)
             if not np.all(np.isfinite(lixel_values)) or np.any(lixel_values < 0.0):
@@ -172,15 +154,17 @@ class HeatNetworkKDE(BaseKDE):
             owned_nodal.setflags(write=False)
             owned_values = np.ascontiguousarray(lixel_values.copy())
             owned_values.setflags(write=False)
-            bandwidth = float(np.sqrt(2.0 * self.diffusion_time))
+            bandwidth = float(np.sqrt(2.0 * diffusion_time))
 
             self.workspace_ = workspace
             self.network_events_ = events
             self.lixels_ = workspace.lixels
             self.heat_operator_ = operator
+            self.heat_compute_plan_ = plan
+            self.diffusion_time_ = diffusion_time
             self.nodal_values_ = owned_nodal
             self.values_ = owned_values
-            self.component_mass_error_ = max(component_errors, default=0.0)
+            self.component_mass_error_ = component_error
             self.raw_minimum_ = raw_minimum
             self.vertex_continuity_error_ = 0.0
             self.events_ = np.ascontiguousarray(events.coordinates.copy())
@@ -197,7 +181,8 @@ class HeatNetworkKDE(BaseKDE):
                 "kernel": "heat",
                 "target": self.target,
                 "junction_policy": "kirchhoff",
-                "diffusion_time": self.diffusion_time,
+                "diffusion_time": diffusion_time,
+                "diffusion_time_selected": (self.diffusion_time_selection_ is not None),
                 "equivalent_gaussian_bandwidth": bandwidth,
                 "mesh_size": operator.mesh_size,
                 "n_heat_dofs": operator.n_dofs,
@@ -209,6 +194,8 @@ class HeatNetworkKDE(BaseKDE):
                 "event_fingerprint": events.fingerprint,
                 "support_fingerprint": workspace.lixels.fingerprint,
                 "heat_operator_fingerprint": operator.fingerprint,
+                "heat_compute_plan_fingerprint": plan.fingerprint,
+                "heat_compute_plan_memory_bytes": plan.memory_bytes,
                 "raw_minimum_before_clipping": raw_minimum,
                 "component_mass_error_before_normalization": (
                     self.component_mass_error_
@@ -216,7 +203,7 @@ class HeatNetworkKDE(BaseKDE):
                 "vertex_continuity_error": self.vertex_continuity_error_,
                 "lixel_evaluation": "cell_average",
                 "terminal_boundary": "neumann",
-                "solver": solver,
+                "solver": plan.solver,
             }
             self._mark_fitted()
             return self
@@ -257,6 +244,11 @@ class HeatNetworkKDE(BaseKDE):
             metadata=dict(self.fit_metadata_ or {}),
         )
 
-    def fit_predict(self, workspace: NetworkWorkspace) -> NetworkField:
+    def fit_predict(
+        self,
+        workspace: NetworkWorkspace,
+        *,
+        compute_plan: HeatComputePlan | None = None,
+    ) -> NetworkField:
         """Fit a workspace and immediately return its heat network field."""
-        return self.fit(workspace).predict_result()
+        return self.fit(workspace, compute_plan=compute_plan).predict_result()

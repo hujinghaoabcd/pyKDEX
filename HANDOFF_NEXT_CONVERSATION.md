@@ -1,47 +1,54 @@
 # pyKDEX current handoff
 
-The latest completed development unit is **0.0.9 heat-equation KDE on measured metric
-graphs**. Read `HANDOFF_0.0.9_HEAT_NETWORK_KDE.md` first for the full design,
-implementation, validation, limitation, recovery, and next-unit record.
+The latest development unit is **0.0.10 reusable heat plans, batch diffusion
+times, and heat-time selection**. Read
+`HANDOFF_0.0.10_HEAT_SELECTION_BATCH.md` first for the complete design,
+mathematics, implementation, validation, limitations, recovery procedure, and
+next-unit record.
 
 ## Current repository state
 
 - repository: `hujinghaoabcd/pyKDEX`;
 - default branch: `main`;
-- latest stable version: `0.0.9`;
-- merged feature branch: `agent/heat-network-kde`;
-- pull request: `#9 Add heat-equation network KDE`;
-- feature commit: `16bc4ba79d861b2651c227033be1b24bce7f5b9e`;
-- complete PR CI run `#113` (`29979483652`): success;
-- final clean PR CI run `#114` (`29979609465`): success;
-- PR #9 squash merge commit: `51cdc8740f462bea7a7f0a3ee3302ceff963d26f`;
-- observed local validation: `161 passed`, branch coverage `81.76%`,
-  80 public symbols mapped, all 11 examples, formatting, lint, typing, strict
-  docs, distributions, and isolated wheel smoke passed;
-- unit status: implementation, documentation, validation, final CI, and feature
-  merge are complete;
+- development branch: `agent/heat-selection-batch`;
+- version under finalization: `0.0.10`;
+- pull request, feature commit, final CI, and merge commit: pending publication;
+- observed local validation: `178 passed`, branch coverage `81.67%`;
+- public API/example map: `91 public symbols`, all `12` examples executable;
+- Black, isort, Ruff, mypy, strict docs, distributions, and isolated wheel
+  smoke: passed;
+- final GitHub Actions and merge fields must be updated with observed results;
 - no temporary repository workflow has been added.
 
-## Implemented in 0.0.9
+## Implemented in 0.0.10
 
-- separate public `HeatNetworkKDE`;
-- reusable read-only `NetworkHeatOperator`;
-- measured piecewise-linear metric-graph finite elements;
-- exact event and lixel-boundary mesh insertion;
-- shared vertex continuity and Kirchhoff flux balance;
-- natural Neumann terminal conditions;
-- density/intensity and per-component mass conservation;
-- exact lixel cell-average output;
-- analytical interval and ring references plus T-junction/disconnected tests.
+- reusable read-only `HeatComputePlan`;
+- dense spectral decomposition reuse and sparse generator reuse;
+- multi-source, ordered multi-time heat evolution;
+- `HeatNetworkExperiment` and `HeatNetworkBatchResult`;
+- exact piecewise-linear squared-field integration;
+- weighted heat leave-one-out likelihood;
+- exact finite-element heat LSCV;
+- fixed and selected heat-time strategies for `HeatNetworkKDE`;
+- strict network/event/support/mesh compatibility fingerprints;
+- deterministic grid performance and memory benchmark.
 
 ## Next recommended development unit
 
-After 0.0.9 is merged, implement reusable heat solver plans, batched
-diffusion-time evaluation, heat likelihood/LSCV selection, and large-grid
-benchmarks. Then proceed to temporal data objects and separable STKDE.
+After 0.0.10 is merged, build the ordinary temporal and spatiotemporal data
+foundation before temporal-network KDE:
+
+1. explicit linear and cyclic time domains;
+2. immutable space-time events with independent spatial and temporal units;
+3. measured space-time support and xarray-compatible structured results;
+4. separable product STKDE with explicit spatial and temporal kernels/metrics;
+5. shared spatial/temporal distance assets and deterministic bandwidth experiments;
+6. moving-hotspot, cyclic-boundary, mass, weighting, and chunk-invariance tests;
+7. `HANDOFF_0.0.11_SPATIOTEMPORAL_FOUNDATION.md`.
 
 ## Permanent process rule
 
-Every completed development unit must create a versioned root Markdown handoff, update the
-corresponding `docs/development` page and this file, and record actual CI and merge state.
-See `docs/development/handoff-policy.md`.
+Every completed development unit must create a detailed versioned root Markdown
+handoff, add/update the corresponding `docs/development` page, update this file,
+and record actual validation, CI, PR, and merge state. See
+`docs/development/handoff-policy.md`.

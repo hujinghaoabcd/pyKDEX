@@ -3,6 +3,11 @@
 
 """Bandwidth selection objectives and optimizers."""
 
+from pykdex.selection.heat import (
+    HeatLeastSquaresCV,
+    HeatLikelihoodCV,
+    HeatSelectionCache,
+)
 from pykdex.selection.network import (
     NetworkLeastSquaresCV,
     NetworkLikelihoodCV,
@@ -16,4 +21,7 @@ __all__ = [
     "NetworkLikelihoodCV",
     "NetworkLeastSquaresCV",
     "NetworkSelectionCache",
+    "HeatLikelihoodCV",
+    "HeatLeastSquaresCV",
+    "HeatSelectionCache",
 ]

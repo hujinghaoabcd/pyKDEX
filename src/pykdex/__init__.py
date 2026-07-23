@@ -11,7 +11,7 @@ from __future__ import annotations
 
 __author__ = "Jinghao Hu"
 __license__ = "MIT"
-__version__ = "0.0.9"
+__version__ = "0.0.10"
 
 from pykdex.adapters import from_networkx_graph, from_osmnx_graph, network_from_place
 from pykdex.bandwidths import (
@@ -19,9 +19,13 @@ from pykdex.bandwidths import (
     BalloonKNNBandwidth,
     BandwidthMatrix,
     BaseBalloonBandwidth,
+    BaseHeatTime,
     BaseNetworkBandwidth,
     FixedBandwidth,
+    FixedHeatTime,
     FixedNetworkBandwidth,
+    HeatLeastSquaresCVTime,
+    HeatLikelihoodCVTime,
     KNNBandwidth,
     LeastSquaresCVBandwidth,
     LikelihoodCVBandwidth,
@@ -29,7 +33,12 @@ from pykdex.bandwidths import (
     NetworkLeastSquaresCVBandwidth,
     NetworkLikelihoodCVBandwidth,
 )
-from pykdex.core import BandwidthSelectionResult, NetworkField, SpatialKDEResult
+from pykdex.core import (
+    BandwidthSelectionResult,
+    HeatNetworkBatchResult,
+    NetworkField,
+    SpatialKDEResult,
+)
 from pykdex.corrections import (
     BaseBoundaryCorrection,
     NoBoundaryCorrection,
@@ -56,7 +65,12 @@ from pykdex.datasets import (
     make_bimodal_events,
     make_grid_network,
 )
-from pykdex.estimators import HeatNetworkKDE, NetworkKDE, SpatialKDE
+from pykdex.estimators import (
+    HeatNetworkExperiment,
+    HeatNetworkKDE,
+    NetworkKDE,
+    SpatialKDE,
+)
 from pykdex.kernels import (
     EpanechnikovKernel,
     ExponentialKernel,
@@ -70,6 +84,7 @@ from pykdex.metrics import EuclideanMetric
 from pykdex.network import (
     ContinuousJunctionPolicy,
     DiscontinuousJunctionPolicy,
+    HeatComputePlan,
     JunctionPolicy,
     LinearNetwork,
     LixelSupport,
@@ -87,6 +102,7 @@ from pykdex.network import (
     TraversalState,
     build_event_event_distances,
     build_event_lixel_distances,
+    build_heat_compute_plan,
     build_network_distance_asset,
     build_network_heat_operator,
     get_junction_policy,
@@ -95,6 +111,9 @@ from pykdex.network import (
     truncated_traversal,
 )
 from pykdex.selection import (
+    HeatLeastSquaresCV,
+    HeatLikelihoodCV,
+    HeatSelectionCache,
     LeastSquaresCV,
     LikelihoodCV,
     NetworkLeastSquaresCV,
@@ -106,6 +125,8 @@ __all__ = [
     "SpatialKDE",
     "NetworkKDE",
     "HeatNetworkKDE",
+    "HeatNetworkExperiment",
+    "HeatNetworkBatchResult",
     "SpatialKDEResult",
     "NetworkField",
     "BandwidthSelectionResult",
@@ -128,7 +149,9 @@ __all__ = [
     "LinearNetwork",
     "NetworkEvents",
     "NetworkHeatOperator",
+    "HeatComputePlan",
     "build_network_heat_operator",
+    "build_heat_compute_plan",
     "SnapResult",
     "snap_events",
     "LixelSupport",
@@ -162,6 +185,10 @@ __all__ = [
     "NetworkKNNBandwidth",
     "NetworkLikelihoodCVBandwidth",
     "NetworkLeastSquaresCVBandwidth",
+    "BaseHeatTime",
+    "FixedHeatTime",
+    "HeatLikelihoodCVTime",
+    "HeatLeastSquaresCVTime",
     "KNNBandwidth",
     "AbramsonBandwidth",
     "LikelihoodCVBandwidth",
@@ -171,6 +198,9 @@ __all__ = [
     "NetworkLikelihoodCV",
     "NetworkLeastSquaresCV",
     "NetworkSelectionCache",
+    "HeatLikelihoodCV",
+    "HeatLeastSquaresCV",
+    "HeatSelectionCache",
     "BaseBoundaryCorrection",
     "NoBoundaryCorrection",
     "RenormalizationCorrection",

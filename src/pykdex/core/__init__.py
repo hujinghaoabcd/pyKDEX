@@ -4,6 +4,7 @@
 """Core fitted-state, validation, protocol, and result utilities."""
 
 from pykdex.core.base import BaseEstimator, BaseKDE
+from pykdex.core.heat_results import HeatNetworkBatchResult
 from pykdex.core.network_results import NetworkField
 from pykdex.core.results import BandwidthSelectionResult, SpatialKDEResult
 
@@ -13,4 +14,5 @@ __all__ = [
     "BandwidthSelectionResult",
     "SpatialKDEResult",
     "NetworkField",
+    "HeatNetworkBatchResult",
 ]
