@@ -17,6 +17,7 @@ from pykdex.data import (
     KDEDataset,
     SpatialBoundary,
     SpatialEvents,
+    SpatiotemporalEvents,
 )
 
 
@@ -44,6 +45,56 @@ def make_bimodal_events(
             transformations=("generated_bimodal_events",),
             metadata={"random_state": random_state, "n_events": n_events},
         ),
+    )
+
+
+def make_moving_hotspot_events(
+    n_events: int = 200,
+    *,
+    velocity: tuple[float, float] = (0.5, 0.25),
+    spatial_noise: float = 0.2,
+    temporal_bounds: tuple[float, float] = (0.0, 10.0),
+    random_state: int | None = 42,
+) -> SpatiotemporalEvents:
+    """Generate a reproducible planar hotspot moving linearly through time."""
+    if isinstance(n_events, bool) or not isinstance(n_events, int):
+        raise TypeError("n_events must be an integer.")
+    if n_events < 2:
+        raise ValueError("n_events must be at least two.")
+    if not isinstance(velocity, tuple) or len(velocity) != 2:
+        raise TypeError("velocity must be a two-value tuple.")
+    velocity_array = np.asarray(velocity, dtype=float)
+    if not np.all(np.isfinite(velocity_array)):
+        raise ValueError("velocity must contain finite values.")
+    noise = float(spatial_noise)
+    start, stop = (float(value) for value in temporal_bounds)
+    if not np.isfinite(noise) or noise < 0.0:
+        raise ValueError("spatial_noise must be finite and non-negative.")
+    if not np.isfinite(start) or not np.isfinite(stop) or not start < stop:
+        raise ValueError("temporal_bounds must be finite and increasing.")
+    rng = np.random.default_rng(random_state)
+    times = rng.uniform(start, stop, size=n_events)
+    centered = times - start
+    coordinates = centered[:, None] * velocity_array[None, :]
+    coordinates += rng.normal(scale=noise, size=(n_events, 2))
+    provenance = DataProvenance(
+        source="pyKDEX synthetic generator",
+        transformations=("generated_moving_hotspot_events",),
+        metadata={
+            "random_state": random_state,
+            "n_events": n_events,
+            "velocity": velocity,
+            "spatial_noise": noise,
+            "temporal_bounds": (start, stop),
+        },
+    )
+    return SpatiotemporalEvents.from_arrays(
+        coordinates,
+        times,
+        coordinate_names=("x", "y"),
+        spatial_unit="unit",
+        temporal_unit="unit",
+        provenance=provenance,
     )
 
 

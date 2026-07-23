@@ -14,6 +14,7 @@ from pykdex.selection.network import (
     NetworkSelectionCache,
 )
 from pykdex.selection.selectors import LeastSquaresCV, LikelihoodCV
+from pykdex.selection.spatiotemporal import SpatiotemporalBandwidthExperiment
 
 __all__ = [
     "LikelihoodCV",
@@ -24,4 +25,5 @@ __all__ = [
     "HeatLikelihoodCV",
     "HeatLeastSquaresCV",
     "HeatSelectionCache",
+    "SpatiotemporalBandwidthExperiment",
 ]

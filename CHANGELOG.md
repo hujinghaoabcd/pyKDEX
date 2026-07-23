@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.0.11 - 2026-07-23
+
+- Add explicit `LinearTimeDomain` and `CyclicTimeDomain` contracts.
+- Add immutable temporal coordinates, space-time events, point support, and
+  measured space-time grids with independent spatial and temporal units.
+- Add reusable target-by-source spatial/temporal distance assets.
+- Add separable `SpatiotemporalKDE` for density and intensity.
+- Normalize cyclic kernels through periodic image summation.
+- Add structured measured results with optional xarray export.
+- Add deterministic joint and separate weighted LOO bandwidth experiments.
+- Add a moving-hotspot generator, executable example, API docs, and detailed
+  recovery handoff.
+
 ## 0.0.10 - 2026-07-23
 
 - Add reusable `HeatComputePlan` generator and dense spectral assets.

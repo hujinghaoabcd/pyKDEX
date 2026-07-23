@@ -56,6 +56,9 @@ osm = [
 plot = [
     "matplotlib>=3.7.2",
 ]
+array = [
+    "xarray>=2024.1.0",
+]
 all = [
     "geopandas>=0.14.4",
     "shapely>=2.0.2",
@@ -63,6 +66,7 @@ all = [
     "networkx>=3.2",
     "osmnx>=2.0.7",
     "matplotlib>=3.7.2",
+    "xarray>=2024.1.0",
 ]
 test = [
     "pytest>=7.4.0",
@@ -71,6 +75,7 @@ test = [
     "shapely>=2.0.2",
     "pyproj>=3.6.0",
     "networkx>=3.2",
+    "xarray>=2024.1.0",
 ]
 dev = [
     "pytest>=7.4.0",
@@ -80,6 +85,7 @@ dev = [
     "pyproj>=3.6.0",
     "networkx>=3.2",
     "matplotlib>=3.7.2",
+    "xarray>=2024.1.0",
     "black>=24.0.0",
     "ruff>=0.6.0",
     "isort>=5.13.0",
