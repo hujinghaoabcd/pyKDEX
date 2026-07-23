@@ -194,7 +194,8 @@ def _write_archive(
                 info.compress_type = zipfile.ZIP_DEFLATED
                 info.external_attr = 0o100644 << 16
                 archive.writestr(info, payload, compresslevel=9)
-        with temporary.open("rb") as stream:
+        # Windows requires a writable file handle for fsync.
+        with temporary.open("r+b") as stream:
             os.fsync(stream.fileno())
         if destination.exists() and destination.is_dir():
             raise IsADirectoryError(
