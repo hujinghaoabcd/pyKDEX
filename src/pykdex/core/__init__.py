@@ -6,7 +6,10 @@
 from pykdex.core.base import BaseEstimator, BaseKDE
 from pykdex.core.heat_results import HeatNetworkBatchResult
 from pykdex.core.network_results import NetworkField
-from pykdex.core.network_time_results import NetworkTimeField
+from pykdex.core.network_time_results import (
+    NetworkTimeBandwidthSelectionResult,
+    NetworkTimeField,
+)
 from pykdex.core.results import BandwidthSelectionResult, SpatialKDEResult
 from pykdex.core.spatiotemporal_results import (
     SpatiotemporalBandwidthSelectionResult,
@@ -20,6 +23,7 @@ __all__ = [
     "SpatialKDEResult",
     "NetworkField",
     "NetworkTimeField",
+    "NetworkTimeBandwidthSelectionResult",
     "HeatNetworkBatchResult",
     "SpatiotemporalKDEResult",
     "SpatiotemporalBandwidthSelectionResult",

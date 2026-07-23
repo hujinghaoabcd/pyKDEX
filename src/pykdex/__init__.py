@@ -11,7 +11,7 @@ from __future__ import annotations
 
 __author__ = "Jinghao Hu"
 __license__ = "MIT"
-__version__ = "0.0.12"
+__version__ = "0.0.13"
 
 from pykdex.adapters import from_networkx_graph, from_osmnx_graph, network_from_place
 from pykdex.bandwidths import (
@@ -32,11 +32,14 @@ from pykdex.bandwidths import (
     NetworkKNNBandwidth,
     NetworkLeastSquaresCVBandwidth,
     NetworkLikelihoodCVBandwidth,
+    NetworkTimeBandwidths,
+    NetworkTimeKNNBandwidth,
 )
 from pykdex.core import (
     BandwidthSelectionResult,
     HeatNetworkBatchResult,
     NetworkField,
+    NetworkTimeBandwidthSelectionResult,
     NetworkTimeField,
     SpatialKDEResult,
     SpatiotemporalBandwidthSelectionResult,
@@ -136,6 +139,8 @@ from pykdex.selection import (
     NetworkLeastSquaresCV,
     NetworkLikelihoodCV,
     NetworkSelectionCache,
+    NetworkTimeBandwidthExperiment,
+    NetworkTimeSelectionCache,
     SpatiotemporalBandwidthExperiment,
 )
 from pykdex.spatiotemporal import (
@@ -155,6 +160,7 @@ __all__ = [
     "SpatialKDEResult",
     "NetworkField",
     "NetworkTimeField",
+    "NetworkTimeBandwidthSelectionResult",
     "BandwidthSelectionResult",
     "SpatiotemporalKDEResult",
     "SpatiotemporalBandwidthSelectionResult",
@@ -228,6 +234,8 @@ __all__ = [
     "NetworkKNNBandwidth",
     "NetworkLikelihoodCVBandwidth",
     "NetworkLeastSquaresCVBandwidth",
+    "NetworkTimeBandwidths",
+    "NetworkTimeKNNBandwidth",
     "BaseHeatTime",
     "FixedHeatTime",
     "HeatLikelihoodCVTime",
@@ -241,6 +249,8 @@ __all__ = [
     "NetworkLikelihoodCV",
     "NetworkLeastSquaresCV",
     "NetworkSelectionCache",
+    "NetworkTimeBandwidthExperiment",
+    "NetworkTimeSelectionCache",
     "HeatLikelihoodCV",
     "HeatLeastSquaresCV",
     "HeatSelectionCache",

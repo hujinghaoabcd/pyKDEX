@@ -102,5 +102,6 @@ nav:
       - 0.0.10 handoff: development/handoff-0.0.10-heat-selection-batch.md
       - 0.0.11 handoff: development/handoff-0.0.11-spatiotemporal-foundation.md
       - 0.0.12 handoff: development/handoff-0.0.12-network-time-foundation.md
+      - 0.0.13 handoff: development/handoff-0.0.13-network-time-bandwidths.md
       - Roadmap: development/roadmap.md
   - 中文: zh/index.md

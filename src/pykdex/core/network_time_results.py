@@ -17,13 +17,95 @@ from pykdex.network_time import ArixelSupport
 
 
 @dataclass(frozen=True)
+class NetworkTimeBandwidthSelectionResult:
+    """Immutable result of a network-time bandwidth grid experiment."""
+
+    spatial_bandwidth: float
+    temporal_bandwidth: float
+    score: float
+    mode: str
+    objective: str
+    spatial_candidates: np.ndarray
+    temporal_candidates: np.ndarray
+    score_matrix: np.ndarray
+    cache_fingerprint: str
+
+    def __post_init__(self) -> None:
+        spatial_candidates = readonly_array(
+            self.spatial_candidates,
+            dtype=float,
+            ndim=1,
+            name="spatial_candidates",
+        )
+        temporal_candidates = readonly_array(
+            self.temporal_candidates,
+            dtype=float,
+            ndim=1,
+            name="temporal_candidates",
+        )
+        scores = readonly_array(
+            self.score_matrix, dtype=float, ndim=2, name="score_matrix"
+        )
+        if scores.shape != (spatial_candidates.size, temporal_candidates.size):
+            raise ValueError("score_matrix shape must match the candidate grid.")
+        if (
+            spatial_candidates.size == 0
+            or temporal_candidates.size == 0
+            or not np.all(np.isfinite(spatial_candidates))
+            or np.any(spatial_candidates <= 0.0)
+            or not np.all(np.isfinite(temporal_candidates))
+            or np.any(temporal_candidates <= 0.0)
+            or not np.all(np.isfinite(scores))
+        ):
+            raise ValueError("candidate grid and scores must contain valid values.")
+        spatial_bandwidth = float(self.spatial_bandwidth)
+        temporal_bandwidth = float(self.temporal_bandwidth)
+        score = float(self.score)
+        if not np.any(np.isclose(spatial_candidates, spatial_bandwidth)):
+            raise ValueError("selected spatial bandwidth must be a candidate.")
+        if not np.any(np.isclose(temporal_candidates, temporal_bandwidth)):
+            raise ValueError("selected temporal bandwidth must be a candidate.")
+        if not np.isfinite(score):
+            raise ValueError("score must be finite.")
+        if self.mode not in {"joint", "separate"}:
+            raise ValueError("mode must be 'joint' or 'separate'.")
+        if self.objective not in {"loo_likelihood", "least_squares_cv"}:
+            raise ValueError(
+                "objective must be 'loo_likelihood' or 'least_squares_cv'."
+            )
+        if not isinstance(self.cache_fingerprint, str) or not self.cache_fingerprint:
+            raise ValueError("cache_fingerprint must be non-empty.")
+        object.__setattr__(self, "spatial_bandwidth", spatial_bandwidth)
+        object.__setattr__(self, "temporal_bandwidth", temporal_bandwidth)
+        object.__setattr__(self, "score", score)
+        object.__setattr__(self, "spatial_candidates", spatial_candidates)
+        object.__setattr__(self, "temporal_candidates", temporal_candidates)
+        object.__setattr__(self, "score_matrix", scores)
+
+    def to_frame(self) -> pd.DataFrame:
+        """Return every candidate pair and its joint objective score."""
+        spatial, temporal = np.meshgrid(
+            self.spatial_candidates,
+            self.temporal_candidates,
+            indexing="ij",
+        )
+        return pd.DataFrame(
+            {
+                "spatial_bandwidth": spatial.ravel(),
+                "temporal_bandwidth": temporal.ravel(),
+                "score": self.score_matrix.ravel(),
+            }
+        )
+
+
+@dataclass(frozen=True)
 class NetworkTimeField:
     """Density or intensity represented on measured arixel support."""
 
     values: np.ndarray
     support: ArixelSupport
-    spatial_bandwidth: float
-    temporal_bandwidth: float
+    spatial_bandwidth: float | np.ndarray
+    temporal_bandwidth: float | np.ndarray
     target: str
     spatial_kernel: str
     temporal_kernel: str
@@ -41,15 +123,12 @@ class NetworkTimeField:
             raise ValueError("values must contain one estimate per arixel.")
         if not np.all(np.isfinite(values)) or np.any(values < 0.0):
             raise ValueError("values must be finite and non-negative.")
-        spatial_bandwidth = float(self.spatial_bandwidth)
-        temporal_bandwidth = float(self.temporal_bandwidth)
-        if (
-            not np.isfinite(spatial_bandwidth)
-            or spatial_bandwidth <= 0.0
-            or not np.isfinite(temporal_bandwidth)
-            or temporal_bandwidth <= 0.0
-        ):
-            raise ValueError("bandwidths must be finite and positive.")
+        spatial_bandwidth = self._bandwidth(
+            self.spatial_bandwidth, name="spatial_bandwidth"
+        )
+        temporal_bandwidth = self._bandwidth(
+            self.temporal_bandwidth, name="temporal_bandwidth"
+        )
         if self.target not in {"density", "intensity"}:
             raise ValueError("target must be 'density' or 'intensity'.")
         if not isinstance(self.directed, (bool, np.bool_)):
@@ -70,6 +149,36 @@ class NetworkTimeField:
         object.__setattr__(self, "temporal_bandwidth", temporal_bandwidth)
         object.__setattr__(self, "directed", bool(self.directed))
         object.__setattr__(self, "metadata", MappingProxyType(dict(self.metadata)))
+
+    def _bandwidth(self, value: float | np.ndarray, *, name: str) -> float | np.ndarray:
+        array = np.asarray(value, dtype=float)
+        if array.ndim == 0:
+            scalar = float(array)
+            if not np.isfinite(scalar) or scalar <= 0.0:
+                raise ValueError(f"{name} must be finite and positive.")
+            return scalar
+        array = readonly_array(array, dtype=float, ndim=1, name=name)
+        n_events = self.metadata.get("n_events")
+        if n_events is not None and array.shape != (int(n_events),):
+            raise ValueError(f"{name} must contain one value per event.")
+        if array.size == 0 or not np.all(np.isfinite(array)) or np.any(array <= 0.0):
+            raise ValueError(f"{name} must contain finite positive values.")
+        return array
+
+    @property
+    def adaptive_spatial(self) -> bool:
+        """Whether spatial bandwidth varies by source event."""
+        return isinstance(self.spatial_bandwidth, np.ndarray)
+
+    @property
+    def adaptive_temporal(self) -> bool:
+        """Whether temporal bandwidth varies by source event."""
+        return isinstance(self.temporal_bandwidth, np.ndarray)
+
+    @property
+    def adaptive(self) -> bool:
+        """Whether either bandwidth component varies by source event."""
+        return self.adaptive_spatial or self.adaptive_temporal
 
     @property
     def support_measure(self) -> np.ndarray:
@@ -105,6 +214,22 @@ class NetworkTimeField:
                 "xarray export requires the 'array' optional dependency."
             ) from exc
         lixels = self.support.lixels
+        attrs: dict[str, Any] = {
+            "adaptive_spatial_bandwidth": self.adaptive_spatial,
+            "adaptive_temporal_bandwidth": self.adaptive_temporal,
+            "spatial_bandwidth_min": float(np.min(self.spatial_bandwidth)),
+            "spatial_bandwidth_max": float(np.max(self.spatial_bandwidth)),
+            "temporal_bandwidth_min": float(np.min(self.temporal_bandwidth)),
+            "temporal_bandwidth_max": float(np.max(self.temporal_bandwidth)),
+            "spatial_unit": lixels.spatial_unit,
+            "temporal_unit": self.support.temporal_unit,
+            "junction_policy": self.junction_policy,
+            "directed": self.directed,
+        }
+        if not self.adaptive_spatial:
+            attrs["spatial_bandwidth"] = float(self.spatial_bandwidth)
+        if not self.adaptive_temporal:
+            attrs["temporal_bandwidth"] = float(self.temporal_bandwidth)
         return xr.DataArray(
             self.to_grid(),
             dims=("time", "lixel"),
@@ -116,12 +241,5 @@ class NetworkTimeField:
                 "lixel_length": ("lixel", lixels.lengths),
             },
             name=self.target,
-            attrs={
-                "spatial_bandwidth": self.spatial_bandwidth,
-                "temporal_bandwidth": self.temporal_bandwidth,
-                "spatial_unit": lixels.spatial_unit,
-                "temporal_unit": self.support.temporal_unit,
-                "junction_policy": self.junction_policy,
-                "directed": self.directed,
-            },
+            attrs=attrs,
         )

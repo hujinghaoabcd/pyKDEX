@@ -47,26 +47,55 @@ def evaluate_temporal_kernel(
     *,
     domain: BaseTimeDomain,
     kernel: BaseKernel,
-    bandwidth: float,
+    bandwidth: float | np.ndarray,
     tail_tolerance: float = 1e-12,
 ) -> np.ndarray:
-    """Evaluate a normalized temporal kernel, including periodic image sums."""
-    resolved = _positive_bandwidth(bandwidth, name="temporal_bandwidth")
+    """Evaluate a normalized temporal kernel, including periodic image sums.
+
+    A one-dimensional bandwidth array assigns one bandwidth to every source in
+    the final axis of ``offsets``.
+    """
     values = np.asarray(offsets, dtype=float)
     if not np.all(np.isfinite(values)):
         raise ValueError("temporal offsets must contain finite values.")
+    raw_bandwidths = np.asarray(bandwidth, dtype=float)
+    if raw_bandwidths.ndim == 0:
+        resolved: float | np.ndarray = _positive_bandwidth(
+            float(raw_bandwidths), name="temporal_bandwidth"
+        )
+    elif (
+        raw_bandwidths.ndim == 1
+        and values.ndim >= 1
+        and raw_bandwidths.shape[0] == values.shape[-1]
+    ):
+        if not np.all(np.isfinite(raw_bandwidths)) or np.any(raw_bandwidths <= 0.0):
+            raise ValueError("temporal_bandwidth values must be finite and positive.")
+        resolved = np.ascontiguousarray(raw_bandwidths)
+    else:
+        raise ValueError(
+            "temporal_bandwidth must be scalar or contain one value per source."
+        )
     if not isinstance(domain, CyclicTimeDomain):
         distances = domain.distances_from_offsets(values)
         return kernel(distances / resolved, 1) / resolved
     tolerance = float(tail_tolerance)
     if not np.isfinite(tolerance) or not 0.0 < tolerance < 1.0:
         raise ValueError("tail_tolerance must lie strictly between zero and one.")
-    count = _cyclic_image_count(kernel, resolved, domain.period, tolerance)
     canonical = domain.canonicalize(values + domain.origin) - domain.origin
     result = np.zeros_like(canonical, dtype=float)
-    for image in range(-count, count + 1):
-        distance = np.abs(canonical + image * domain.period)
-        result += kernel(distance / resolved, 1) / resolved
+    if np.ndim(resolved) == 0:
+        scalar = float(resolved)
+        count = _cyclic_image_count(kernel, scalar, domain.period, tolerance)
+        for image in range(-count, count + 1):
+            distance = np.abs(canonical + image * domain.period)
+            result += kernel(distance / scalar, 1) / scalar
+        return result
+    bandwidths = np.asarray(resolved, dtype=float)
+    for source, scalar in enumerate(bandwidths):
+        count = _cyclic_image_count(kernel, float(scalar), domain.period, tolerance)
+        for image in range(-count, count + 1):
+            distance = np.abs(canonical[..., source] + image * domain.period)
+            result[..., source] += kernel(distance / scalar, 1) / scalar
     return result
 
 

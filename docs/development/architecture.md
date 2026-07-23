@@ -33,3 +33,10 @@ locations, junction policies, and measured lixels.
 `NetworkTimeWorkspace` composes a `NetworkWorkspace`, accepted
 `NetworkTimeEvents`, `ArixelSupport`, and an optional factorized distance
 asset. It never expands network distances over every temporal cell.
+
+`NetworkTimeSelectionCache` extends that factorization to bandwidth
+experiments: source-event network matrices and target-time offset matrices are
+evaluated separately and combined only for an objective. Path-based policies
+trace each source once at the largest candidate spatial bandwidth. Adaptive
+spatial and temporal bandwidths are sample-point values owned by source
+events, never query-centred balloon bandwidths.

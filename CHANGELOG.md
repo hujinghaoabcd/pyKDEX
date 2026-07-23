@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.0.13 - 2026-07-23
+
+- Add reusable `NetworkTimeSelectionCache` factorized over network and time.
+- Add weighted network-time leave-one-out likelihood candidate experiments.
+- Add arixel-measured network-time least-squares cross-validation.
+- Add deterministic joint and separate scalar bandwidth selection.
+- Add immutable `NetworkTimeBandwidths` with explicit source-event ownership.
+- Add independent spatial and temporal `NetworkTimeKNNBandwidth`.
+- Extend `TemporalNetworkKDE` and `NetworkTimeField` to event-specific bandwidths.
+- Add duplicate, cyclic, path-policy, cache, benchmark, and recovery contracts.
+
 ## 0.0.12 - 2026-07-23
 
 - Add immutable `NetworkTimeEvents` with stable accepted-event time alignment.
