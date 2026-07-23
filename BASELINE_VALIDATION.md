@@ -84,7 +84,12 @@ Validation date: 2026-07-23
   `3f3a752202b4a2ff91939a01513d67713074c5e9`;
 - first complete PR CI run `#128` (`30011519807`): success across quality,
   coverage, distributions, Linux/Windows/macOS, and Python 3.11-3.14;
-- final clean CI, merge commit, and post-merge handoff commit: pending.
+- final clean PR CI run `#129` (`30011753378`): success;
+- PR #12 squash merge commit:
+  `f9b9d7e3949ee8688b8829a6b8760f1f3214cd4a`;
+- post-merge handoff commit: pending.
+
+PR #12 was merged and closed successfully.
 
 ## Deliberate exclusions
 

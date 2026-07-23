@@ -10,14 +10,14 @@ recovery procedure, and next-unit record.
 - repository: `hujinghaoabcd/pyKDEX`;
 - default branch: `main`;
 - development branch: `agent/network-time-foundation`;
-- version under final validation: `0.0.12`;
-- latest stable merged version before publication: `0.0.11`;
+- latest stable merged version: `0.0.12`;
 - pull request: `#12 Add network-time KDE foundation`;
 - feature implementation commit:
   `3f3a752202b4a2ff91939a01513d67713074c5e9`;
 - first complete PR CI run `#128` (`30011519807`): success;
-- final clean PR CI: pending;
-- squash merge commit: pending;
+- final clean PR CI run `#129` (`30011753378`): success;
+- squash merge commit:
+  `f9b9d7e3949ee8688b8829a6b8760f1f3214cd4a`;
 - post-merge handoff commit: pending;
 - focused network-time validation: `17 passed`;
 - final full local regression: `217 passed`;
@@ -28,8 +28,8 @@ recovery procedure, and next-unit record.
   archive verification, and isolated wheel smoke: passed;
 - no temporary repository workflow has been added.
 
-Replace remaining GitHub pending fields only with observed publication
-results.
+PR #12 was merged and closed successfully. Replace the remaining post-merge
+handoff field only with its observed commit.
 
 ## Implemented in 0.0.12
 

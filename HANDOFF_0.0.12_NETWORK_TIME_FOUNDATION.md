@@ -16,8 +16,8 @@ recommended next work without relying on chat history.
 - Feature implementation commit:
   `3f3a752202b4a2ff91939a01513d67713074c5e9`
 - First complete PR CI: run `#128` (`30011519807`), conclusion `success`
-- Final clean PR CI: pending
-- Squash merge commit: pending
+- Final clean PR CI: run `#129` (`30011753378`), conclusion `success`
+- Squash merge commit: `f9b9d7e3949ee8688b8829a6b8760f1f3214cd4a`
 - Post-merge handoff commit: pending
 
 The source tree and tests are authoritative. Pending fields must be replaced
@@ -463,11 +463,12 @@ Before publication, the following were observed:
 - first complete PR CI run `#128` (`30011519807`): success across quality,
   coverage, distributions, Linux/Windows/macOS, and Python 3.11-3.14;
 
-Still pending:
+- final clean PR CI run `#129` (`30011753378`): success;
+- squash merge commit:
+  `f9b9d7e3949ee8688b8829a6b8760f1f3214cd4a`;
+- post-merge handoff/status commit: pending.
 
-- final clean PR CI run;
-- squash merge commit;
-- post-merge handoff/status commit.
+PR #12 was merged and closed successfully.
 
 No temporary diagnostic, transfer, formatting, or auto-fix workflow may enter
 `main`.
