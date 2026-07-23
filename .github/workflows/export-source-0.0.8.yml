@@ -21,11 +21,25 @@ jobs:
         with:
           ref: agent/spatial-boundary-anisotropy
           fetch-depth: 0
-      - name: Verify and apply source patch
+      - name: Inspect staged patch
         shell: bash
         run: |
           set -euo pipefail
           cat .tmp/pykdex008.part.00 .tmp/pykdex008.part.01 .tmp/pykdex008.part.02 > /tmp/pykdex008.patch.gz.b64
+          {
+            wc -c .tmp/pykdex008.part.00 .tmp/pykdex008.part.01 .tmp/pykdex008.part.02 /tmp/pykdex008.patch.gz.b64
+            sha256sum .tmp/pykdex008.part.00 .tmp/pykdex008.part.01 .tmp/pykdex008.part.02 /tmp/pykdex008.patch.gz.b64
+          } > /tmp/pykdex008-diagnostics.txt
+      - name: Upload patch diagnostics
+        uses: actions/upload-artifact@v4
+        with:
+          name: pykdex008-patch-diagnostics
+          path: /tmp/pykdex008-diagnostics.txt
+          retention-days: 1
+      - name: Verify and apply source patch
+        shell: bash
+        run: |
+          set -euo pipefail
           echo "2c2cc2efbd316c0823c9135b563622f3f3ee1dd32ca02bfd3c2ce4c1baa95aed  /tmp/pykdex008.patch.gz.b64" | sha256sum -c -
           base64 --decode /tmp/pykdex008.patch.gz.b64 > /tmp/pykdex008.patch.gz
           gzip --decompress --stdout /tmp/pykdex008.patch.gz > /tmp/pykdex008.patch
