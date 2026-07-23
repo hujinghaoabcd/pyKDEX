@@ -76,3 +76,6 @@ BaseBoundaryCorrection,10_spatial_boundary_anisotropy.py
 NoBoundaryCorrection,10_spatial_boundary_anisotropy.py
 RenormalizationCorrection,10_spatial_boundary_anisotropy.py
 ReflectionCorrection,10_spatial_boundary_anisotropy.py
+HeatNetworkKDE,11_heat_network_kde.py
+NetworkHeatOperator,11_heat_network_kde.py
+build_network_heat_operator,11_heat_network_kde.py

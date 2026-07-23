@@ -7,7 +7,7 @@ The package follows the engineering conventions of pyGWRx while keeping the
 KDE architecture composition-based: domains, metrics, kernels, bandwidths,
 corrections, supports, and estimators are independent components.
 
-> Status: spatial KDE includes scalar, sample-point, balloon, matrix, and boundary-corrected estimators. Fixed/adaptive network KDE, canonical networks, OSMnx/NetworkX adapters, auditable snapping, lixels, reusable distance assets, junction policies, network CV bandwidth selection, and kNN network bandwidths are implemented.
+> Status: spatial KDE includes scalar, sample-point, balloon, matrix, and boundary-corrected estimators. Fixed/adaptive radial network KDE and a measured finite-element heat-equation NetworkKDE are implemented alongside canonical networks, auditable snapping, lixels, reusable distance assets, junction policies, and network bandwidth selection.
 
 ## Installation
 
@@ -144,6 +144,24 @@ adaptive_network = NetworkKDE(
 
 Network LSCV uses actual lixel lengths for the squared-density integral. Event-to-event
 distance assets and upper-bound propagation traces are reused during optimization.
+
+## Heat-equation network KDE
+
+```python
+from pykdex import HeatNetworkKDE
+
+heat = HeatNetworkKDE(
+    diffusion_time=2500.0,
+    mesh_size=25.0,
+).fit_predict(workspace)
+
+print(heat.integral())
+```
+
+Heat smoothing is an independent metric-graph engine, not a kernel name passed
+to `NetworkKDE`. Shared finite-element vertex values enforce continuity,
+Kirchhoff balance controls junction flux, and terminal vertices use zero-flux
+Neumann conditions. The output contains exactly integrated lixel cell averages.
 
 ## Initial design commitments
 

@@ -1,4 +1,4 @@
-# pyKDEX 0.0.8 validation
+# pyKDEX 0.0.9 validation
 
 Validation date: 2026-07-23
 
@@ -12,6 +12,8 @@ Validation date: 2026-07-23
 - deterministic measured-cell Polygon/MultiPolygon renormalization;
 - one-generation axis-aligned rectangular reflection correction;
 - public `SpatialKDE` and fixed/adaptive `NetworkKDE` estimators;
+- public finite-element `HeatNetworkKDE` for undirected metric graphs;
+- reusable sparse `NetworkHeatOperator` assets;
 - structured spatial/network data, support measures, provenance, snapping, distance assets,
   network policies, network CV, and network kNN bandwidths from 0.0.1-0.0.7.
 
@@ -30,25 +32,37 @@ Validation date: 2026-07-23
 - boundary CRS, units, event coverage, and support coverage are enforced;
 - failed fits atomically clear fitted state.
 
+## Heat-network numerical validation
+
+- finite-interval lixel averages agree with the analytical Neumann heat kernel;
+- square-ring lixel averages agree with the analytical periodic heat kernel;
+- shared junction degrees of freedom enforce exact vertex continuity;
+- the weak form supplies Kirchhoff junction balance and Neumann terminals;
+- accepted event offsets are inserted exactly in the heat mesh;
+- near-duplicate floating breakpoints are coalesced before element assembly;
+- density and intensity conserve mass independently in each connected component;
+- empty disconnected components remain exactly zero;
+- heat outputs are exact piecewise-linear lixel cell averages;
+- directed networks and unsupported self-loop records fail explicitly;
+- failed fits atomically clear all heat-estimator state.
+
 ## Final observed validation
 
-- pytest: `145 passed`;
-- branch coverage: `81.41%`, above the required `80%` minimum;
-- public API/example map: `77 symbols mapped to executable examples`;
-- Black, isort, Ruff, and mypy: passed;
-- strict MkDocs build: passed;
-- wheel, sdist, Twine metadata, distribution-content, and installed-wheel smoke checks: passed;
-- Linux, Windows, and macOS passed on Python 3.11-3.14;
-- final clean pull-request CI: run `#104` (`29974693141`), conclusion `success`;
-- temporary transfer, apply, export, formatter, Ruff-fix, and finalizer infrastructure: removed;
-- existing 0.0.1-0.0.7 regression suite: passed;
-- PR #7 squash merge commit: `9f0aef9e8be57cc9e1c6beb210225b421501a623`.
+- pytest: `161 passed` in the latest development run;
+- branch coverage: `81.76%`, above the required `80%` minimum;
+- public API/example map: `80 symbols mapped to executable examples`;
+- Black, isort, Ruff, mypy, strict MkDocs, all examples, distributions, and
+  isolated installed-wheel checks: passed;
+- final cross-platform GitHub CI, PR, and merge fields: pending publication;
+- existing 0.0.1-0.0.8 regression suite: passed.
 
 ## Deliberate exclusions
 
 - balloon boundary correction;
 - event-specific full matrices and plug-in matrix selectors;
 - infinite-series or irregular-polygon reflection;
-- heat-equation Gaussian NetworkKDE;
+- directed heat flow, self-loop heat elements, variable diffusivity, and
+  alternative terminal boundary conditions;
+- heat-time selection, batched heat evaluation, and reusable decompositions;
 - spatiotemporal and network-time KDE;
 - relative risk, bootstrap uncertainty, persistent workspace serialization, and compiled acceleration.

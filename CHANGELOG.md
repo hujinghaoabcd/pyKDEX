@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.0.9 - 2026-07-23
+
+- Add `HeatNetworkKDE` as a separate metric-graph heat-equation estimator.
+- Add measured piecewise-linear finite elements with shared vertex degrees of freedom.
+- Add reusable read-only `NetworkHeatOperator` sparse assets and fingerprints.
+- Insert event offsets and lixel boundaries exactly in the heat discretization.
+- Enforce Kirchhoff junction balance and natural Neumann terminal conditions.
+- Return exactly integrated lixel cell averages with per-component mass checks.
+- Add interval, ring, T-junction, disconnected-network, weighting, and failure tests.
+- Add a runnable example, API documentation, estimator guide, and versioned handoff.
+
 ## 0.0.8 - 2026-07-23
 
 - Add polygon boundary renormalization with analytical rectangular Gaussian mass and deterministic measured-cell quadrature.
