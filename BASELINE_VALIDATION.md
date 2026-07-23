@@ -39,10 +39,10 @@ Validation date: 2026-07-23
 - strict MkDocs build: passed;
 - wheel, sdist, Twine metadata, distribution-content, and installed-wheel smoke checks: passed;
 - Linux, Windows, and macOS passed on Python 3.11-3.14;
-- final clean pull-request CI: run `#101` (`29974418301`), conclusion `success`;
+- final clean pull-request CI: run `#104` (`29974693141`), conclusion `success`;
 - temporary transfer, apply, export, formatter, Ruff-fix, and finalizer infrastructure: removed;
 - existing 0.0.1-0.0.7 regression suite: passed;
-- PR #7 squash merge commit: pending.
+- PR #7 squash merge commit: `9f0aef9e8be57cc9e1c6beb210225b421501a623`.
 
 ## Deliberate exclusions
 

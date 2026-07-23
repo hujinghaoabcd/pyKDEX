@@ -334,6 +334,6 @@ After the heat engine, proceed to spatiotemporal data objects and separable STKD
 - Final test count: `145 passed`
 - Final branch coverage: `81.41%`
 - Public API/example count: `77 symbols mapped to executable examples`
-- Final CI run: GitHub Actions run `#101` (`29974418301`), conclusion `success`
-- PR #7 squash merge commit: pending
+- Final CI run: GitHub Actions run `#104` (`29974693141`), conclusion `success`
+- PR #7 squash merge commit: `9f0aef9e8be57cc9e1c6beb210225b421501a623`
 - Temporary workflow removal: completed
