@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.0.14 - 2026-07-23
+
+- Add versioned `WorkspaceManifest` records with a closed schema.
+- Add deterministic ZIP archive and portable directory backends.
+- Add SHA-256 payload checks, byte-size checks, safe paths, and schema guards.
+- Add atomic local writes with explicit overwrite protection.
+- Persist networks, snapping audits, lixels, arixels, provenance, and metadata.
+- Preserve object identifiers and NumPy scalar types without pickle.
+- Round-trip sparse network and factorized network-time distance assets exactly.
+- Add `NetworkWorkspace.save/load` and `NetworkTimeWorkspace.save/load`.
+- Add corruption, cross-process, OSMnx, cyclic-time, and atomic-failure tests.
+- Add an executable example, size/reload benchmark, documentation, and handoff.
+
 ## 0.0.13 - 2026-07-23
 
 - Add reusable `NetworkTimeSelectionCache` factorized over network and time.

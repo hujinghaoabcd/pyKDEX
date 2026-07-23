@@ -10,6 +10,8 @@ Author:
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from os import PathLike
+from pathlib import Path
 from typing import Any
 
 from pykdex.data import SpatialEvents
@@ -142,6 +144,38 @@ class NetworkWorkspace:
             "n_warnings": len(validation.warnings),
             "fingerprint": self.fingerprint,
         }
+
+    def save(
+        self,
+        path: str | PathLike[str],
+        *,
+        format: str = "archive",
+        overwrite: bool = False,
+    ) -> Path:
+        """Persist this workspace as a checksummed directory or ZIP archive."""
+        from pykdex.persistence import save_network_workspace
+
+        return save_network_workspace(
+            self,
+            path,
+            format=format,
+            overwrite=overwrite,
+        )
+
+    @classmethod
+    def load(
+        cls,
+        path: str | PathLike[str],
+        *,
+        max_payload_bytes: int = 1_073_741_824,
+    ) -> "NetworkWorkspace":
+        """Load and validate a persisted workspace."""
+        from pykdex.persistence import load_network_workspace
+
+        return load_network_workspace(
+            path,
+            max_payload_bytes=max_payload_bytes,
+        )
 
     def with_event_lixel_distances(
         self,

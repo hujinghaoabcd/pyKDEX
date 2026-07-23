@@ -6,6 +6,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from os import PathLike
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -175,6 +177,38 @@ class NetworkTimeWorkspace:
             "n_warnings": len(report.warnings),
             "fingerprint": self.fingerprint,
         }
+
+    def save(
+        self,
+        path: str | PathLike[str],
+        *,
+        format: str = "archive",
+        overwrite: bool = False,
+    ) -> Path:
+        """Persist this workspace as a checksummed directory or ZIP archive."""
+        from pykdex.persistence import save_network_time_workspace
+
+        return save_network_time_workspace(
+            self,
+            path,
+            format=format,
+            overwrite=overwrite,
+        )
+
+    @classmethod
+    def load(
+        cls,
+        path: str | PathLike[str],
+        *,
+        max_payload_bytes: int = 1_073_741_824,
+    ) -> "NetworkTimeWorkspace":
+        """Load and validate a persisted temporal-network workspace."""
+        from pykdex.persistence import load_network_time_workspace
+
+        return load_network_time_workspace(
+            path,
+            max_payload_bytes=max_payload_bytes,
+        )
 
     def with_distances(
         self,

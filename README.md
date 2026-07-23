@@ -226,6 +226,24 @@ print(field.integral())
 width. Network distances and temporal offsets are stored as a factorized
 reusable asset rather than an expanded event-by-arixel matrix.
 
+## Persistent prepared workspaces
+
+```python
+workspace = (
+    workspace.with_event_lixel_distances(cutoff=1000.0)
+    .with_event_event_distances()
+)
+workspace.save("city-network.pykdex")
+
+restored = NetworkWorkspace.load("city-network.pykdex")
+assert restored.fingerprint == workspace.fingerprint
+```
+
+The portable format contains canonical JSON, non-object NumPy arrays, and WKB
+geometry. It never uses pickle. Every payload has a declared byte size and
+SHA-256 digest, and loading reconstructs and validates the full object graph.
+Use `format="directory"` for an inspectable directory bundle.
+
 ## Initial design commitments
 
 - independent in-package numerical implementation;
