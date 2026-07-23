@@ -18,7 +18,9 @@ recommended next work without relying on chat history.
 - First complete PR CI: run `#128` (`30011519807`), conclusion `success`
 - Final clean PR CI: run `#129` (`30011753378`), conclusion `success`
 - Squash merge commit: `f9b9d7e3949ee8688b8829a6b8760f1f3214cd4a`
-- Post-merge handoff commit: pending
+- Post-merge handoff commit:
+  `3cda2582e702963b34bd84f66eb79db84c500429`
+- Post-merge `main` CI: run `#131` (`30012065149`), conclusion `success`
 
 The source tree and tests are authoritative. Pending fields must be replaced
 only with observed GitHub values. Never infer CI or merge success.
@@ -466,7 +468,9 @@ Before publication, the following were observed:
 - final clean PR CI run `#129` (`30011753378`): success;
 - squash merge commit:
   `f9b9d7e3949ee8688b8829a6b8760f1f3214cd4a`;
-- post-merge handoff/status commit: pending.
+- post-merge handoff/status commit:
+  `3cda2582e702963b34bd84f66eb79db84c500429`;
+- post-merge `main` CI run `#131` (`30012065149`): success.
 
 PR #12 was merged and closed successfully.
 

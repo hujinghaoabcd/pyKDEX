@@ -87,7 +87,9 @@ Validation date: 2026-07-23
 - final clean PR CI run `#129` (`30011753378`): success;
 - PR #12 squash merge commit:
   `f9b9d7e3949ee8688b8829a6b8760f1f3214cd4a`;
-- post-merge handoff commit: pending.
+- post-merge handoff commit:
+  `3cda2582e702963b34bd84f66eb79db84c500429`;
+- post-merge `main` CI run `#131` (`30012065149`): success.
 
 PR #12 was merged and closed successfully.
 
