@@ -53,7 +53,9 @@ Validation date: 2026-07-23
 - public API/example map: `80 symbols mapped to executable examples`;
 - Black, isort, Ruff, mypy, strict MkDocs, all examples, distributions, and
   isolated installed-wheel checks: passed;
-- final cross-platform GitHub CI, PR, and merge fields: pending publication;
+- PR #9 GitHub Actions run `#113` (`29979483652`): success across quality,
+  coverage, distributions, Linux/Windows/macOS, and Python 3.11-3.14;
+- final clean metadata CI and squash merge commit: pending;
 - existing 0.0.1-0.0.8 regression suite: passed.
 
 ## Deliberate exclusions

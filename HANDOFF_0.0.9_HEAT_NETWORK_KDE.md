@@ -12,7 +12,10 @@ development order without access to earlier chat messages.
 - Version developed in this unit: `0.0.9`
 - Stable version before this unit: `0.0.8`
 - Development date: `2026-07-23`
-- Pull request and merge commit: pending final publication
+- Pull request: `#9 Add heat-equation network KDE`
+- Feature commit: `16bc4ba79d861b2651c227033be1b24bce7f5b9e`
+- First complete PR CI: run `#113` (`29979483652`), conclusion `success`
+- Merge commit: pending final squash merge
 
 The source of truth is the repository. Final CI and merge fields at the end of
 this document must be updated after the clean GitHub workflow.
@@ -397,8 +400,9 @@ Also observed locally:
 - Twine and distribution-content checks passed;
 - an isolated installed-wheel smoke test passed.
 
-Clean GitHub Actions on Linux/Windows/macOS and Python 3.11-3.14 remains
-pending publication. Do not replace that pending field until observed.
+GitHub Actions run `#113` (`29979483652`) passed quality, coverage,
+distributions, and Linux/Windows/macOS tests on Python 3.11-3.14. A final clean
+run after recording these identifiers remains required before merge.
 
 ## 10. Known limitations
 
@@ -474,7 +478,8 @@ and separable STKDE.
 - Final local test count: `161 passed`
 - Final branch coverage: `81.76%`
 - Public API/example count: `80 symbols; 11 examples`
-- Final pull request: pending
-- Final CI run and conclusion: pending
+- Final pull request: `#9 Add heat-equation network KDE`
+- First complete CI run: `#113` (`29979483652`), `success`
+- Final clean CI run after this metadata update: pending
 - Squash merge commit: pending
 - Temporary workflow removal: no temporary repository workflow added

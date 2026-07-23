@@ -11,11 +11,14 @@ implementation, validation, limitation, recovery, and next-unit record.
 - stable base version: `0.0.8`;
 - active branch: `agent/heat-network-kde`;
 - source version: `0.0.9`;
-- 0.0.9 pull request and merge commit: pending publication;
+- pull request: `#9 Add heat-equation network KDE`;
+- feature commit: `16bc4ba79d861b2651c227033be1b24bce7f5b9e`;
+- complete PR CI run `#113` (`29979483652`): success;
+- squash merge commit: pending final clean CI;
 - observed local validation: `161 passed`, branch coverage `81.76%`,
   80 public symbols mapped, all 11 examples, formatting, lint, typing, strict
   docs, distributions, and isolated wheel smoke passed;
-- final GitHub CI and merge fields: pending publication;
+- final clean metadata CI and merge fields: pending;
 - no temporary repository workflow has been added.
 
 ## Implemented in 0.0.9
