@@ -1,4 +1,4 @@
-# pyKDEX 0.0.11 validation
+# pyKDEX 0.0.12 validation
 
 Validation date: 2026-07-23
 
@@ -8,62 +8,57 @@ Validation date: 2026-07-23
   spatial bandwidths;
 - polygon boundary validation, renormalization, and rectangular reflection;
 - explicit linear and cyclic time domains;
-- immutable temporal coordinates, ordinary space-time events, point support,
-  and measured space-time grids;
-- reusable spatial-distance and signed-temporal-offset assets;
-- separable product-kernel `SpatiotemporalKDE`;
-- cyclic kernel normalization by periodic image summation;
-- deterministic joint and separate weighted LOO bandwidth experiments;
-- optional xarray-compatible time/y/x results;
-- fixed/adaptive traversal `NetworkKDE` with three junction policies;
+- ordinary space-time events, measured space-time grids, product KDE, and
+  joint/separate bandwidth experiments;
+- canonical linear networks, auditable snapping, measured lixels, exact
+  distances, traversal, and three junction policies;
+- fixed/adaptive traversal `NetworkKDE`;
 - measured finite-element `HeatNetworkKDE`, reusable plans, batch experiments,
   and heat-time selection;
-- structured provenance, support measures, snapping, and fingerprints.
+- network-time events, measured arixels, factorized assets, reusable
+  workspaces, and fixed product `TemporalNetworkKDE`;
+- structured provenance, units, support measures, identifiers, and
+  fingerprints.
 
-## Spatiotemporal data validation
+## Network-time data validation
 
-- spatial and temporal observations must have equal lengths;
+- raw spatial events and times must have equal lengths;
+- accepted event times are aligned after snapping by stable event ID;
+- rejected event records remain in the snap report;
+- accepted network events and temporal coordinates remain distinct immutable
+  components;
 - temporal units are mandatory and independent from spatial units;
-- datetime conversion requires a timezone for naive values;
-- cyclic coordinates canonicalize to one explicit period;
-- cyclic grids cover exactly one full period;
-- remainder spatial and temporal cells retain their actual measure;
-- distance assets retain both signed offsets and domain distances;
-- CRS, spatial unit, temporal unit, domain, origin, timezone, source, and target
-  fingerprints are validated before asset reuse;
+- arixel support uses actual lixel length × actual temporal-cell width;
+- spatial and temporal remainder cells retain actual measure;
+- cyclic arixels cover exactly one complete period from the domain origin;
+- flat arixel order is time-major and reshapes to `time × lixel`;
+- event, lixel, workspace, time-domain, unit, origin, timezone, and directed
+  fingerprints are checked before distance-asset reuse;
 - public arrays and measures are owned and read-only.
 
-## Spatiotemporal numerical validation
+## Network-time numerical validation
 
-- product Gaussian values match analytical normalization;
+- the exact zero-distance Epanechnikov × Gaussian product is recovered;
+- one-time discontinuous and continuous slices equal the corresponding
+  `NetworkKDE` field times the temporal factor;
 - density and intensity differ exactly by total event weight;
-- chunked, unchunked, and precomputed-asset evaluation agree;
-- cyclic values are periodic across the period boundary;
-- cyclic Gaussian evaluation includes periodic images, not only minimum
-  circular distance;
-- a full-period cyclic density integrates to one on measured support within
-  deterministic quadrature tolerance;
-- unmeasured results reject `integral()`;
-- grid values reshape to time/y/x;
-- optional xarray export preserves named time/y/x axes;
-- failed refits clear fitted state atomically.
-
-## Bandwidth-experiment validation
-
-- joint mode evaluates the complete ordered Cartesian candidate grid;
-- separate mode selects marginal spatial and temporal objectives independently;
-- the selected separate pair reports its product-kernel joint score;
-- weighted LOO removes only the observation's own diagonal contribution;
-- distance assets are reused and fingerprinted;
-- repeated runs are deterministic;
-- invalid, duplicate, empty, or nonpositive candidates are rejected;
-- selection requires at least two events.
+- time-chunked and unchunked evaluation agree;
+- a compatible sparse network-time asset is reused;
+- cyclic values agree across the period boundary;
+- full-period cyclic continuous density integrates to one within deterministic
+  quadrature tolerance;
+- directed simple propagation is zero on upstream lixels;
+- path policies reject infinite-support spatial kernels;
+- failed fits clear state atomically;
+- optional xarray export preserves `time` and `lixel` axes.
 
 ## Existing numerical validation retained
 
 - scalar and matrix spatial bandwidth equivalence;
 - SciPy multivariate-normal agreement for anisotropic Gaussian KDE;
 - analytical and measured boundary correction behavior;
+- ordinary space-time product values, cyclic periodic images, mass, chunking,
+  and bandwidth experiments;
 - exact event/lixel network distances and propagation contracts;
 - simple, discontinuous, and continuous `NetworkKDE` references;
 - finite-interval Neumann and periodic-ring heat references;
@@ -73,35 +68,30 @@ Validation date: 2026-07-23
 
 ## Final observed local validation
 
-- pytest: `200 passed`;
-- branch coverage: `81.41%`, above required `80%`;
-- public API/example map: `105 public symbols`;
-- executable examples: `13`;
+- focused network-time tests: `17 passed`;
+- final full regression: `217 passed`;
+- branch coverage: `81.14%`, above required `80%`;
+- public API/example map: `112 public symbols`;
+- executable examples: all `14` passed;
 - Black, isort, Ruff, mypy, and strict MkDocs: passed;
-- wheel and sdist build, Twine, and archive-content verification: passed;
-- isolated wheel installation and ordinary/spatiotemporal smoke: passed.
+- wheel and sdist build, Twine, archive verification, and isolated wheel
+  installation smoke: passed.
 
 ## GitHub state
 
-- PR: `#11 Add ordinary spatiotemporal KDE foundation`;
+- PR: `#12 Add network-time KDE foundation`;
 - feature implementation commit:
-  `f3cd409ea84508bf7218ba842dddd4b15b5e3138`;
-- first complete PR CI run `#123` (`29999198427`): success across all
-  quality, coverage, distribution, OS, and Python jobs;
-- final clean CI run `#124` (`29999408464`): success;
-- PR #11 squash merge commit:
-  `0ab1291a41eddd8dd4e6709ed92c5307b3e4b3e0`;
-- post-merge handoff commit:
-  `3ae0a8b56613d3f307d64a94bf01762cd52cd532`.
-
-PR #11 was merged and closed successfully.
+  `3f3a752202b4a2ff91939a01513d67713074c5e9`;
+- first complete PR CI run `#128` (`30011519807`): success across quality,
+  coverage, distributions, Linux/Windows/macOS, and Python 3.11-3.14;
+- final clean CI, merge commit, and post-merge handoff commit: pending.
 
 ## Deliberate exclusions
 
-- adaptive or balloon space-time bandwidths;
+- network-time bandwidth selection and adaptive bandwidths;
+- heat-equation network-time diffusion;
 - nonseparable, causal, and advection-aware temporal kernels;
-- spatiotemporal boundaries, exposure, risk, and uncertainty;
-- persistent distance assets and distributed xarray execution;
-- network-time events, arixels, `NetworkTimeWorkspace`, and TNKDE;
-- directed network-time propagation;
-- PostGIS/Zarr persistence and compiled acceleration.
+- time-dependent network topology or cost;
+- exposure, relative risk, uncertainty, and separability tests;
+- persistent workspaces and distance assets;
+- PostGIS/Zarr storage, distributed execution, and compiled acceleration.

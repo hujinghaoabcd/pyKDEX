@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.0.12 - 2026-07-23
+
+- Add immutable `NetworkTimeEvents` with stable accepted-event time alignment.
+- Add measured `ArixelSupport` as lixel × temporal-cell support.
+- Add reusable `NetworkTimeWorkspace` preparation and validation.
+- Add factorized sparse network distances and signed temporal offsets.
+- Add fixed-bandwidth separable `TemporalNetworkKDE`.
+- Reuse simple, discontinuous, and continuous network junction semantics.
+- Support linear and normalized cyclic temporal kernels.
+- Add measured `NetworkTimeField` results with frame, geospatial, and xarray exports.
+- Add analytical product, direction, chunking, cyclic, and mass tests.
+- Add an executable example, API documentation, estimator guide, and detailed handoff.
+
 ## 0.0.11 - 2026-07-23
 
 - Add explicit `LinearTimeDomain` and `CyclicTimeDomain` contracts.

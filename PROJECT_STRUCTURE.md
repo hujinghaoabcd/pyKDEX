@@ -7,6 +7,9 @@ pyKDEX/
 │   ├── data/          events, support, boundaries, datasets, and provenance
 │   ├── datasets/      deterministic spatial and network fixtures
 │   ├── network/       topology, snapping, lixels, workspaces, heat, and bundles
+│   ├── temporal/      linear and cyclic time domains
+│   ├── spatiotemporal/ ordinary space-time distance and evaluation assets
+│   ├── network_time/  network-time events, arixels, distances, and workspaces
 │   ├── adapters/      NetworkX and OSMnx conversion and acquisition
 │   ├── kernels/       normalized radial kernels and registry
 │   ├── bandwidths/    spatial and network bandwidth strategies
@@ -22,6 +25,6 @@ pyKDEX/
 └── .github/workflows/ continuous integration
 ```
 
-Only implemented and tested symbols enter the public API. Future network and
-temporal packages will be added with real data contracts rather than empty
-placeholder classes.
+Only implemented and tested symbols enter the public API. Future estimator
+families are added with complete data and numerical contracts rather than
+empty placeholder classes.
