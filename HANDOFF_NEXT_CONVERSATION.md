@@ -13,15 +13,19 @@ validation contract, limitations, recovery procedure, and next recommended unit.
 - active pull request: `#7 Add spatial boundary correction and anisotropic KDE`;
 - last stable completed version: `0.0.7`;
 - development version: `0.0.8`;
-- reviewed source commit on the development branch: `c55188f1a80bb53f68ed081d7dd7e4a0f21991f4`;
+- initial reviewed source commit: `c55188f1a80bb53f68ed081d7dd7e4a0f21991f4`;
+- formatted source and installed-wheel smoke-test commit: `91733f5519472401c54b01fee074562e50897d46`;
 - local validation: `145 passed`, branch coverage `81.41%`, 77 public symbols mapped, and all
   10 executable examples completed;
+- first online coverage and cross-platform tests confirmed the numerical regression suite; Black
+  formatting and the stale installed-wheel version assertion were corrected without changing the
+  numerical design;
 - new public functionality: polygon renormalization, rectangular reflection, positive-definite
   bandwidth matrices, and query-centred balloon kNN;
-- temporary transfer fragments and all temporary apply/export workflows: removed;
-- current status: implementation, tests, examples, documentation, and recovery records are complete;
-  the clean maintainer-triggered GitHub Actions quality, distribution, coverage, and platform matrix
-  is pending;
+- temporary transfer, formatting, apply, and export infrastructure: removed;
+- permanent CI workflow: restored to the `main` version;
+- current status: a second clean maintainer-triggered GitHub Actions quality, distribution, coverage,
+  and platform matrix is pending;
 - do not merge until final CI results are written into the versioned handoff.
 
 ## Next recommended unit after 0.0.8
