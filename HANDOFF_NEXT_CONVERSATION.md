@@ -13,6 +13,7 @@ implementation files, validation results, limitations, recovery procedure, and n
 - completed pull request: `#7 Add spatial boundary correction and anisotropic KDE`;
 - PR #7 squash merge commit: `9f0aef9e8be57cc9e1c6beb210225b421501a623`;
 - post-merge handoff-record commit: `a7b1ae9461ab90c3ba7c89b6043693ffcb26e412`;
+- post-merge main verification source commit: `4e73ea1fc2812305f47c702444860e8c90ac9fd4`;
 - validation: `145 passed`, branch coverage `81.41%`, 77 public symbols mapped, and all
   10 executable examples completed;
 - final documentation-complete pull-request CI run #104 (`29974693141`): success;
@@ -21,8 +22,9 @@ implementation files, validation results, limitations, recovery procedure, and n
 - temporary transfer, patch, apply, export, formatting, Ruff-fix, finalizer, merge-recorder,
   and diagnostic infrastructure: removed;
 - permanent CI workflow: restored on `main`;
-- unit status: complete and merged into `main`; post-merge main-branch CI is the final
-  repository-state verification.
+- post-merge verification PR: pending full permanent-CI result;
+- unit status: complete and merged into `main`; this verification PR records the final exact
+  repository-state check without adding a temporary workflow.
 
 ## Implemented in 0.0.8
 
