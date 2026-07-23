@@ -79,8 +79,12 @@ Validation date: 2026-07-23
 
 ## GitHub state
 
-- PR, feature commit, CI runs, merge commit, and post-merge handoff commit:
-  pending publication.
+- PR: `#12 Add network-time KDE foundation`;
+- feature implementation commit:
+  `3f3a752202b4a2ff91939a01513d67713074c5e9`;
+- first complete PR CI run `#128` (`30011519807`): success across quality,
+  coverage, distributions, Linux/Windows/macOS, and Python 3.11-3.14;
+- final clean CI, merge commit, and post-merge handoff commit: pending.
 
 ## Deliberate exclusions
 

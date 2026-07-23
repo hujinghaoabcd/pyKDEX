@@ -12,9 +12,10 @@ recommended next work without relying on chat history.
 - Version developed: `0.0.12`
 - Stable version before this unit: `0.0.11`
 - Development date: `2026-07-23`
-- Pull request: pending final publication
-- Feature implementation commit: pending final publication
-- First complete PR CI: pending
+- Pull request: `#12 Add network-time KDE foundation`
+- Feature implementation commit:
+  `3f3a752202b4a2ff91939a01513d67713074c5e9`
+- First complete PR CI: run `#128` (`30011519807`), conclusion `success`
 - Final clean PR CI: pending
 - Squash merge commit: pending
 - Post-merge handoff commit: pending
@@ -456,11 +457,14 @@ Before publication, the following were observed:
 
 ## 15. GitHub and merge state
 
-Pending publication. Record:
+- PR: `#12 Add network-time KDE foundation`;
+- feature implementation commit:
+  `3f3a752202b4a2ff91939a01513d67713074c5e9`;
+- first complete PR CI run `#128` (`30011519807`): success across quality,
+  coverage, distributions, Linux/Windows/macOS, and Python 3.11-3.14;
 
-- PR number and title;
-- feature commit;
-- first complete PR CI run number, database ID, and conclusion;
+Still pending:
+
 - final clean PR CI run;
 - squash merge commit;
 - post-merge handoff/status commit.

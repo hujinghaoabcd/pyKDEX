@@ -12,9 +12,10 @@ recovery procedure, and next-unit record.
 - development branch: `agent/network-time-foundation`;
 - version under final validation: `0.0.12`;
 - latest stable merged version before publication: `0.0.11`;
-- pull request: pending publication;
-- feature implementation commit: pending;
-- first complete PR CI: pending;
+- pull request: `#12 Add network-time KDE foundation`;
+- feature implementation commit:
+  `3f3a752202b4a2ff91939a01513d67713074c5e9`;
+- first complete PR CI run `#128` (`30011519807`): success;
 - final clean PR CI: pending;
 - squash merge commit: pending;
 - post-merge handoff commit: pending;
@@ -27,7 +28,8 @@ recovery procedure, and next-unit record.
   archive verification, and isolated wheel smoke: passed;
 - no temporary repository workflow has been added.
 
-Replace GitHub pending fields only with observed publication results.
+Replace remaining GitHub pending fields only with observed publication
+results.
 
 ## Implemented in 0.0.12
 
