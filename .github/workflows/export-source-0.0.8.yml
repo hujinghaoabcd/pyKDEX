@@ -25,10 +25,25 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat .tmp/pykdex008.part.00 .tmp/pykdex008.part.01 .tmp/pykdex008.part.02 > /tmp/pykdex008.patch.gz.b64
+          cat \
+            .tmp/pykdex008.part.00 \
+            .tmp/pykdex008.part.010 \
+            .tmp/pykdex008.part.011 \
+            .tmp/pykdex008.part.02 \
+            > /tmp/pykdex008.patch.gz.b64
           {
-            wc -c .tmp/pykdex008.part.00 .tmp/pykdex008.part.01 .tmp/pykdex008.part.02 /tmp/pykdex008.patch.gz.b64
-            sha256sum .tmp/pykdex008.part.00 .tmp/pykdex008.part.01 .tmp/pykdex008.part.02 /tmp/pykdex008.patch.gz.b64
+            wc -c \
+              .tmp/pykdex008.part.00 \
+              .tmp/pykdex008.part.010 \
+              .tmp/pykdex008.part.011 \
+              .tmp/pykdex008.part.02 \
+              /tmp/pykdex008.patch.gz.b64
+            sha256sum \
+              .tmp/pykdex008.part.00 \
+              .tmp/pykdex008.part.010 \
+              .tmp/pykdex008.part.011 \
+              .tmp/pykdex008.part.02 \
+              /tmp/pykdex008.patch.gz.b64
           } > /tmp/pykdex008-diagnostics.txt
       - name: Upload patch diagnostics
         uses: actions/upload-artifact@v4
@@ -46,7 +61,12 @@ jobs:
           echo "8dd1d51c9b221a0096d8e34192556119f56bfbd04ff1ae2c8e6331bc1176d943  /tmp/pykdex008.patch" | sha256sum -c -
           git apply --check /tmp/pykdex008.patch
           git apply /tmp/pykdex008.patch
-          rm -f .tmp/pykdex008.part.00 .tmp/pykdex008.part.01 .tmp/pykdex008.part.02
+          rm -f \
+            .tmp/pykdex008.part.00 \
+            .tmp/pykdex008.part.01 \
+            .tmp/pykdex008.part.010 \
+            .tmp/pykdex008.part.011 \
+            .tmp/pykdex008.part.02
           rm -f .github/workflows/apply-pykdex-0.0.8.yml
           rm -f .github/workflows/export-source-0.0.8.yml
           rmdir .tmp 2>/dev/null || true
