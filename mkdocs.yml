@@ -72,6 +72,7 @@ nav:
       - Network distances: guides/network-distances.md
       - Network-time data: guides/network-time-data.md
       - Network bandwidths: guides/network-bandwidths.md
+      - Workspace persistence: guides/workspace-persistence.md
       - Spatial boundary and anisotropy: guides/spatial-boundary-anisotropy.md
       - Kernels: guides/kernels.md
       - Bandwidths: guides/bandwidths.md
@@ -87,6 +88,7 @@ nav:
       - Spatiotemporal: api/spatiotemporal.md
       - Network-time: api/network-time.md
       - Network bandwidths: api/network-bandwidths.md
+      - Persistence: api/persistence.md
       - Boundary corrections: api/corrections.md
       - Kernels: api/kernels.md
       - Bandwidths: api/bandwidths.md
@@ -103,5 +105,6 @@ nav:
       - 0.0.11 handoff: development/handoff-0.0.11-spatiotemporal-foundation.md
       - 0.0.12 handoff: development/handoff-0.0.12-network-time-foundation.md
       - 0.0.13 handoff: development/handoff-0.0.13-network-time-bandwidths.md
+      - 0.0.14 handoff: development/handoff-0.0.14-workspace-persistence.md
       - Roadmap: development/roadmap.md
   - 中文: zh/index.md

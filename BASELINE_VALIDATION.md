@@ -1,92 +1,73 @@
-# pyKDEX 0.0.13 validation
+# pyKDEX 0.0.14 validation
 
 Validation date: 2026-07-23
 
 ## Implemented public functionality
 
-- scalar, cross-validated, sample-point kNN, Abramson, matrix, and balloon
-  spatial bandwidths;
-- polygon boundary validation, renormalization, and rectangular reflection;
-- explicit linear and cyclic time domains;
-- ordinary space-time events, measured grids, product KDE, and bandwidth
-  experiments;
-- canonical networks, auditable snapping, measured lixels, exact distances,
-  traversal, and three junction policies;
-- fixed/adaptive traversal `NetworkKDE`;
-- finite-element `HeatNetworkKDE`, reusable plans, batch experiments, and
-  heat-time selection;
-- network-time events, measured arixels, factorized assets, and reusable
-  workspaces;
-- fixed/adaptive `TemporalNetworkKDE`;
-- network-time likelihood and measured LSCV candidate experiments;
-- structured provenance, units, support measures, identifiers, and
-  fingerprints.
+- ordinary spatial, space-time, network, heat-network, and temporal-network
+  KDE;
+- scalar, matrix, balloon, sample-point, and cross-validated bandwidths;
+- polygon boundary correction and measured result objects;
+- canonical networks, auditable snapping, lixels, arixels, and exact sparse
+  distances;
+- linear and cyclic time domains;
+- reusable network, heat, space-time, and network-time compute assets;
+- portable, safe persistence for network and network-time workspaces;
+- structured provenance, units, identifiers, measures, and fingerprints.
 
-## Network-time bandwidth validation
+## Workspace persistence validation
 
-- scalar or event-specific bandwidth components are owned and read-only;
-- event-specific arrays must match accepted event count;
-- spatial and temporal kNN ranks are independent;
-- only the event's own diagonal index is excluded;
-- colocated other events and duplicate times remain valid zero-distance
-  neighbours;
-- zero selected distances require explicit positive floors;
-- directed-unreachable spatial neighbour ranks fail explicitly;
-- event-specific bandwidths evaluate under simple and path-based policies;
-- path policies still reject infinite-support spatial kernels;
-- cyclic temporal evaluation accepts one source bandwidth per event and
-  preserves periodic image normalization;
-- joint and separate likelihood experiments are deterministic;
-- simple selection reuses a compatible workspace distance asset;
-- continuous selection reuses maximum-candidate propagation traces;
-- network-time LSCV integrates actual arixel measure;
-- result candidate arrays and score matrices are immutable;
-- cache fingerprints agree with selection results.
-
-## Existing numerical validation retained
-
-- ordinary spatial, boundary, anisotropic, and adaptive KDE references;
-- ordinary space-time products, cyclic images, mass, and bandwidth experiments;
-- exact event/lixel network distances and junction propagation;
-- simple, discontinuous, and continuous `NetworkKDE` references;
-- finite-interval, ring, Kirchhoff, and mass-conserving heat references;
-- fixed temporal-network products, cyclic mass, direction, chunking, and
-  structured exports.
+- identical workspaces produce byte-identical archives;
+- archive and directory backends recover identical fingerprints;
+- object tuple IDs and NumPy scalar marks preserve their types;
+- WKB restores exact network and lixel fingerprints;
+- OSMnx-style direction, parallel-edge keys, IDs, and attributes survive;
+- rejected snapping records, reports, and parameters survive;
+- event-lixel and event-event sparse assets remain sparse and exact;
+- linear and cyclic temporal domains survive;
+- signed temporal offsets and factorized distances survive;
+- future schema versions and wrong workspace kinds fail;
+- corrupted sizes, checksums, and inventories fail;
+- aggregate payload limits fail before object construction;
+- unsupported arbitrary metadata fails before writing;
+- existing destinations are protected;
+- simulated atomic replacement failure preserves old bytes;
+- independent-process loading returns the same fingerprint;
+- final reconstructed fingerprints and normal object validation are required.
 
 ## Observed local validation
 
-- focused network-time and neighboring tests: `22 passed`;
-- full regression: `226 passed`;
-- branch coverage: `81.15%`, above required `80%`;
-- public API/example map: `117 public symbols`;
-- executable examples: all `15` passed;
-- benchmark: `100` events, `6912` arixels, and `64` candidate pairs completed;
-- Black, isort, Ruff, mypy, and strict MkDocs: passed;
-- wheel/sdist build, Twine, archive verification, and isolated installation:
-  passed.
+- focused persistence tests: `10 passed`;
+- full regression: `236 passed`;
+- branch coverage: `80.86%`;
+- public API/example map after update: `122 public symbols`;
+- all executable examples: `16 passed`;
+- benchmark: `250` events, `10,560` arixels, and `33,875` sparse distance
+  pairs saved to `149,733` bytes and reloaded with equal fingerprint;
+- Black, isort, Ruff, and mypy: passed;
+- strict MkDocs: passed;
+- wheel, sdist, Twine, archive-content verification, and isolated wheel smoke:
+  passed;
+- GitHub CI and merge evidence: pending.
 
 ## GitHub state
 
-- development branch: `agent/network-time-bandwidths`;
-- PR: `#13 Add network-time bandwidth selection and adaptive KDE`;
-- feature implementation commit:
-  `1fd7c07902daf14e061491e7af313b1833ea6de3`;
-- first complete PR CI run `#133` (`30014407093`): success across quality,
-  coverage, distributions, Linux/Windows/macOS, and Python 3.11-3.14;
-- final clean PR CI run `#134` (`30014636526`): success;
-- squash merge commit: `20fccb9bfd6f9f88880f88fb1903f5c8fe2d3597`;
-- post-merge handoff commit: pending;
+- development branch: `agent/workspace-persistence`;
+- PR: pending;
+- feature commit: pending;
+- PR CI: pending;
+- squash merge commit: pending;
 - post-merge `main` CI: pending.
 
-PR #13 was merged and closed successfully. Post-merge `main` CI remains
-pending and is not claimed before observation.
+These fields must be replaced only with observed GitHub results.
 
 ## Deliberate exclusions
 
-- heat-equation network-time diffusion;
-- fully coupled or nonseparable per-event bandwidths;
-- causal or time-dependent-network kernels;
-- exposure-adjusted risk and uncertainty;
-- persistent workspaces and distance assets;
-- PostGIS/Zarr storage;
-- distributed or compiled execution.
+- estimator serialization;
+- pickle-compatible formats;
+- PostGIS and Zarr;
+- remote and distributed storage;
+- out-of-core compute;
+- exposure-adjusted risk;
+- bootstrap uncertainty and separability tests;
+- heat-equation network-time diffusion.

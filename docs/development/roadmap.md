@@ -13,4 +13,7 @@
 11. ~~separable and cyclic ordinary spatiotemporal KDE with bandwidth experiments~~;
 12. ~~arixel support and fixed-bandwidth temporal-network KDE~~;
 13. ~~network-time bandwidth selection and adaptive temporal-network KDE~~;
-14. exposure-adjusted risk, uncertainty, separability, persistence, and scalable estimators.
+14. ~~portable persistent network and network-time workspaces~~;
+15. exposure-adjusted risk and relative-risk estimation;
+16. uncertainty, separability diagnostics, and scalable execution;
+17. optional PostGIS/Zarr storage adapters.

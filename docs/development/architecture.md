@@ -40,3 +40,17 @@ evaluated separately and combined only for an objective. Path-based policies
 trace each source once at the largest candidate spatial bandwidth. Adaptive
 spatial and temporal bandwidths are sample-point values owned by source
 events, never query-centred balloon bandwidths.
+
+## Portable workspace persistence
+
+Persistence is a data boundary, not estimator serialization. A versioned
+manifest describes a closed component graph and an exact payload inventory.
+Numeric arrays remain independent NPY payloads with pickle disabled; object
+identifiers use a typed JSON codec; line geometry uses WKB data and offsets.
+Every payload is checked by byte size and SHA-256 before object construction.
+
+Archive and directory backends share this logical schema. Writes are staged
+beside the destination and atomically renamed, while reads validate schema,
+paths, checksums, dtype/shape contracts, component fingerprints, and finally
+the complete reconstructed workspace fingerprint. Storage-provider adapters
+such as PostGIS or Zarr must remain separate from this portable foundation.

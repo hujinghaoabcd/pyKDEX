@@ -11,7 +11,7 @@ from __future__ import annotations
 
 __author__ = "Jinghao Hu"
 __license__ = "MIT"
-__version__ = "0.0.13"
+__version__ = "0.0.14"
 
 from pykdex.adapters import from_networkx_graph, from_osmnx_graph, network_from_place
 from pykdex.bandwidths import (
@@ -130,6 +130,13 @@ from pykdex.network_time import (
     NetworkTimeWorkspace,
     build_network_time_distance_asset,
 )
+from pykdex.persistence import (
+    WorkspaceManifest,
+    load_network_time_workspace,
+    load_network_workspace,
+    save_network_time_workspace,
+    save_network_workspace,
+)
 from pykdex.selection import (
     HeatLeastSquaresCV,
     HeatLikelihoodCV,
@@ -206,6 +213,11 @@ __all__ = [
     "NetworkTimeDistanceAsset",
     "build_network_time_distance_asset",
     "NetworkTimeWorkspace",
+    "WorkspaceManifest",
+    "save_network_workspace",
+    "load_network_workspace",
+    "save_network_time_workspace",
+    "load_network_time_workspace",
     "NetworkLocations",
     "NetworkDistanceAsset",
     "build_network_distance_asset",
