@@ -94,6 +94,4 @@ def bootstrap_kde(
                 "support."
             )
         return bootstrap_heat_network_kde(estimator, events, plan=plan)
-    raise TypeError(
-        "estimator must be a SpatialKDE, NetworkKDE, or HeatNetworkKDE."
-    )
+    raise TypeError("estimator must be a SpatialKDE, NetworkKDE, or HeatNetworkKDE.")

@@ -39,7 +39,6 @@ from pykdex.uncertainty.plan import BootstrapPlan
 from pykdex.uncertainty.results import BootstrapResult
 from pykdex.uncertainty.seeds import SeedLedger, build_seed_ledger
 
-
 _DEFAULT_DENSE_THRESHOLD = 1_024
 _FORCE_SPARSE_THRESHOLD = 1
 
@@ -196,9 +195,7 @@ def _solver_temporary_upper_bytes(plan: HeatComputePlan) -> int:
         return int(4 * n_dofs * n_dofs * 8 + n_dofs * 8 * 16)
     generator = plan.generator
     sparse_bytes = (
-        generator.data.nbytes
-        + generator.indices.nbytes
-        + generator.indptr.nbytes
+        generator.data.nbytes + generator.indices.nbytes + generator.indptr.nbytes
     )
     return int(4 * sparse_bytes + n_dofs * 8 * 32)
 
@@ -351,10 +348,7 @@ def _resolve_heat_replicate_execution(
         + workspace.lixels.n_lixels * 8
     )
     one_worker_bytes = int(
-        replicate_workspace_bytes
-        + solver_state
-        + solver_temporary
-        + numerical_arrays
+        replicate_workspace_bytes + solver_state + solver_temporary + numerical_arrays
     )
     fixed_overhead = int(
         ensemble_bytes
@@ -455,9 +449,7 @@ def bootstrap_heat_network_kde(
     replicate_workspace_fingerprints: list[str | None] = [
         None
     ] * bootstrap_plan.n_resamples
-    replicate_plan_fingerprints: list[str | None] = [
-        None
-    ] * bootstrap_plan.n_resamples
+    replicate_plan_fingerprints: list[str | None] = [None] * bootstrap_plan.n_resamples
 
     def worker(
         start: int,

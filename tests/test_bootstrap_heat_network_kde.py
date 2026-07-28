@@ -78,9 +78,9 @@ def test_heat_bootstrap_returns_complete_exact_support_result() -> None:
     assert result.metadata["solver"] == "dense_symmetric_eigendecomposition"
     assert result.ensemble.metadata["unit_event_weights"] is True
     assert result.ensemble.metadata["n_rejected_fixed"] == 0
-    assert len(
-        result.ensemble.metadata["replicate_heat_compute_plan_fingerprints"]
-    ) == 4
+    assert (
+        len(result.ensemble.metadata["replicate_heat_compute_plan_fingerprints"]) == 4
+    )
     assert not source.is_fitted_
     assert not result.ensemble.replicate_values.flags.writeable
     assert np.dot(
@@ -270,7 +270,9 @@ def test_heat_bootstrap_rejects_target_chunks_and_explicit_support() -> None:
         )
 
 
-def test_heat_bootstrap_accepts_events_keyword_and_fails_small_memory_preflight() -> None:
+def test_heat_bootstrap_accepts_events_keyword_and_fails_small_memory_preflight() -> (
+    None
+):
     workspace = _workspace()
     result = bootstrap_kde(
         estimator=HeatNetworkKDE(diffusion_time=0.08, mesh_size=0.25),
