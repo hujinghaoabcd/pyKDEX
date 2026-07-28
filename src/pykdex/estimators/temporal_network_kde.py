@@ -90,9 +90,7 @@ class TemporalNetworkKDE(BaseKDE):
                 raise TypeError("time_chunk_size must be a positive integer or None.")
             if int(time_chunk_size) <= 0:
                 raise ValueError("time_chunk_size must be greater than zero.")
-        if execution_plan is not None and not isinstance(
-            execution_plan, ExecutionPlan
-        ):
+        if execution_plan is not None and not isinstance(execution_plan, ExecutionPlan):
             raise TypeError("execution_plan must be an ExecutionPlan or None.")
         tolerance = float(cyclic_tail_tolerance)
         coefficient = float(coefficient_tolerance)

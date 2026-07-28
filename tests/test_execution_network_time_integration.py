@@ -6,7 +6,12 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from pykdex import NetworkTimeWorkspace, SpatialEvents, TemporalNetworkKDE, load_t_junction
+from pykdex import (
+    NetworkTimeWorkspace,
+    SpatialEvents,
+    TemporalNetworkKDE,
+    load_t_junction,
+)
 from pykdex.execution import ExecutionPlan
 
 

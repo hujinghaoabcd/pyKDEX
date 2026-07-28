@@ -76,9 +76,7 @@ class HeatNetworkKDE(BaseKDE):
         tolerance = float(negative_tolerance)
         if not np.isfinite(tolerance) or tolerance <= 0.0:
             raise ValueError("negative_tolerance must be finite and positive.")
-        if execution_plan is not None and not isinstance(
-            execution_plan, ExecutionPlan
-        ):
+        if execution_plan is not None and not isinstance(execution_plan, ExecutionPlan):
             raise TypeError("execution_plan must be an ExecutionPlan or None.")
         self.diffusion_time = diffusion_time
         self.diffusion_time_strategy = strategy
