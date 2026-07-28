@@ -1,32 +1,34 @@
 # pyKDEX 0.0.15 final handoff: exposure-adjusted rates and relative risk
 
-This is the durable release handoff for pyKDEX 0.0.15. It consolidates the three
-validated development subunits into the final public API and records the release-candidate
-state, statistical contracts, implementation boundaries, examples, documentation,
-validation requirements, PR workflow, and recovery procedure.
+This is the durable engineering and release handoff for pyKDEX 0.0.15. It consolidates
+the three implementation subunits, final public API, analytical validation, release
+candidate, pull-request audit, and observed merge state. Future conversations must read
+this file before designing 0.0.16.
 
-The file must be updated after the final release-candidate CI, PR readiness transition,
-merge, and post-merge `main` CI. Until those events are observed and recorded, this
-handoff describes a release candidate rather than a completed merge.
-
-## 1. Repository and release-candidate state
+## 1. Final repository state
 
 - Project: `hujinghaoabcd/pyKDEX`
-- Release version in the branch: `0.0.15`
-- Previous stable merged version: `0.0.14`
-- Branch: `agent/exposure-relative-risk`
-- Pull request: `#15 Add exposure-adjusted rate and relative-risk foundations`
-- PR state at handoff creation: open, Draft, mergeable, not merged
-- Base `main`: `1315619afba79a6ddf1fbfd7b91900bf0c0992f1`
-- Last fully observed pre-release implementation/status CI:
-  `#214` (`30355794150`), success on head
-  `1aba2852db070d47aada69946d946d32489621f1`
-- Final release-candidate CI after version, API, example, and documentation changes:
-  pending observation
-- Merge commit: not yet created
-- Post-merge `main` CI: not yet observed
+- Stable package version in `main`: `0.0.15`
+- Previous stable version: `0.0.14`
+- Development branch: `agent/exposure-relative-risk`
+- Pull request: `#15 Release pyKDEX 0.0.15 exposure-adjusted rates and relative risk`
+- Release-candidate head: `2652c8b81a662e358059eb809cbde645c05ebb8b`
+- Release-candidate CI: `#229` (`30357305493`), success
+- PR transition: Draft to Ready after successful CI and audit
+- Merge method: squash
+- Merge commit: `dcac85cd1399b9ad18257451601dcc47c4e73f20`
+- Merged at: `2026-07-28T12:09:31Z`
+- PR state: closed and merged
+- Merge-state documentation commit: created by the update containing this file
+- Post-merge `main` CI: must be inspected for the final merge-state documentation head;
+  the available connector exposes PR-triggered workflow runs but not repository push-run
+  enumeration, so no unobserved push result is claimed here.
 
-Read these records in order when recovering the project:
+The CI workflow is configured to run on pushes to `main` and `master`, pull requests, and
+manual dispatch. A later conversation must inspect the live Actions state before relying
+on a statement about the merge-state documentation commit.
+
+Read these records in order:
 
 1. `docs/development/design-0.0.15-exposure-relative-risk.md`;
 2. `HANDOFF_0.0.15_PROGRESS_01_EXPOSURE_FIELD.md`;
@@ -37,18 +39,17 @@ Read these records in order when recovering the project:
 
 ## 2. Release purpose
 
-Version 0.0.15 adds two deliberately distinct statistical layers on measured pyKDEX
-supports:
+Version 0.0.15 adds two statistically distinct layers on measured pyKDEX supports:
 
 1. exposure-adjusted event rates; and
 2. separately normalized case-control density-ratio relative risk.
 
-They share measured-support and denominator-policy infrastructure but are not represented
-by one ambiguous `risk` operation.
+They share support-validation and denominator-policy infrastructure but are not collapsed
+into one ambiguous operation.
 
 ## 3. Final top-level public API
 
-The new stable top-level exports are:
+The five new stable top-level exports are:
 
 ```python
 ExposureField
@@ -65,27 +66,26 @@ from pykdex import ...
 from pykdex.risk import ...
 ```
 
-The risk subpackage additionally exposes `DenominatorPolicy` and measured-support helper
-contracts for advanced validation. Those helper names are not added to the top-level
-package API.
+`pykdex.risk` additionally exposes `DenominatorPolicy` and advanced measured-support
+helpers. Those helper names are intentionally not added to top-level `pykdex`.
 
 ## 4. Measured-support contract
 
-Every exposure, rate, and relative-risk field is bound to an explicit measured support.
-Supported measured domains are:
+Every exposure, rate, and relative-risk field is bound to explicit measured support.
+Supported domains are:
 
 - `GridSupport`, measured by actual cell area;
 - `LixelSupport`, measured by actual lixel length;
-- `SpatiotemporalGridSupport` and measured space-time support, measured by spatial
-  measure multiplied by time-bin width;
-- `ArixelSupport`, measured by lixel length multiplied by time-bin width.
+- measured ordinary space-time support, measured by spatial measure multiplied by
+  temporal-cell width;
+- `ArixelSupport`, measured by lixel length multiplied by temporal-cell width.
 
-Compatibility is not inferred from shape. Required identity includes the applicable:
+Compatibility is never inferred from shape alone. Validation includes the applicable:
 
 ```text
 support fingerprint
-stable support identifiers
-support measure
+stable identifiers
+per-element measure
 CRS
 spatial unit
 temporal unit
@@ -93,75 +93,69 @@ time-domain fingerprint
 network fingerprint
 ```
 
-Boundary remainder cells, unequal lixels, and unequal final time bins retain their actual
+Boundary remainder cells, unequal lixels, and unequal final time bins retain their real
 measure.
 
 ## 5. ExposureField
 
-`ExposureField` is an immutable, fingerprinted exposure-density field. Its canonical
-stored values are exposure density with respect to support measure.
+`ExposureField` is immutable and stores canonical exposure density with respect to support
+measure. It can be constructed from density or from per-element amounts.
 
-For element `j` with measure `m_j`, density `e_j`, and amount `E_j`:
+For support element `j` with measure `m_j`, density `e_j`, and amount `E_j`:
 
 ```text
 E_j = e_j * m_j
 E_total = sum_j e_j * m_j
 ```
 
-Public constructors are:
+Public constructors:
 
 ```python
 ExposureField.from_density(...)
 ExposureField.from_amounts(...)
 ```
 
-The object retains:
+The field retains:
 
-- canonical read-only exposure densities;
-- recoverable per-element exposure amounts;
+- read-only canonical density values;
+- recoverable per-element amounts;
 - original representation (`density` or `amount`);
 - exposure unit;
-- exact measured support and descriptor;
+- exact support and descriptor;
 - provenance and immutable metadata;
-- total exposure;
+- measured total exposure;
 - deterministic fingerprint;
 - DataFrame, grid, and GeoDataFrame exports where supported.
 
-Negative or non-finite exposure values are rejected. A completely zero field may be
-constructed for data inspection but is invalid for default rate estimation.
+Negative or non-finite exposure is rejected. A complete zero field may be represented for
+data inspection but is rejected by default rate calculation.
 
 ## 6. Explicit denominator policy
 
-No hidden epsilon, pseudocount, or implicit denominator regularization is allowed.
+No hidden epsilon, pseudocount, or implicit denominator regularization is used.
 
-The immutable denominator policy supports:
+The immutable policy supports:
 
 - `raise`: reject denominators at or below the validity threshold;
-- `nan`: return `NaN` exactly at invalid cells and preserve the invalid mask;
-- `minimum`: replace invalid denominators with an explicit positive floor and preserve
-  both invalid and adjusted masks.
+- `nan`: produce `NaN` exactly at invalid elements and preserve the invalid mask;
+- `minimum`: use an explicitly supplied positive floor and preserve both invalid and
+  adjusted masks.
 
-Positive-infinite rate or relative-risk values are not stored. A user must choose an
-explicit policy for zero denominators.
+Positive-infinite rate or relative-risk values are never stored.
 
 ## 7. Exposure-adjusted event rates
 
-The event-rate numerator must be an intensity result. Probability density is rejected
-because it has discarded total event mass.
+The numerator must be event intensity. Probability density is rejected because it has
+lost total event mass.
 
-For event intensity `lambda_j` and exposure density `e_j`:
+For intensity `lambda_j` and exposure density `e_j`:
 
 ```text
 q_j = lambda_j / e_j
+rate_unit = event_unit / exposure_unit
 ```
 
-The rate unit is:
-
-```text
-event_unit / exposure_unit
-```
-
-The closed intensity adapter accepts exactly:
+The closed adapter accepts exactly:
 
 ```text
 SpatialKDEResult
@@ -170,35 +164,33 @@ SpatiotemporalKDEResult
 NetworkTimeField
 ```
 
-and requires `target="intensity"`.
+with `target="intensity"`.
 
 `EventRateField` retains:
 
 - rate values;
-- original event intensity;
-- original `ExposureField`;
-- effective exposure after explicit policy handling;
+- original intensity;
+- original and effective exposure;
 - invalid and adjusted masks;
 - event and rate units;
-- event mass and exposure totals;
+- measured event mass and exposure totals;
 - original and effective exposure-weighted mean rates;
-- source-result fingerprint and metadata;
+- source fingerprint and metadata;
 - deterministic result fingerprint;
 - tabular, grid, and geospatial exports.
 
-When no cells are excluded or floored:
+When no cell is excluded or floored:
 
 ```text
 exposure-weighted mean rate = total event mass / total exposure
 ```
 
-The geometric integral of a rate field has no universal statistical interpretation and
-is not labelled total risk.
+The geometric integral of a rate field is not labelled total risk.
 
 ## 8. Case-control relative risk
 
-The case and control inputs must be separately normalized probability-density results on
-exactly the same measured support.
+Case and control inputs must be separately normalized probability densities on the exact
+same measured support.
 
 For case density `f_j` and control density `g_j`:
 
@@ -207,29 +199,28 @@ r_j = f_j / g_j
 rho_j = log(f_j) - log(g_j)
 ```
 
-Both inputs must independently satisfy:
+Both densities must satisfy:
 
 ```text
 sum_j density_j * measure_j approximately equals 1
 ```
 
-within an explicit positive `normalization_tolerance`, default `1e-6`. No automatic
-renormalization of truncated or arbitrary fields is performed.
+within explicit positive `normalization_tolerance`, default `1e-6`. Arbitrary or
+truncated fields are not silently renormalized.
 
-The closed density adapter accepts exactly the same four result families and requires
+The closed density adapter accepts the same four result families with
 `target="density"`.
 
 ### 8.1 Shared fixed-bandwidth restriction
 
-The first public implementation requires:
+Version 0.0.15 requires:
 
 - positive scalar fixed bandwidths;
 - exact equality of case and control bandwidth tuples;
-- matching kernel families;
-- matching metric or network junction policy;
+- matching kernels;
+- matching spatial metric or network junction policy;
 - matching boundary-correction contract;
-- matching directed-network setting;
-- matching network and time domains;
+- matching direction, network, and time-domain contracts;
 - exact measured-support identity.
 
 Adaptive arrays, bandwidth matrices, and independently selected case/control bandwidths
@@ -242,39 +233,156 @@ retained separately and intentionally excluded from shared estimator-contract eq
 
 The immutable field retains:
 
-- raw relative risk;
-- log relative risk;
-- original case and control density;
+- raw and log relative risk;
+- original case and control densities;
 - effective control density;
 - invalid and adjusted control masks;
 - result family and shared bandwidth tuple;
 - shared estimator contract;
-- separate case and control source fingerprints and metadata;
-- case and control measured integrals;
+- separate source fingerprints and metadata;
+- measured case and control integrals;
 - original and effective control-weighted means;
 - deterministic fingerprint;
 - DataFrame, grid, log-grid, and GeoDataFrame exports.
 
-When the original control density is strictly positive:
+When original control density is strictly positive:
 
 ```text
 sum_j r_j * g_j * m_j = 1
 ```
 
-A zero case density with valid control gives raw risk `0` and exact log risk `-inf`.
-A zero control density follows the explicit denominator policy and never yields stored
-positive infinity.
+Zero case density with valid control produces raw risk `0` and exact log risk `-inf`.
+Zero control density follows the explicit policy and never yields stored positive
+infinity.
 
-## 9. Deliberate exclusions
+## 9. Executable example and public API coverage
 
-Version 0.0.15 does not implement:
+The complete example is:
+
+```text
+examples/17_exposure_relative_risk.py
+```
+
+It uses an unequal-measure spatial grid and verifies:
+
+- exact recovery of exposure amounts;
+- measured total exposure;
+- event rates and units;
+- measured event mass;
+- separately normalized case and control densities;
+- raw relative risk `[0.5, 1.0, 2.0]`;
+- corresponding log relative risk;
+- control-weighted mean relative risk equal to one.
+
+All five new top-level symbols are registered in `examples/API_COVERAGE.csv`. The
+repository example runner executes every numbered example in an isolated subprocess and
+the coverage validator rejects missing or stale mappings.
+
+## 10. Documentation and release surface
+
+Added:
+
+```text
+docs/guides/exposure-relative-risk.md
+docs/api/risk.md
+docs/development/handoff-0.0.15-exposure-relative-risk.md
+HANDOFF_0.0.15_EXPOSURE_RELATIVE_RISK.md
+```
+
+Updated:
+
+```text
+src/pykdex/__init__.py
+README.md
+docs/index.md
+docs/zh/index.md
+docs/development/roadmap.md
+CHANGELOG.md
+mkdocs.yml
+examples/API_COVERAGE.csv
+tools/smoke_installed_distribution.py
+HANDOFF_NEXT_CONVERSATION.md
+```
+
+The package reports version `0.0.15`. The installed-wheel smoke test validates both the
+version and the new top-level risk field classes.
+
+## 11. Analytical validation coverage
+
+The combined tests validate:
+
+- amount-density round trips on unequal support measures;
+- measured exposure totals and fingerprints;
+- exact support, unit, provenance, CRS, network, and time-domain contracts;
+- constant event-rate references;
+- event and exposure scaling laws;
+- event-mass and exposure-weighted rate identities;
+- all denominator policies;
+- rejection of probability density as an intensity numerator;
+- reciprocal relative risk after swapping case and control;
+- sign-reversed log risk after swapping inputs;
+- control-weighted normalization;
+- density-normalization tolerance;
+- zero-case and zero-control semantics;
+- rejection of adaptive, matrix, or unequal bandwidths;
+- rejection of support or estimator-contract mismatch;
+- unequal-measure spatial grids;
+- network lixels and junction metadata;
+- cyclic ordinary space-time grids;
+- cyclic network-time arixels.
+
+## 12. Release-candidate validation evidence
+
+Release-candidate head `2652c8b81a662e358059eb809cbde645c05ebb8b`
+completed CI `#229` (`30357305493`) successfully.
+
+Observed successful validation included:
+
+```text
+Black
+isort
+Ruff
+mypy
+complete top-level API example mapping
+strict MkDocs
+branch coverage
+complete pytest suite
+sdist and wheel build
+Twine metadata validation
+distribution archive verification
+isolated installed-wheel smoke test
+Linux / Windows / macOS
+Python 3.11 / 3.12 / 3.13 / 3.14
+```
+
+The PR audit found 33 intended changed files, no review comments, and no temporary
+formatter workflows. Both `.github/workflows/format-event-rate.yml` and
+`.github/workflows/format-relative-risk.yml` returned not found on the release branch.
+
+## 13. Pull-request and merge evidence
+
+PR #15 was updated from its development description to the full 0.0.15 release scope.
+After CI #229 and the audit, it was marked Ready. GitHub reported it open, non-Draft,
+and mergeable on unchanged head `2652c8b81a662e358059eb809cbde645c05ebb8b`.
+
+The PR was squash merged with:
+
+```text
+merge commit: dcac85cd1399b9ad18257451601dcc47c4e73f20
+merged_at: 2026-07-28T12:09:31Z
+```
+
+GitHub subsequently reported the PR closed and merged.
+
+## 14. Deliberate exclusions
+
+Version 0.0.15 does not include:
 
 - adaptive relative risk;
 - spatial bandwidth matrices for relative risk;
 - independent case and control bandwidth selection;
 - relative-risk bandwidth selection;
-- case probability;
-- pooled-process case odds;
+- case probability or pooled-process case odds;
 - automatic density renormalization;
 - hidden pseudocounts;
 - bootstrap, permutation, or asymptotic inference;
@@ -285,183 +393,45 @@ Version 0.0.15 does not implement:
 - PostGIS or Zarr adapters;
 - distributed execution.
 
-These are separate statistical or engineering units and must not be folded into this
-release without new design and analytical evidence.
+These require separate statistical or engineering designs.
 
-## 10. Executable example and API coverage
+## 15. Post-merge validation boundary
 
-The complete public example is:
+The repository CI workflow runs on pushes to `main` and `master`, pull requests, and
+manual dispatch. This merge-state record changes documentation after the squash merge and
+therefore produces a new `main` head.
 
-```text
-examples/17_exposure_relative_risk.py
-```
+The available GitHub connector can inspect PR-triggered workflow runs but cannot list
+repository push-triggered runs by commit. Consequently:
 
-It uses an unequal-measure spatial grid and verifies:
+- CI #229 is fully observed and validates the complete release tree before merge;
+- the actual merge and merge commit are fully observed;
+- no claim is made here that the later merge-state documentation head passed its push CI;
+- the live Actions page must be checked before treating that later documentation commit
+  as independently validated.
 
-- exact recovery of exposure amounts;
-- measured total exposure;
-- exposure-adjusted event rates and units;
-- measured event mass;
-- separately normalized case/control densities;
-- raw relative risk `[0.5, 1.0, 2.0]`;
-- corresponding log relative risk;
-- control-weighted mean relative risk equal to one.
+This limitation affects only observation of the status-record commit. It does not erase
+the full release-candidate validation on the exact code, tests, examples, package
+metadata, and documentation merged by PR #15.
 
-All five new top-level symbols are registered in:
+## 16. Next version boundary
 
-```text
-examples/API_COVERAGE.csv
-```
-
-The repository example runner executes every numbered example in an isolated subprocess,
-and the API coverage validator rejects missing or stale top-level mappings.
-
-## 11. User and API documentation
-
-Added:
-
-```text
-docs/guides/exposure-relative-risk.md
-docs/api/risk.md
-docs/development/handoff-0.0.15-exposure-relative-risk.md
-```
-
-Updated:
-
-```text
-README.md
-docs/index.md
-docs/zh/index.md
-docs/development/roadmap.md
-CHANGELOG.md
-mkdocs.yml
-```
-
-The guide distinguishes event rate from density-ratio relative risk, documents measured
-support, denominator policies, shared fixed-bandwidth restrictions, and deliberate
-exclusions. The API page documents the five public objects/functions plus the explicit
-denominator policy.
-
-## 12. Source files added in 0.0.15
-
-Core risk implementation:
-
-```text
-src/pykdex/risk/__init__.py
-src/pykdex/risk/support.py
-src/pykdex/risk/exposure.py
-src/pykdex/risk/policies.py
-src/pykdex/risk/intensity.py
-src/pykdex/risk/rate.py
-src/pykdex/risk/density.py
-src/pykdex/risk/relative_risk.py
-```
-
-Tests:
-
-```text
-tests/test_exposure_field.py
-tests/test_event_rate.py
-tests/test_relative_risk.py
-```
-
-Release-surface changes:
-
-```text
-src/pykdex/__init__.py
-examples/17_exposure_relative_risk.py
-examples/API_COVERAGE.csv
-tools/smoke_installed_distribution.py
-```
-
-## 13. Analytical validation coverage
-
-The combined tests validate:
-
-- amount-density round trips on unequal support measures;
-- exposure total invariance;
-- support identity, unit, provenance, and fingerprint contracts;
-- constant event-rate fields;
-- event and exposure scaling laws;
-- event-mass and exposure-weighted rate identities;
-- all denominator policies;
-- rejection of density as an intensity numerator;
-- reciprocal relative risk after swapping case/control;
-- sign-reversed log risk after swapping inputs;
-- control-weighted normalization;
-- density-normalization tolerance;
-- zero-case and zero-control semantics;
-- rejection of adaptive/matrix/unequal bandwidths;
-- rejection of support and estimator-contract mismatch;
-- spatial unequal-measure grids;
-- network lixels and junction metadata;
-- cyclic ordinary space-time grids;
-- cyclic network-time arixels.
-
-## 14. Required release validation
-
-The final release-candidate head must pass:
-
-```text
-Black
-isort
-Ruff
-mypy
-public API example mapping
-strict MkDocs
-branch coverage >= repository threshold
-complete pytest suite
-sdist and wheel build
-Twine metadata validation
-distribution archive verification
-isolated installed-wheel smoke test
-Linux / Windows / macOS
-Python 3.11 / 3.12 / 3.13 / 3.14
-```
-
-Only GitHub Actions results actually observed for the relevant head may be recorded.
-A previous successful CI does not validate later release-surface commits.
-
-## 15. PR completion and merge procedure
-
-After the final release-candidate CI succeeds:
-
-1. inspect PR #15 metadata and changed files;
-2. verify temporary formatter workflows are absent;
-3. inspect review comments and unresolved threads;
-4. update the PR title/body to describe the complete 0.0.15 release;
-5. mark the PR ready for review;
-6. confirm mergeability and required checks;
-7. merge using the repository's established method;
-8. observe the actual merge commit on `main`;
-9. observe post-merge `main` CI;
-10. update this handoff and `HANDOFF_NEXT_CONVERSATION.md` with real merge and CI
-    evidence before declaring 0.0.15 stable.
-
-Do not claim merge or post-merge success before those events are visible.
-
-## 16. Next planned version
-
-After 0.0.15 is merged and stable, the roadmap continues with 0.0.16:
+The next roadmap unit is 0.0.16:
 
 ```text
 uncertainty, separability diagnostics, and scalable execution
 ```
 
-That unit requires a new detailed design before implementation. It should not silently
-extend the point-estimate semantics fixed in 0.0.15.
+It requires a new detailed design before implementation. Do not silently extend the
+point-estimate semantics fixed in 0.0.15.
 
 ## 17. Recovery procedure
 
-1. Inspect PR #15 and the current `main` branch before trusting recorded status.
-2. Read the six records listed in section 1.
-3. Confirm `src/pykdex/__init__.py` reports `0.0.15` and exports exactly the five new
-   top-level risk names.
-4. Confirm `examples/17_exposure_relative_risk.py` and its five API mappings exist.
-5. Confirm `.github/workflows/format-event-rate.yml` and
-   `.github/workflows/format-relative-risk.yml` are absent.
-6. Run the three risk test modules and all numbered examples.
-7. Run the complete repository validation matrix.
-8. If the PR is still Draft, continue the release procedure from section 15.
-9. If merged, inspect the real merge commit and post-merge CI before updating stable
-   status.
+1. Inspect the current `main` head and live Actions state before trusting status newer
+   than this record.
+2. Read the six handoff records listed in section 1.
+3. Confirm `src/pykdex/__init__.py` reports `0.0.15` and exports the five risk names.
+4. Confirm `examples/17_exposure_relative_risk.py` and its API mappings exist.
+5. Confirm temporary formatter workflows are absent.
+6. Run the three risk test modules, all examples, and the complete repository matrix.
+7. Do not redesign the 0.0.15 numerical contracts while starting 0.0.16.
