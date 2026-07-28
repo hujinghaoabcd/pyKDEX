@@ -27,7 +27,10 @@ from pykdex.bandwidths.network_time import (
     NetworkTimeBandwidths,
     NetworkTimeKNNBandwidth,
 )
-from pykdex.bandwidths.selection import LeastSquaresCVBandwidth, LikelihoodCVBandwidth
+from pykdex.bandwidths.selection import (
+    LeastSquaresCVBandwidth,
+    LikelihoodCVBandwidth,
+)
 
 __all__ = [
     "BaseBandwidth",

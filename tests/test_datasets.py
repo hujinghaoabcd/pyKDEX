@@ -5,7 +5,11 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from pykdex import load_bimodal_points, make_bimodal_events, make_moving_hotspot_events
+from pykdex import (
+    load_bimodal_points,
+    make_bimodal_events,
+    make_moving_hotspot_events,
+)
 
 
 def test_bimodal_generator_is_deterministic():

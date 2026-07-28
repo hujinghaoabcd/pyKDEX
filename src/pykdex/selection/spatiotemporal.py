@@ -7,7 +7,9 @@ from __future__ import annotations
 
 import numpy as np
 
-from pykdex.core.spatiotemporal_results import SpatiotemporalBandwidthSelectionResult
+from pykdex.core.spatiotemporal_results import (
+    SpatiotemporalBandwidthSelectionResult,
+)
 from pykdex.data import SpatiotemporalEvents
 from pykdex.data._utils import readonly_array
 from pykdex.kernels import BaseKernel, get_kernel

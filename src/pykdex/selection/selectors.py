@@ -17,7 +17,10 @@ from pykdex.selection.objectives import (
     likelihood_cv_score,
     validate_selection_weights,
 )
-from pykdex.selection.optimization import minimize_bandwidth_objective, validate_bounds
+from pykdex.selection.optimization import (
+    minimize_bandwidth_objective,
+    validate_bounds,
+)
 
 
 @dataclass(frozen=True)

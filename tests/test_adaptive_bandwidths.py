@@ -6,7 +6,12 @@ import numpy as np
 import pytest
 from scipy.integrate import trapezoid
 
-from pykdex import AbramsonBandwidth, KNNBandwidth, LikelihoodCVBandwidth, SpatialKDE
+from pykdex import (
+    AbramsonBandwidth,
+    KNNBandwidth,
+    LikelihoodCVBandwidth,
+    SpatialKDE,
+)
 from pykdex.kernels import GaussianKernel
 from pykdex.metrics import EuclideanMetric
 
