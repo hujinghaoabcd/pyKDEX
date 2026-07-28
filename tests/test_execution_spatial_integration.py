@@ -18,8 +18,8 @@ from pykdex.execution import ExecutionPlan
 
 
 def test_spatial_thread_plan_matches_legacy_chunking_and_records_metadata() -> None:
-    events = np.array([[0.0], [0.5], [1.0]])
-    support = GridSupport.from_bounds((0.0, 1.0), resolution=0.25)
+    events = np.array([[0.0, 0.0], [0.5, 0.5], [1.0, 1.0]])
+    support = GridSupport.from_bounds((0.0, 0.0, 1.0, 1.0), resolution=0.25)
     expected = SpatialKDE(bandwidth=0.4, chunk_size=2).fit_predict(events, support)
 
     model = SpatialKDE(
@@ -47,20 +47,20 @@ def test_spatial_legacy_and_plan_chunks_are_mutually_exclusive() -> None:
         bandwidth=0.5,
         chunk_size=1,
         execution_plan=ExecutionPlan(target_chunk_size=1),
-    ).fit([[0.0], [1.0]])
+    ).fit([[0.0, 0.0], [1.0, 1.0]])
 
     with pytest.raises(ValueError, match="cannot both be set"):
-        model.evaluate([[0.5]])
+        model.evaluate([[0.5, 0.5]])
 
 
 def test_spatial_budget_rejects_before_pairwise_evaluation() -> None:
     model = SpatialKDE(
         bandwidth=0.5,
         execution_plan=ExecutionPlan(memory_budget_bytes=100),
-    ).fit([[0.0], [0.5], [1.0]])
+    ).fit([[0.0, 0.0], [0.5, 0.5], [1.0, 1.0]])
 
     with pytest.raises(MemoryError, match="cannot fit one target row"):
-        model.evaluate([[0.25], [0.75]])
+        model.evaluate([[0.25, 0.25], [0.75, 0.75]])
 
 
 def _spatiotemporal_inputs() -> tuple[
