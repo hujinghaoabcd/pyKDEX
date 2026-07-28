@@ -24,6 +24,7 @@
 SpatialKDE + SpatialEvents + GridSupport
 NetworkKDE + NetworkWorkspace
 HeatNetworkKDE + NetworkWorkspace
+SpatiotemporalKDE + SpatiotemporalEvents + SpatiotemporalGridSupport
 ```
 
 ::: pykdex.uncertainty.bootstrap_kde
