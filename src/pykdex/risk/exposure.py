@@ -43,7 +43,9 @@ class ExposureField:
         descriptor = describe_measured_support(self.support)
         values = readonly_array(self.values, dtype=float, ndim=1, name="values")
         if values.shape != (descriptor.n_elements,):
-            raise ValueError("values must contain one exposure value per support element.")
+            raise ValueError(
+                "values must contain one exposure value per support element."
+            )
         if not np.all(np.isfinite(values)) or np.any(values < 0.0):
             raise ValueError("exposure values must be finite and non-negative.")
         unit = normalize_unit(self.exposure_unit, name="exposure_unit")
