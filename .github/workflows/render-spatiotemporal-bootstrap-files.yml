@@ -1,0 +1,73 @@
+name: Render spatiotemporal Bootstrap files
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/uncertainty-separability-scalable-design
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install black==25.1.0 isort==5.13.2
+      - name: Apply audited semantic patch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          source = Path("src/pykdex/uncertainty/spatiotemporal.py")
+          text = source.read_text(encoding="utf-8")
+          old = '        metadata.get("execution"),\n'
+          if text.count(old) != 1:
+              raise RuntimeError("expected one execution fingerprint entry")
+          source.write_text(text.replace(old, ""), encoding="utf-8")
+
+          tests = Path("tests/test_bootstrap_spatiotemporal_kde.py")
+          text = tests.read_text(encoding="utf-8")
+          old = '''    assert (
+              threaded.ensemble.seed_ledger_fingerprint
+              == sequential.ensemble.seed_ledger_fingerprint
+          )
+          assert sequential.ensemble.execution_metadata["parallel_axis"] == "none"
+          '''
+          new = '''    assert (
+              threaded.ensemble.seed_ledger_fingerprint
+              == sequential.ensemble.seed_ledger_fingerprint
+          )
+          assert (
+              threaded.ensemble.observed_field_fingerprint
+              == sequential.ensemble.observed_field_fingerprint
+          )
+          assert sequential.ensemble.execution_metadata["parallel_axis"] == "none"
+          '''
+          if text.count(old) != 1:
+              raise RuntimeError("expected one scheduling assertion block")
+          tests.write_text(text.replace(old, new), encoding="utf-8")
+          PY
+      - run: >-
+          python -m black
+          src/pykdex/uncertainty/api.py
+          src/pykdex/uncertainty/spatiotemporal.py
+          tests/test_bootstrap_spatiotemporal_kde.py
+      - run: >-
+          python -m isort
+          src/pykdex/uncertainty/api.py
+          src/pykdex/uncertainty/spatiotemporal.py
+          tests/test_bootstrap_spatiotemporal_kde.py
+      - run: |
+          mkdir -p rendered/src/pykdex/uncertainty rendered/tests
+          cp src/pykdex/uncertainty/api.py rendered/src/pykdex/uncertainty/api.py
+          cp src/pykdex/uncertainty/spatiotemporal.py rendered/src/pykdex/uncertainty/spatiotemporal.py
+          cp tests/test_bootstrap_spatiotemporal_kde.py rendered/tests/test_bootstrap_spatiotemporal_kde.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rendered-spatiotemporal-bootstrap
+          path: rendered
+          if-no-files-found: error
