@@ -1,142 +1,93 @@
 # pyKDEX current handoff
 
-The latest implemented development unit is **0.0.14 portable workspace
-persistence**. Read `HANDOFF_0.0.14_WORKSPACE_PERSISTENCE.md` first. It is the
-complete design, schema, security, implementation, validation, limitation,
-recovery, and next-unit record.
+The latest stable merged version is **0.0.14**. Active development is **0.0.15
+exposure-adjusted rates and relative risk**.
 
-## Current repository state
+Read these records in order:
+
+1. `HANDOFF_0.0.14_WORKSPACE_PERSISTENCE.md`;
+2. `docs/development/design-0.0.15-exposure-relative-risk.md`;
+3. `HANDOFF_0.0.15_PROGRESS_01_EXPOSURE_FIELD.md`.
+
+## Current state
 
 - repository: `hujinghaoabcd/pyKDEX`;
-- development branch: `agent/workspace-persistence`;
-- development worktree:
-  `/workspace/scratch/660de0f0af7d/pykdex-workspace-persistence`;
-- version implemented in this branch: `0.0.14`;
-- latest stable merged version: `0.0.14`;
-- pull request: `#14 Add portable workspace persistence`;
-- initial feature commit:
-  `35f333812e0e938c2ef11ced9c907b042b2fb346`;
-- Windows fsync fix commit:
-  `6a851e167d796eea02b28414a7d289aab8953888`;
-- first PR CI run `#138` (`30017443733`): failed on Windows Python 3.14
-  and exposed read-only-descriptor `fsync` incompatibility;
-- corrected PR CI run `#139` (`30017717273`): success across quality,
-  coverage, distributions, Linux/Windows/macOS, and Python 3.11-3.14;
-- final clean PR CI run `#140` (`30018184507`): success;
-- final PR head:
-  `17f73ff44f447d31470250545c8265060dc0f9b6`;
-- squash merge commit:
-  `979a2f3ada7e68e8f850d33b0722bb993c369e66`;
-- post-merge `main` CI: pending;
-- focused persistence validation: `10 passed`;
-- full regression: `236 passed`;
-- branch coverage: `80.86%`;
-- public API/example map after update: `122 public symbols`, all mapped;
-- executable examples: `16`;
-- Black, isort, Ruff, mypy, strict docs, distributions, and isolated wheel:
-  passed;
-- PR #14 merge: successful;
-- no temporary repository workflow has been added.
+- branch: `agent/exposure-relative-risk`;
+- draft PR: `#15 Add exposure-field foundation for pyKDEX 0.0.15`;
+- base `main`: `1315619afba79a6ddf1fbfd7b91900bf0c0992f1`;
+- clean implementation head before handoff updates:
+  `85dc5fc1a5fb71e8ec54841c8a4d4ba7d8584d26`;
+- corrected CI run `#146` (`30348884054`): success;
+- final CI after handoff updates: pending observation;
+- merge: not merged;
+- package version remains `0.0.14` until the complete 0.0.15 unit is finished.
 
-PR #14 was merged and closed successfully. Update post-merge CI only after it
-is observed.
+Do not merge PR #15 after only this first subunit.
 
-## Implemented in 0.0.14
+## Implemented in progress subunit 01
 
-- public immutable `WorkspaceManifest`;
-- schema version 1 of format `pykdex-workspace`;
-- workspace kinds `network` and `network_time`;
-- deterministic local ZIP archive backend;
-- inspectable local directory backend;
-- atomic staged writes and explicit overwrite protection;
-- exact payload inventory and aggregate safety limit;
-- byte-size and SHA-256 validation for every payload;
-- safe-path and duplicate-entry rejection;
-- non-object NPY arrays loaded with `allow_pickle=False`;
-- typed JSON for object IDs, NumPy scalars, tuples, mappings, and metadata;
-- WKB geometry as `uint8` data and `int64` offsets;
-- network, snapping audit, lixel, provenance, CRS, unit, and attribute schemas;
-- exact event-lixel and event-event sparse distance schemas;
-- temporal coordinates and linear/cyclic time-domain schemas;
-- arixel and factorized network-time distance schemas;
-- `NetworkWorkspace.save/load`;
-- `NetworkTimeWorkspace.save/load`;
-- public functional save/load APIs;
-- reconstructed object validation and final workspace-fingerprint check;
-- deterministic byte-for-byte archive test;
-- corruption, future-schema, payload-limit, atomic-failure, OSMnx,
-  cyclic-time, and cross-process contracts;
-- executable example 16 and size/reload benchmark;
-- detailed root and documentation handoffs.
+- fixed the statistical distinction between exposure-adjusted event rates and
+  case-control density-ratio relative risk;
+- inspected `sparr`, `spatstat.explore`, `spatstat.linnet`, and `spNetwork` as
+  methodological references without copying GPL source;
+- added a closed measured-support contract for spatial grids, lixels, measured
+  space-time points, space-time grids, and arixels;
+- added immutable `SupportDescriptor` identity, measure, CRS, unit, temporal-domain,
+  identifier, fingerprint, and shape contracts;
+- added immutable `ExposureField` construction from density or per-element amounts;
+- retained explicit exposure unit, provenance, metadata, total exposure, fingerprint,
+  and supported table/grid/geospatial exports;
+- added focused tests across spatial, network, space-time, and network-time supports.
 
-## Persistence rules that must not change accidentally
-
-1. Persistence stores prepared data, not fitted estimators.
-2. Pickle, joblib, and cloudpickle are forbidden.
-3. Object arrays must never enter NPY payloads.
-4. Unknown metadata types fail; they are not converted to `repr`.
-5. Every payload is declared, sized, and checksummed.
-6. Unknown schema versions fail explicitly.
-7. ZIP content is read directly and never extracted.
-8. Existing destinations are protected unless overwrite is explicit.
-9. Writes are staged beside the destination before replacement.
-10. Sparse distance coordinates remain sparse and retain reachable zero.
-11. Network-time distance assets remain factorized.
-12. Normal pyKDEX constructors and validation run after decoding.
-13. The reconstructed full fingerprint must equal the manifest fingerprint.
-14. Identical workspaces should produce identical archive bytes.
-15. PostGIS/Zarr adapters must remain separate from the portable schema.
-
-## Observed benchmark
+The canonical exposure convention is:
 
 ```text
-n_nodes: 121
-n_edges: 220
-n_events: 250
-n_arixels: 10,560
-distance_pairs: 33,875
-archive_bytes: 149,733
-save_seconds: 0.101
-load_seconds: 0.124
+exposure_amount_j = exposure_density_j * support_measure_j
+total_exposure = sum_j exposure_amount_j
 ```
 
-Timings are environment-specific. Fingerprint equality is the benchmark's
-required correctness assertion.
+Unmeasured point support is rejected. Equal array shape is not support compatibility.
+A zero exposure field may be constructed for inspection, but later rate estimation
+must apply an explicit denominator policy.
 
-## Next recommended development unit
+## Validation
 
-Build **0.0.15 exposure-adjusted rate and relative-risk estimation**:
+The first CI run `#143` found only a Black formatting failure. A temporary branch-only
+formatting workflow generated the exact correction and was removed immediately.
 
-1. immutable exposure fields bound to measured supports;
-2. explicit exposure units and provenance;
-3. support, CRS, unit, domain, and fingerprint validation;
-4. non-negative and zero-exposure policies;
-5. event rate fields;
-6. case-control relative risk and log-relative risk;
-7. shared fixed bandwidth first;
-8. analytical constant-exposure and proportional-risk references;
-9. spatial, network, cyclic-time, and arixel tests;
-10. `HANDOFF_0.0.15_EXPOSURE_RELATIVE_RISK.md`.
+Corrected CI run `#146` passed:
 
-Do not fold bootstrap envelopes, separability tests, PostGIS/Zarr, distributed
-execution, or remote storage into the exposure foundation.
+- Black, isort, Ruff, mypy, API mapping, and strict MkDocs;
+- branch coverage;
+- distributions, Twine, archive verification, and isolated wheel smoke testing;
+- Linux, Windows, and macOS on Python 3.11-3.14.
+
+## Exact next subunit
+
+1. Add denominator policies: `raise`, `nan`, and explicit positive `minimum`.
+2. Add closed adapters for existing spatial, network, space-time, and network-time
+   result objects.
+3. Reject probability-density numerators; event rates require intensity.
+4. Validate exact support, CRS, units, time domain, network direction, and estimator
+   metadata.
+5. Add immutable `EventRateField` and `estimate_event_rate(...)`.
+6. Retain raw intensity, effective exposure, invalid mask, event mass, total exposure,
+   and exposure-weighted mean rate.
+7. Add analytical constant-exposure and zero-denominator tests on all four domains.
+8. Create progress handoff 02 before case-control relative risk.
+
+Do not add adaptive relative risk, bandwidth selection, shrinkage, uncertainty,
+separability diagnostics, PostGIS/Zarr, or distributed execution in this subunit.
 
 ## Recovery checklist
 
-1. Read `HANDOFF_0.0.14_WORKSPACE_PERSISTENCE.md`.
-2. Inspect `git status --short --branch`.
-3. Verify real GitHub `main`, PR, CI, and merge state.
-4. Confirm version `0.0.14`.
-5. Read the five files under `src/pykdex/persistence`.
-6. Run `tests/test_workspace_persistence.py`.
-7. Run full coverage, API map, 16 examples, format, lint, types, strict docs,
-   distributions, and isolated wheel checks.
-8. Confirm the post-merge `main` state and CI.
-9. Start 0.0.15 only from final merged `main`.
+1. Inspect PR #15 and verify its real head, draft state, and CI.
+2. Confirm `.github/workflows/format-diagnostic.yml` is absent.
+3. Read the three records listed at the top.
+4. Inspect `src/pykdex/risk/support.py` and `src/pykdex/risk/exposure.py`.
+5. Run `tests/test_exposure_field.py` and the complete repository validation matrix.
+6. Continue on `agent/exposure-relative-risk`.
 
-## Permanent process rule
-
-Every completed development unit must create a detailed versioned root
-Markdown handoff, add or update the corresponding `docs/development` page,
-update this file, and record actual validation, CI, PR, and merge state. See
-`docs/development/handoff-policy.md`.
+The final release must still create
+`HANDOFF_0.0.15_EXPOSURE_RELATIVE_RISK.md` with actual final version, public API,
+validation, PR, CI, and merge evidence.
