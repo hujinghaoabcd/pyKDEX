@@ -1,0 +1,40 @@
+name: Format spatial Bootstrap files
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install black==25.1.0 isort==5.13.2
+      - run: >-
+          python -m black
+          src/pykdex/uncertainty/__init__.py
+          src/pykdex/uncertainty/results.py
+          src/pykdex/uncertainty/spatial.py
+          tests/test_bootstrap_spatial_kde.py
+      - run: >-
+          python -m isort
+          src/pykdex/uncertainty/__init__.py
+          src/pykdex/uncertainty/results.py
+          src/pykdex/uncertainty/spatial.py
+          tests/test_bootstrap_spatial_kde.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: formatted-spatial-bootstrap
+          path: |
+            src/pykdex/uncertainty/__init__.py
+            src/pykdex/uncertainty/results.py
+            src/pykdex/uncertainty/spatial.py
+            tests/test_bootstrap_spatial_kde.py
+          if-no-files-found: error
