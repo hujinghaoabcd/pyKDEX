@@ -93,7 +93,9 @@ class EventRateField:
         if not np.all(np.isfinite(intensity)) or np.any(intensity < 0.0):
             raise ValueError("event_intensity must be finite and non-negative.")
         if np.any(np.isinf(values)) or np.any(values[np.isfinite(values)] < 0.0):
-            raise ValueError("event-rate values must be non-negative and never infinite.")
+            raise ValueError(
+                "event-rate values must be non-negative and never infinite."
+            )
 
         resolution = apply_denominator_policy(self.exposure.values, self.policy)
         if not np.array_equal(invalid, resolution.invalid_mask):
@@ -106,8 +108,12 @@ class EventRateField:
         valid = np.isfinite(effective)
         expected_rate = np.full_like(intensity, np.nan)
         np.divide(intensity, effective, out=expected_rate, where=valid)
-        if not np.allclose(values, expected_rate, rtol=1e-12, atol=1e-15, equal_nan=True):
-            raise ValueError("values are inconsistent with intensity/exposure division.")
+        if not np.allclose(
+            values, expected_rate, rtol=1e-12, atol=1e-15, equal_nan=True
+        ):
+            raise ValueError(
+                "values are inconsistent with intensity/exposure division."
+            )
         if self.policy.mode == "nan":
             if not np.array_equal(np.isnan(values), invalid):
                 raise ValueError("NaN event rates must occur exactly at invalid cells.")
@@ -265,9 +271,7 @@ def estimate_event_rate(
     result_metadata.update(
         {
             "result_family": intensity.result_family,
-            "invalid_denominator_count": int(
-                np.count_nonzero(resolution.invalid_mask)
-            ),
+            "invalid_denominator_count": int(np.count_nonzero(resolution.invalid_mask)),
             "adjusted_denominator_count": int(
                 np.count_nonzero(resolution.adjusted_mask)
             ),
