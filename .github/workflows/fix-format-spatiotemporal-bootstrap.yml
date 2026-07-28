@@ -1,3 +1,4 @@
+# Temporary branch-only fixer; remove after the bot commit.
 name: Fix and format spatiotemporal Bootstrap
 
 on:
