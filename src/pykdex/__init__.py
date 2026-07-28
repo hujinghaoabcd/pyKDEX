@@ -11,7 +11,7 @@ from __future__ import annotations
 
 __author__ = "Jinghao Hu"
 __license__ = "MIT"
-__version__ = "0.0.14"
+__version__ = "0.0.15"
 
 from pykdex.adapters import from_networkx_graph, from_osmnx_graph, network_from_place
 from pykdex.bandwidths import (
@@ -137,6 +137,13 @@ from pykdex.persistence import (
     save_network_time_workspace,
     save_network_workspace,
 )
+from pykdex.risk import (
+    EventRateField,
+    ExposureField,
+    RelativeRiskField,
+    estimate_event_rate,
+    estimate_relative_risk,
+)
 from pykdex.selection import (
     HeatLeastSquaresCV,
     HeatLikelihoodCV,
@@ -171,6 +178,11 @@ __all__ = [
     "BandwidthSelectionResult",
     "SpatiotemporalKDEResult",
     "SpatiotemporalBandwidthSelectionResult",
+    "ExposureField",
+    "EventRateField",
+    "RelativeRiskField",
+    "estimate_event_rate",
+    "estimate_relative_risk",
     "SpatialEvents",
     "TemporalCoordinates",
     "SpatiotemporalEvents",
