@@ -106,5 +106,9 @@ nav:
       - 0.0.12 handoff: development/handoff-0.0.12-network-time-foundation.md
       - 0.0.13 handoff: development/handoff-0.0.13-network-time-bandwidths.md
       - 0.0.14 handoff: development/handoff-0.0.14-workspace-persistence.md
+      - 0.0.15 design: development/design-0.0.15-exposure-relative-risk.md
+      - 0.0.15 progress 01: development/handoff-0.0.15-progress-01-exposure-field.md
+      - 0.0.15 progress 02: development/handoff-0.0.15-progress-02-event-rate.md
+      - 0.0.15 progress 03: development/handoff-0.0.15-progress-03-relative-risk.md
       - Roadmap: development/roadmap.md
   - 中文: zh/index.md
