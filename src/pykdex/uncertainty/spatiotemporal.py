@@ -236,7 +236,6 @@ def _result_fingerprint(result: SpatiotemporalKDEResult) -> str:
         result.temporal_kernel,
         result.spatial_metric,
         metadata.get("time_domain"),
-        metadata.get("execution"),
     )
 
 
@@ -391,7 +390,9 @@ def bootstrap_spatiotemporal_kde(
                 replicate_events.temporal.domain.fingerprint
                 != contract.event_time_domain_fingerprint
             ):
-                raise RuntimeError("space-time Bootstrap replicate time domain changed.")
+                raise RuntimeError(
+                    "space-time Bootstrap replicate time domain changed."
+                )
             block[local_index] = replicate_result.values
             fingerprints.append(replicate_events.fingerprint)
         return block, tuple(fingerprints)
@@ -402,7 +403,9 @@ def bootstrap_spatiotemporal_kde(
         replicate_fingerprints[start:stop] = fingerprints
 
     if any(value is None for value in replicate_fingerprints):
-        raise RuntimeError("space-time Bootstrap replicate fingerprints are incomplete.")
+        raise RuntimeError(
+            "space-time Bootstrap replicate fingerprints are incomplete."
+        )
     completed_fingerprints = tuple(
         str(value) for value in replicate_fingerprints if value is not None
     )
