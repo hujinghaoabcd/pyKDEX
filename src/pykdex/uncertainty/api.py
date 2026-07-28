@@ -8,10 +8,7 @@ from __future__ import annotations
 from typing import overload
 
 from pykdex.data import GridSupport, SpatialEvents
-from pykdex.data.spatiotemporal import (
-    SpatiotemporalEvents,
-    SpatiotemporalGridSupport,
-)
+from pykdex.data.spatiotemporal import SpatiotemporalEvents, SpatiotemporalGridSupport
 from pykdex.estimators.heat_network_kde import HeatNetworkKDE
 from pykdex.estimators.network_kde import NetworkKDE
 from pykdex.estimators.spatial_kde import SpatialKDE
