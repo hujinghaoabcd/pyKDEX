@@ -181,7 +181,9 @@ class RelativeRiskField:
 
         if self.policy.mode == "nan":
             if not np.array_equal(np.isnan(values), invalid):
-                raise ValueError("NaN relative risk must occur exactly at invalid cells.")
+                raise ValueError(
+                    "NaN relative risk must occur exactly at invalid cells."
+                )
             if not np.array_equal(np.isnan(log_values), invalid):
                 raise ValueError(
                     "NaN log relative risk must occur exactly at invalid cells."
@@ -193,12 +195,12 @@ class RelativeRiskField:
         case_fingerprint = str(self.case_source_fingerprint).strip()
         control_fingerprint = str(self.control_source_fingerprint).strip()
         if not family or not case_fingerprint or not control_fingerprint:
-            raise ValueError(
-                "result_family and source fingerprints must be non-empty."
-            )
+            raise ValueError("result_family and source fingerprints must be non-empty.")
         bandwidths = tuple(float(value) for value in self.bandwidths)
-        if not bandwidths or not np.all(np.isfinite(bandwidths)) or any(
-            value <= 0.0 for value in bandwidths
+        if (
+            not bandwidths
+            or not np.all(np.isfinite(bandwidths))
+            or any(value <= 0.0 for value in bandwidths)
         ):
             raise ValueError("bandwidths must contain finite positive scalars.")
 
@@ -256,9 +258,7 @@ class RelativeRiskField:
     @property
     def effective_control_weighted_mean(self) -> float:
         """Mean relative risk weighted by the denominator used in division."""
-        valid = np.isfinite(self.values) & np.isfinite(
-            self.effective_control_density
-        )
+        valid = np.isfinite(self.values) & np.isfinite(self.effective_control_density)
         weights = self.effective_control_density[valid] * self.descriptor.measure[valid]
         denominator = float(np.sum(weights))
         if denominator <= 0.0:
@@ -392,12 +392,8 @@ def estimate_relative_risk(
             "case_integral": case.integral,
             "control_integral": control.integral,
             "normalization_tolerance": case.normalization_tolerance,
-            "invalid_control_count": int(
-                np.count_nonzero(resolution.invalid_mask)
-            ),
-            "adjusted_control_count": int(
-                np.count_nonzero(resolution.adjusted_mask)
-            ),
+            "invalid_control_count": int(np.count_nonzero(resolution.invalid_mask)),
+            "adjusted_control_count": int(np.count_nonzero(resolution.adjusted_mask)),
             "zero_policy": policy.mode,
             "validity_threshold": policy.validity_threshold,
             "minimum_denominator": policy.minimum_denominator,
