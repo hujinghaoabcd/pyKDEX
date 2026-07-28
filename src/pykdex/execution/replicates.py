@@ -70,7 +70,9 @@ class ResolvedReplicateExecution:
         requested_jobs = _positive_int(self.requested_n_jobs, name="requested_n_jobs")
         resolved_jobs = _positive_int(self.resolved_n_jobs, name="resolved_n_jobs")
         if chunk > replicates:
-            raise ValueError("resolved_replicate_chunk_size cannot exceed n_replicates.")
+            raise ValueError(
+                "resolved_replicate_chunk_size cannot exceed n_replicates."
+            )
         if resolved_jobs > requested_jobs:
             raise ValueError("resolved_n_jobs cannot exceed requested_n_jobs.")
         if self.backend not in {"sequential", "thread"}:
@@ -222,13 +224,7 @@ def resolve_replicate_execution(
         else "none"
     )
     estimated = int(
-        ceil(
-            overhead
-            + resolved_chunk
-            * temporary_bytes
-            * factor
-            * resolved_workers
-        )
+        ceil(overhead + resolved_chunk * temporary_bytes * factor * resolved_workers)
     )
     if (
         effective.memory_budget_bytes is not None
@@ -265,8 +261,7 @@ def replicate_chunk_ranges(
     replicates = _positive_int(n_replicates, name="n_replicates")
     chunk = _positive_int(chunk_size, name="chunk_size")
     return tuple(
-        (start, min(start + chunk, replicates))
-        for start in range(0, replicates, chunk)
+        (start, min(start + chunk, replicates)) for start in range(0, replicates, chunk)
     )
 
 
