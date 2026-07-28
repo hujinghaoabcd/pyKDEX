@@ -3,6 +3,7 @@
 
 """Empirical uncertainty contracts for pyKDEX fields."""
 
+from pykdex.uncertainty.api import bootstrap_kde
 from pykdex.uncertainty.fields import (
     FieldEnsemble,
     PointwiseInterval,
@@ -10,7 +11,6 @@ from pykdex.uncertainty.fields import (
 )
 from pykdex.uncertainty.plan import BootstrapPlan
 from pykdex.uncertainty.results import BootstrapResult
-from pykdex.uncertainty.spatial import bootstrap_kde
 
 __all__ = [
     "BootstrapPlan",
