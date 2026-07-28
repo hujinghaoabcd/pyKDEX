@@ -14,15 +14,17 @@ Read these records in order:
 
 - repository: `hujinghaoabcd/pyKDEX`;
 - branch: `agent/exposure-relative-risk`;
-- draft PR: `#15`;
+- draft PR: `#15 Add exposure-adjusted rate and relative-risk foundations`;
 - base `main`: `1315619afba79a6ddf1fbfd7b91900bf0c0992f1`;
 - exposure-field subunit final state commit: `40fc66841fdde4fa90774ed79ca31bb1fd5b4f58`;
-- event-rate implementation head before handoff updates:
+- event-rate implementation head before handoff documents:
   `c806f34a2ebba8eb3dd1ae72cadcb7d895ef6ad1`;
+- event-rate handoff-update head validated by CI:
+  `a32652619f3990c91c811ea6e8381adb1727ceaa`;
 - first event-rate CI `#156` (`30350961687`): stopped at Black formatting;
-- corrected event-rate CI `#162` (`30351398127`): quality, coverage,
-  distributions, and completed platform jobs succeeded; final workflow conclusion
-  pending observation when this file was updated;
+- corrected implementation CI `#162` (`30351398127`): successful observed quality,
+  coverage, distribution, and platform jobs, then superseded by handoff commits;
+- complete handoff-update CI `#165` (`30351722623`): success;
 - merge: not merged;
 - package version remains `0.0.14` until the complete 0.0.15 unit is finished.
 
@@ -68,8 +70,17 @@ rate_unit = event_unit / exposure_unit
 ```
 
 A temporary `.github/workflows/format-event-rate.yml` workflow was used only to obtain
-exact Black/isort output and was deleted before corrected validation. Confirm it remains
-absent.
+exact Black/isort output and was deleted before corrected validation. It is absent from
+the CI-validated handoff head.
+
+## Validation
+
+CI run `#165` passed:
+
+- Black, isort, Ruff, mypy, API mapping, and strict MkDocs;
+- branch coverage;
+- source/wheel distributions, Twine, archive verification, and isolated wheel smoke;
+- Linux, Windows, and macOS on Python 3.11, 3.12, 3.13, and 3.14.
 
 ## Exact next subunit
 
