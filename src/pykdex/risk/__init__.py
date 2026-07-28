@@ -4,6 +4,8 @@
 """Exposure-adjusted rate and relative-risk foundations."""
 
 from pykdex.risk.exposure import ExposureField
+from pykdex.risk.policies import DenominatorPolicy
+from pykdex.risk.rate import EventRateField, estimate_event_rate
 from pykdex.risk.support import (
     MeasuredSupport,
     SupportDescriptor,
@@ -13,6 +15,9 @@ from pykdex.risk.support import (
 
 __all__ = [
     "ExposureField",
+    "DenominatorPolicy",
+    "EventRateField",
+    "estimate_event_rate",
     "MeasuredSupport",
     "SupportDescriptor",
     "describe_measured_support",
