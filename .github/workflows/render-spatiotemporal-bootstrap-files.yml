@@ -31,25 +31,17 @@ jobs:
 
           tests = Path("tests/test_bootstrap_spatiotemporal_kde.py")
           text = tests.read_text(encoding="utf-8")
-          old = '''    assert (
-              threaded.ensemble.seed_ledger_fingerprint
-              == sequential.ensemble.seed_ledger_fingerprint
+          marker = '    assert sequential.ensemble.execution_metadata["parallel_axis"] == "none"\n'
+          insertion = (
+              "    assert (\n"
+              "        threaded.ensemble.observed_field_fingerprint\n"
+              "        == sequential.ensemble.observed_field_fingerprint\n"
+              "    )\n"
+              + marker
           )
-          assert sequential.ensemble.execution_metadata["parallel_axis"] == "none"
-          '''
-          new = '''    assert (
-              threaded.ensemble.seed_ledger_fingerprint
-              == sequential.ensemble.seed_ledger_fingerprint
-          )
-          assert (
-              threaded.ensemble.observed_field_fingerprint
-              == sequential.ensemble.observed_field_fingerprint
-          )
-          assert sequential.ensemble.execution_metadata["parallel_axis"] == "none"
-          '''
-          if text.count(old) != 1:
-              raise RuntimeError("expected one scheduling assertion block")
-          tests.write_text(text.replace(old, new), encoding="utf-8")
+          if text.count(marker) != 1:
+              raise RuntimeError("expected one scheduling marker")
+          tests.write_text(text.replace(marker, insertion), encoding="utf-8")
           PY
       - run: >-
           python -m black
