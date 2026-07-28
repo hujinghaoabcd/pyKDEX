@@ -1,9 +1,9 @@
 name: Debug execution tests
 
 on:
-  push:
+  pull_request:
     branches:
-      - agent/uncertainty-separability-scalable-design
+      - main
 
 permissions:
   contents: read
