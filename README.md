@@ -7,7 +7,7 @@ The package follows the engineering conventions of pyGWRx while keeping the
 KDE architecture composition-based: domains, metrics, kernels, bandwidths,
 corrections, supports, and estimators are independent components.
 
-> Status: spatial KDE includes scalar, sample-point, balloon, matrix, and boundary-corrected estimators. Ordinary product-kernel spatiotemporal KDE supports linear/cyclic time and measured space-time grids. Fixed/adaptive radial network KDE, measured finite-element heat-equation NetworkKDE, and fixed/adaptive temporal-network KDE are implemented alongside canonical networks, auditable snapping, reusable assets, and bandwidth selection.
+> Status: spatial KDE includes scalar, sample-point, balloon, matrix, and boundary-corrected estimators. Ordinary product-kernel spatiotemporal KDE supports linear/cyclic time and measured space-time grids. Fixed/adaptive radial network KDE, measured finite-element heat-equation NetworkKDE, and fixed/adaptive temporal-network KDE are implemented alongside canonical networks, auditable snapping, reusable assets, bandwidth selection, exposure-adjusted event rates, and shared-fixed-bandwidth case-control relative risk.
 
 ## Installation
 
@@ -32,8 +32,6 @@ result = model.predict_result(support)
 print(result.values)
 print(result.to_frame().head())
 ```
-
-
 
 ## Structured data workflow
 
@@ -91,7 +89,6 @@ selected = SpatialKDE(
 knn = SpatialKDE(bandwidth=KNNBandwidth(k=20)).fit(events)
 adaptive = SpatialKDE(bandwidth=AbramsonBandwidth(0.5)).fit(events)
 ```
-
 
 ## Spatial boundaries, matrices, and balloon bandwidths
 
@@ -243,6 +240,40 @@ The portable format contains canonical JSON, non-object NumPy arrays, and WKB
 geometry. It never uses pickle. Every payload has a declared byte size and
 SHA-256 digest, and loading reconstructs and validates the full object graph.
 Use `format="directory"` for an inspectable directory bundle.
+
+## Exposure-adjusted rates and case-control relative risk
+
+```python
+from pykdex import ExposureField, estimate_event_rate, estimate_relative_risk
+
+exposure = ExposureField.from_amounts(
+    population_by_cell,
+    grid,
+    exposure_unit="persons",
+)
+rate = estimate_event_rate(
+    event_intensity_result,
+    exposure,
+    event_unit="events",
+)
+
+risk = estimate_relative_risk(
+    case_density_result,
+    control_density_result,
+    support=grid,
+)
+
+print(rate.rate_unit)
+print(risk.values)
+print(risk.log_values)
+```
+
+Event rates divide an intensity field by independently supplied exposure density.
+Relative risk divides separately normalized case and control probability densities.
+Both operations require exact measured-support compatibility and explicit handling of
+zero denominators; no hidden epsilon or pseudocount is added. Version 0.0.15 supports
+shared positive scalar fixed bandwidths for relative risk. See
+`examples/17_exposure_relative_risk.py` for a complete executable example.
 
 ## Initial design commitments
 
