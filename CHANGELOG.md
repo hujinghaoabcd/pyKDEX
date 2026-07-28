@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.0.15 - 2026-07-28
+
+- Add closed measured-support descriptors for spatial grids, lixels, ordinary
+  space-time grids, and network-time arixels.
+- Add immutable `ExposureField` construction from exposure density or per-element
+  exposure amounts with explicit units, provenance, totals, and fingerprints.
+- Add explicit `raise`, `nan`, and `minimum` denominator policies without hidden
+  epsilon or pseudocounts.
+- Add immutable `EventRateField` and `estimate_event_rate` for intensity divided by
+  independently supplied exposure density.
+- Add closed density adapters for spatial, network, space-time, and network-time KDE
+  result families.
+- Add immutable `RelativeRiskField` and `estimate_relative_risk` for separately
+  normalized case-control density ratios and log ratios.
+- Require exact measured-support and estimator compatibility with shared positive scalar
+  fixed bandwidths for relative risk.
+- Add analytical unequal-cell, lixel, cyclic space-time, and cyclic arixel validation.
+- Add top-level public exports, executable example coverage, user and API documentation,
+  and detailed recovery handoffs.
+
 ## 0.0.14 - 2026-07-23
 
 - Add versioned `WorkspaceManifest` records with a closed schema.

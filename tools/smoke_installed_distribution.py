@@ -6,7 +6,7 @@ import numpy as np
 
 import pykdex
 
-assert pykdex.__version__ == "0.0.14"
+assert pykdex.__version__ == "0.0.15"
 assert files("pykdex").joinpath("py.typed").is_file()
 events = pykdex.SpatialEvents.from_array([[0.0, 0.0], [1.0, 1.0]])
 support = pykdex.GridSupport.from_bounds((0.0, 0.0, 1.0, 1.0), resolution=0.5)
@@ -16,4 +16,7 @@ result = model.predict_result(support)
 assert values.shape == (1,)
 assert np.isfinite(values[0]) and values[0] > 0.0
 assert result.to_grid().shape == support.shape
+assert pykdex.ExposureField.__name__ == "ExposureField"
+assert pykdex.EventRateField.__name__ == "EventRateField"
+assert pykdex.RelativeRiskField.__name__ == "RelativeRiskField"
 print("Installed pyKDEX distribution smoke test passed.")

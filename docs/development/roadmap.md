@@ -14,6 +14,6 @@
 12. ~~arixel support and fixed-bandwidth temporal-network KDE~~;
 13. ~~network-time bandwidth selection and adaptive temporal-network KDE~~;
 14. ~~portable persistent network and network-time workspaces~~;
-15. exposure-adjusted risk and relative-risk estimation;
+15. ~~exposure-adjusted event rates and shared-fixed-bandwidth relative risk~~;
 16. uncertainty, separability diagnostics, and scalable execution;
 17. optional PostGIS/Zarr storage adapters.
