@@ -1,7 +1,7 @@
 # pyKDEX current handoff
 
-The latest stable merged version is **0.0.14**. Active development is **0.0.15
-exposure-adjusted rates and relative risk**.
+The latest stable merged version is **0.0.14**. Branch
+`agent/exposure-relative-risk` is now the **0.0.15 release candidate**.
 
 Read these records in order:
 
@@ -9,147 +9,130 @@ Read these records in order:
 2. `docs/development/design-0.0.15-exposure-relative-risk.md`;
 3. `HANDOFF_0.0.15_PROGRESS_01_EXPOSURE_FIELD.md`;
 4. `HANDOFF_0.0.15_PROGRESS_02_EVENT_RATE.md`;
-5. `HANDOFF_0.0.15_PROGRESS_03_RELATIVE_RISK.md`.
+5. `HANDOFF_0.0.15_PROGRESS_03_RELATIVE_RISK.md`;
+6. `HANDOFF_0.0.15_EXPOSURE_RELATIVE_RISK.md`.
 
 ## Current state
 
 - repository: `hujinghaoabcd/pyKDEX`;
 - branch: `agent/exposure-relative-risk`;
-- draft PR: `#15 Add exposure-adjusted rate and relative-risk foundations`;
+- release-candidate head before this handoff update:
+  `9e54215fa7a057bf8fe3ca5ba87a0d3433b3d1db`;
+- PR: `#15 Add exposure-adjusted rate and relative-risk foundations`;
+- PR state: open, Draft, mergeable, not merged;
 - base `main`: `1315619afba79a6ddf1fbfd7b91900bf0c0992f1`;
-- exposure-field subunit final state commit: `40fc66841fdde4fa90774ed79ca31bb1fd5b4f58`;
-- event-rate implementation and handoff state documented in progress handoff 02;
-- relative-risk implementation and formatter-removal head:
-  `5a42a59815cda5321ee89b52d0f86704b5f7f31f`;
-- relative-risk progress handoff root commit:
-  `9eb2686cd0e85b4fafad670ed7ab0de01662ed35`;
-- documentation-update head validated by CI:
-  `51523a9e730340c63c884fbce5d310713cfbb666`;
-- first relative-risk CI `#172` (`30353108398`): stopped at Black formatting;
-- corrected relative-risk implementation CI `#177` (`30353630091`): success;
-- complete progress-documentation CI `#201` (`30354857130`): success;
-- merge: not merged;
-- PR remains Draft;
-- package version remains `0.0.14` until the complete 0.0.15 release unit is finished.
+- package version in the branch: `0.0.15`;
+- last fully observed pre-release status CI:
+  `#214` (`30355794150`), success;
+- final release-candidate CI after API, version, example, and documentation changes:
+  pending observation;
+- merge commit: not created;
+- post-merge `main` CI: not observed.
 
-The live branch head and the latest status-only CI must be read from PR #15 because
-handoff-record commits may follow the validated numerical implementation. Do not infer a
-merge or release from a later documentation commit.
+Do not claim 0.0.15 is stable until the final candidate CI, merge, and post-merge `main`
+CI have been observed and recorded.
 
-Do not merge PR #15 after only the three numerical subunits.
+## Completed numerical subunits
 
-## Implemented in progress subunit 01
+### 01. Exposure fields
 
-- closed measured-support identity for spatial grids, lixels, measured space-time
-  points, space-time grids, and arixels;
-- immutable `SupportDescriptor`;
-- immutable `ExposureField` from density or per-element exposure amounts;
-- explicit exposure units, provenance, measured totals, fingerprints, and exports;
-- analytical support and exposure tests across all four domains.
+- exact measured-support identity for spatial grids, lixels, measured space-time, and
+  arixels;
+- immutable `SupportDescriptor` and `ExposureField`;
+- construction from density or per-element amounts;
+- exposure units, provenance, totals, fingerprints, and exports.
 
 ```text
 exposure_amount_j = exposure_density_j * support_measure_j
 total_exposure = sum_j exposure_amount_j
 ```
 
-## Implemented in progress subunit 02
+### 02. Exposure-adjusted event rates
 
-- immutable `DenominatorPolicy` with explicit `raise`, `nan`, and `minimum` modes;
-- no hidden epsilon and no stored positive infinity;
-- closed intensity adapters for `SpatialKDEResult`, `NetworkField`,
-  `SpatiotemporalKDEResult`, and `NetworkTimeField`;
-- strict rejection of probability density as an event-rate numerator;
-- immutable `EventRateField` and `estimate_event_rate(...)`;
-- original intensity, original/effective exposure, masks, units, event mass, exposure
-  totals, source fingerprints, and documented exposure-weighted summaries;
-- analytical tests on spatial, network, space-time, and network-time supports.
+- explicit immutable `raise`, `nan`, and `minimum` denominator policies;
+- closed intensity adapters for spatial, network, space-time, and network-time results;
+- rejection of probability density as the numerator;
+- immutable `EventRateField` and `estimate_event_rate`;
+- event mass, exposure totals, units, masks, source fingerprints, and weighted summaries.
 
 ```text
 event_rate_j = event_intensity_j / exposure_density_j
 rate_unit = event_unit / exposure_unit
 ```
 
-## Implemented in progress subunit 03
+### 03. Shared-fixed-bandwidth relative risk
 
 - closed density adapters for the same four result families;
-- mandatory `target="density"` for case and control;
-- measured density-integral validation with explicit positive
-  `normalization_tolerance`;
-- explicit `GridSupport` requirement for spatial results because the complete grid is
-  not retained by `SpatialKDEResult`;
-- embedded support inference for network, ordinary space-time, and network-time results;
-- shared positive scalar fixed-bandwidth contract;
-- rejection of adaptive arrays, spatial matrices, and unequal case/control bandwidths;
-- exact support, kernel, metric, boundary, junction, direction, network, CRS, units, and
-  temporal-domain compatibility where applicable;
-- legitimate different event fingerprint, event count, weights, and provenance retained
-  but excluded from shared-configuration equality;
-- immutable `RelativeRiskField` and `estimate_relative_risk(...)`;
-- raw and log relative-risk outputs;
-- original/effective control densities and invalid/adjusted masks;
-- zero case density represented exactly as raw risk `0` and log risk `-inf`;
-- zero control density handled only by explicit `raise`, `nan`, or `minimum` policy;
-- reciprocal, sign-reversal, control-weighted normalization, denominator-policy,
-  unequal-measure grid, lixel, cyclic space-time, and cyclic arixel tests.
+- separately normalized case and control densities;
+- exact support and estimator-contract compatibility;
+- shared positive scalar fixed bandwidths;
+- immutable `RelativeRiskField` and `estimate_relative_risk`;
+- raw and log risk, original/effective control density, masks, fingerprints, and
+  control-weighted summaries.
 
 ```text
 relative_risk_j = case_density_j / control_density_j
 log_relative_risk_j = log(case_density_j) - log(control_density_j)
 ```
 
-A temporary `.github/workflows/format-relative-risk.yml` workflow was used only to
-obtain exact Black/isort output and was deleted before corrected validation. It must be
-absent from the branch and final PR.
+Zero case density gives raw risk `0` and log risk `-inf` when control is valid. Zero
+control density follows an explicit policy and never produces stored positive infinity.
 
-## Validation
+## Final public release surface
 
-Corrected implementation CI `#177` and complete progress-documentation CI `#201`
-passed:
+The five new top-level exports are:
 
-- Black, isort, Ruff, mypy, API mapping, and strict MkDocs;
-- branch coverage and the complete regression suite;
-- source/wheel distributions, Twine, archive verification, and isolated wheel smoke;
-- Linux, Windows, and macOS on Python 3.11, 3.12, 3.13, and 3.14.
+```python
+ExposureField
+EventRateField
+RelativeRiskField
+estimate_event_rate
+estimate_relative_risk
+```
 
-GitHub Actions is the authoritative validation environment.
+Release completion changes already added to the branch:
 
-## Exact next subunit
+- `src/pykdex/__init__.py` reports `0.0.15` and exports the five names;
+- `examples/17_exposure_relative_risk.py` is the executable end-to-end example;
+- `examples/API_COVERAGE.csv` maps all five symbols;
+- `tools/smoke_installed_distribution.py` validates the 0.0.15 wheel and risk exports;
+- `docs/guides/exposure-relative-risk.md` documents the statistical distinction;
+- `docs/api/risk.md` documents the risk API;
+- README, English and Chinese site homes, roadmap, changelog, and MkDocs navigation are
+  updated;
+- `HANDOFF_0.0.15_EXPOSURE_RELATIVE_RISK.md` and its development page are present.
 
-Complete the **0.0.15 public API and release unit**:
+## Validation history
 
-1. review and freeze public names and signatures across exposure, rate, and relative
-   risk;
-2. add stable top-level exports;
-3. add a user-facing risk guide that distinguishes exposure-adjusted event rate from
-   case-control density-ratio relative risk;
-4. add a risk API reference page;
-5. add one executable end-to-end public example;
-6. register every new public symbol in the API-example map;
-7. update README, roadmap, result documentation, changelog/release notes, and all
-   authoritative version metadata;
-8. bump the package from `0.0.14` to `0.0.15`;
-9. create `HANDOFF_0.0.15_EXPOSURE_RELATIVE_RISK.md` and matching development page;
-10. run the full repository validation matrix;
-11. verify PR diff, temporary-workflow absence, review threads, and mergeability;
-12. mark PR ready, merge using the established method, and observe post-merge `main` CI;
-13. record real merge and CI evidence before declaring 0.0.15 stable.
+Observed successful runs before the final release surface:
 
-Do not add relative-risk bandwidth selection, independent or adaptive bandwidths,
-inference, uncertainty, separability diagnostics, PostGIS/Zarr, or distributed execution
-inside the finalization unit.
+- implementation CI `#177` (`30353630091`);
+- progress-documentation CI `#201` (`30354857130`);
+- final progress-state CI `#214` (`30355794150`).
 
-## Recovery checklist
+Each passed quality, typing, strict docs, branch coverage, distributions, isolated wheel
+smoke, and Linux/Windows/macOS Python 3.11-3.14 testing for its own head.
 
-1. Inspect PR #15 and verify its actual head, Draft state, merge state, and CI.
-2. Confirm `.github/workflows/format-event-rate.yml` and
-   `.github/workflows/format-relative-risk.yml` are absent.
-3. Read the five records listed at the top.
-4. Inspect all files under `src/pykdex/risk/`.
-5. Run `tests/test_exposure_field.py`, `tests/test_event_rate.py`, and
-   `tests/test_relative_risk.py`.
-6. Run the full regression, coverage, quality, docs, distribution, isolated-wheel, and
-   platform matrix.
-7. Continue only with final public API and release completion.
+The new release-candidate head must receive its own complete CI before PR readiness or
+merge.
 
-The final release must create `HANDOFF_0.0.15_EXPOSURE_RELATIVE_RISK.md` with actual
-version, complete public API, examples, validation, PR, merge, and post-merge CI evidence.
+## Exact continuation procedure
+
+1. Run and observe the complete CI for the current release-candidate head.
+2. Fix only failures established by logs and rerun the complete matrix.
+3. Inspect all PR changed files and verify both temporary formatter workflows are absent.
+4. Inspect PR comments and unresolved review threads.
+5. Update the PR title and body to describe the complete 0.0.15 release.
+6. Mark PR #15 ready for review only after all checks pass.
+7. Confirm the ready PR remains mergeable and required checks are successful.
+8. Merge using the repository's established method.
+9. Observe the actual merge commit and post-merge `main` CI.
+10. Update `HANDOFF_0.0.15_EXPOSURE_RELATIVE_RISK.md` and this file with real merge and
+    post-merge evidence.
+11. Only then declare 0.0.15 stable and begin a new detailed 0.0.16 design.
+
+## 0.0.16 boundary
+
+The next roadmap unit is uncertainty, separability diagnostics, and scalable execution.
+Do not add adaptive relative risk, independent case/control bandwidths, inference,
+PostGIS/Zarr, or distributed execution to the 0.0.15 release candidate.
