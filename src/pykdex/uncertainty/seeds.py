@@ -98,6 +98,7 @@ def build_seed_ledger(
     count = int(n_logical_tasks)
     if count <= 0:
         raise ValueError("n_logical_tasks must be greater than zero.")
+    entropy: tuple[int, ...]
     if random_state is None:
         generated = np.random.SeedSequence()
         raw_entropy = generated.entropy
