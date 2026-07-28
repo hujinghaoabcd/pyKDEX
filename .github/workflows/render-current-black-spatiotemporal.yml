@@ -1,4 +1,4 @@
-name: Render current Black spatiotemporal files
+name: Audit current Black repository diff
 
 on:
   pull_request:
@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 jobs:
-  render:
+  audit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,15 +18,17 @@ jobs:
           python-version: "3.13"
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e ".[dev,docs]"
-      - run: python -m black src/pykdex/uncertainty/api.py src/pykdex/uncertainty/spatiotemporal.py tests/test_bootstrap_spatiotemporal_kde.py
-      - run: python -m isort src/pykdex/uncertainty/api.py src/pykdex/uncertainty/spatiotemporal.py tests/test_bootstrap_spatiotemporal_kde.py
+      - run: python -m black src tests tools examples
       - run: |
-          mkdir -p rendered/src/pykdex/uncertainty rendered/tests
-          cp src/pykdex/uncertainty/api.py rendered/src/pykdex/uncertainty/api.py
-          cp src/pykdex/uncertainty/spatiotemporal.py rendered/src/pykdex/uncertainty/spatiotemporal.py
-          cp tests/test_bootstrap_spatiotemporal_kde.py rendered/tests/test_bootstrap_spatiotemporal_kde.py
+          mkdir -p audit
+          git diff --name-only > audit/changed.txt
+          git diff --binary > audit/black.patch
+          while IFS= read -r path; do
+            mkdir -p "audit/files/$(dirname "$path")"
+            cp "$path" "audit/files/$path"
+          done < audit/changed.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: current-black-spatiotemporal
-          path: rendered
+          name: current-black-full-audit
+          path: audit
           if-no-files-found: error
