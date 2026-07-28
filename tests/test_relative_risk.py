@@ -80,11 +80,14 @@ def test_spatial_relative_risk_reciprocal_and_log_identity() -> None:
     assert risk.log_to_grid().shape == support.shape
     assert not risk.values.flags.writeable
     assert not risk.log_values.flags.writeable
-    assert risk.fingerprint == estimate_relative_risk(
-        case,
-        control,
-        support=support,
-    ).fingerprint
+    assert (
+        risk.fingerprint
+        == estimate_relative_risk(
+            case,
+            control,
+            support=support,
+        ).fingerprint
+    )
 
 
 def test_control_denominator_policies_and_zero_case_log() -> None:
