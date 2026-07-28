@@ -15,7 +15,7 @@ Read these records in order:
 
 - repository: `hujinghaoabcd/pyKDEX`;
 - branch: `agent/exposure-relative-risk`;
-- draft PR: `#15 Add exposure-adjusted rates and shared-bandwidth relative risk`;
+- draft PR: `#15 Add exposure-adjusted rate and relative-risk foundations`;
 - base `main`: `1315619afba79a6ddf1fbfd7b91900bf0c0992f1`;
 - exposure-field subunit final state commit: `40fc66841fdde4fa90774ed79ca31bb1fd5b4f58`;
 - event-rate implementation and handoff state documented in progress handoff 02;
@@ -25,15 +25,16 @@ Read these records in order:
   `9eb2686cd0e85b4fafad670ed7ab0de01662ed35`;
 - documentation-update head validated by CI:
   `51523a9e730340c63c884fbce5d310713cfbb666`;
-- final progress-state head:
-  `040b003fd41e0d1af357d9bec2b7bac63056e27b`;
 - first relative-risk CI `#172` (`30353108398`): stopped at Black formatting;
 - corrected relative-risk implementation CI `#177` (`30353630091`): success;
 - complete progress-documentation CI `#201` (`30354857130`): success;
-- final progress-state CI: pending observation;
 - merge: not merged;
 - PR remains Draft;
 - package version remains `0.0.14` until the complete 0.0.15 release unit is finished.
+
+The live branch head and the latest status-only CI must be read from PR #15 because
+handoff-record commits may follow the validated numerical implementation. Do not infer a
+merge or release from a later documentation commit.
 
 Do not merge PR #15 after only the three numerical subunits.
 
@@ -119,8 +120,8 @@ Complete the **0.0.15 public API and release unit**:
 1. review and freeze public names and signatures across exposure, rate, and relative
    risk;
 2. add stable top-level exports;
-3. add a user guide distinguishing exposure-adjusted event rate from case-control
-   density-ratio relative risk;
+3. add a user-facing risk guide that distinguishes exposure-adjusted event rate from
+   case-control density-ratio relative risk;
 4. add a risk API reference page;
 5. add one executable end-to-end public example;
 6. register every new public symbol in the API-example map;
