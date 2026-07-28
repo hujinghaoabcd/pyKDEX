@@ -355,8 +355,7 @@ def pointwise_percentile_interval(
             )
             standard_error[selected] = np.std(finite_values, axis=0, ddof=1)
             bias[selected] = (
-                np.mean(finite_values, axis=0)
-                - ensemble.observed_values[selected]
+                np.mean(finite_values, axis=0) - ensemble.observed_values[selected]
             )
         nonfinite_columns = ~finite_columns
         if np.any(nonfinite_columns):
