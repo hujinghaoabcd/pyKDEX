@@ -1,0 +1,209 @@
+name: Apply spatial execution integration
+
+on:
+  push:
+    branches:
+      - agent/uncertainty-separability-scalable-design
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: ${{ !contains(github.event.head_commit.message, 'Integrate execution plans with spatial estimators') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install black==25.1.0
+      - name: Apply exact source transformations
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_exact(text: str, old: str, new: str, *, name: str) -> str:
+              count = text.count(old)
+              if count != 1:
+                  raise RuntimeError(f"{name}: expected one match, found {count}")
+              return text.replace(old, new)
+
+          spatial_path = Path("src/pykdex/estimators/spatial_kde.py")
+          spatial = spatial_path.read_text(encoding="utf-8")
+          spatial = replace_exact(
+              spatial,
+              "from pykdex.data import SpatialBoundary, SpatialEvents\n",
+              "from pykdex.data import SpatialBoundary, SpatialEvents\n"
+              "from pykdex.execution import ExecutionPlan\n"
+              "from pykdex.execution.chunks import execute_target_chunks\n"
+              "from pykdex.execution.plan import (\n"
+              "    ResolvedExecutionPlan,\n"
+              "    resolve_target_execution,\n"
+              ")\n",
+              name="spatial imports",
+          )
+          spatial = replace_exact(
+              spatial,
+              "        chunk_size: Optional positive number of support rows evaluated per chunk.\n"
+              "        random_state: Reserved deterministic random seed for future selectors.\n",
+              "        chunk_size: Optional positive number of support rows evaluated per chunk.\n"
+              "        execution_plan: Optional deterministic memory and worker contract.\n"
+              "        random_state: Reserved deterministic random seed for future selectors.\n",
+              name="spatial docs",
+          )
+          spatial = replace_exact(
+              spatial,
+              "        chunk_size: Optional[int] = None,\n"
+              "        random_state: Optional[int] = None,\n",
+              "        chunk_size: Optional[int] = None,\n"
+              "        execution_plan: ExecutionPlan | None = None,\n"
+              "        random_state: Optional[int] = None,\n",
+              name="spatial signature",
+          )
+          spatial = replace_exact(
+              spatial,
+              "        if boundary is not None and not isinstance(boundary, SpatialBoundary):\n",
+              "        if execution_plan is not None and not isinstance(\n"
+              "            execution_plan, ExecutionPlan\n"
+              "        ):\n"
+              "            raise TypeError(\n"
+              "                \"execution_plan must be an ExecutionPlan or None.\"\n"
+              "            )\n"
+              "        if boundary is not None and not isinstance(boundary, SpatialBoundary):\n",
+              name="spatial plan validation",
+          )
+          spatial = replace_exact(
+              spatial,
+              "        self.chunk_size = int(chunk_size) if chunk_size is not None else None\n"
+              "        self._reset_fit_state()\n",
+              "        self.chunk_size = int(chunk_size) if chunk_size is not None else None\n"
+              "        self.execution_plan = execution_plan\n"
+              "        self._reset_fit_state()\n",
+              name="spatial plan storage",
+          )
+          spatial = replace_exact(
+              spatial,
+              "        self.boundary_correction_state_: Optional[BoundaryCorrectionState] = None\n",
+              "        self.boundary_correction_state_: Optional[BoundaryCorrectionState] = None\n"
+              "        self.last_execution_: ResolvedExecutionPlan | None = None\n",
+              name="spatial execution state",
+          )
+          spatial = replace_exact(
+              spatial,
+              '''    def evaluate(self, support: SupportInput) -> np.ndarray:\n        """Evaluate the fitted estimator at support coordinates."""\n        validated = self._prepare_support(support)\n        values, _ = self._evaluate_array(validated.coordinates)\n        return values\n\n    predict = evaluate\n\n    def _evaluate_array(\n        self,\n        support: np.ndarray,\n    ) -> tuple[np.ndarray, np.ndarray | None]:\n        chunk_size = self.chunk_size or support.shape[0]\n        values = np.empty(support.shape[0], dtype=float)\n        support_bandwidths = (\n            np.empty(support.shape[0], dtype=float)\n            if self.balloon_bandwidth_strategy_ is not None\n            else None\n        )\n        for start in range(0, support.shape[0], chunk_size):\n            stop = min(start + chunk_size, support.shape[0])\n            chunk_values, chunk_bandwidths = self._evaluate_chunk(support[start:stop])\n            values[start:stop] = chunk_values\n            if support_bandwidths is not None:\n                if chunk_bandwidths is None:\n                    raise RuntimeError(\n                        "balloon bandwidth evaluation returned no values."\n                    )\n                support_bandwidths[start:stop] = chunk_bandwidths\n        if support_bandwidths is not None:\n            support_bandwidths.setflags(write=False)\n        return values, support_bandwidths\n''',
+              '''    def evaluate(self, support: SupportInput) -> np.ndarray:\n        """Evaluate the fitted estimator at support coordinates."""\n        validated = self._prepare_support(support)\n        values, _, _ = self._evaluate_array(validated.coordinates)\n        return values\n\n    predict = evaluate\n\n    def _evaluate_array(\n        self,\n        support: np.ndarray,\n    ) -> tuple[np.ndarray, np.ndarray | None, ResolvedExecutionPlan]:\n        if self.n_events_ is None:\n            raise RuntimeError("Fitted event count is unavailable.")\n        output_arrays = 2 if self.balloon_bandwidth_strategy_ is not None else 1\n        resolved = resolve_target_execution(\n            self.execution_plan,\n            operation_name="SpatialKDE.evaluate",\n            n_targets=support.shape[0],\n            n_sources=self.n_events_,\n            bytes_per_pair=96,\n            fixed_overhead_bytes=support.shape[0] * output_arrays * 8,\n            legacy_target_chunk_size=self.chunk_size,\n        )\n        values = np.empty(support.shape[0], dtype=float)\n        support_bandwidths = (\n            np.empty(support.shape[0], dtype=float)\n            if self.balloon_bandwidth_strategy_ is not None\n            else None\n        )\n\n        def worker(start: int, stop: int) -> tuple[np.ndarray, np.ndarray | None]:\n            return self._evaluate_chunk(support[start:stop])\n\n        for start, stop, result in execute_target_chunks(resolved, worker):\n            chunk_values, chunk_bandwidths = result\n            values[start:stop] = chunk_values\n            if support_bandwidths is not None:\n                if chunk_bandwidths is None:\n                    raise RuntimeError(\n                        "balloon bandwidth evaluation returned no values."\n                    )\n                support_bandwidths[start:stop] = chunk_bandwidths\n        if support_bandwidths is not None:\n            support_bandwidths.setflags(write=False)\n        self.last_execution_ = resolved\n        return values, support_bandwidths, resolved\n''',
+              name="spatial evaluation",
+          )
+          spatial = replace_exact(
+              spatial,
+              "        values, support_bandwidths = self._evaluate_array(validated.coordinates)\n",
+              "        values, support_bandwidths, resolved_execution = self._evaluate_array(\n"
+              "            validated.coordinates\n"
+              "        )\n",
+              name="spatial result evaluation",
+          )
+          spatial = replace_exact(
+              spatial,
+              "        if validated.shape is not None:\n"
+              "            metadata[\"support_shape\"] = validated.shape\n",
+              "        if validated.shape is not None:\n"
+              "            metadata[\"support_shape\"] = validated.shape\n"
+              "        metadata[\"execution\"] = resolved_execution.to_metadata()\n",
+              name="spatial result metadata",
+          )
+          spatial_path.write_text(spatial, encoding="utf-8")
+
+          st_path = Path("src/pykdex/estimators/spatiotemporal_kde.py")
+          st = st_path.read_text(encoding="utf-8")
+          st = replace_exact(
+              st,
+              "from pykdex.data import SpatiotemporalEvents\n",
+              "from pykdex.data import SpatiotemporalEvents\n"
+              "from pykdex.execution import ExecutionPlan\n"
+              "from pykdex.execution.chunks import execute_target_chunks\n"
+              "from pykdex.execution.plan import (\n"
+              "    ResolvedExecutionPlan,\n"
+              "    resolve_target_execution,\n"
+              ")\n",
+              name="space-time imports",
+          )
+          st = replace_exact(
+              st,
+              "        chunk_size: Optional[int] = None,\n"
+              "        cyclic_tail_tolerance: float = 1e-12,\n",
+              "        chunk_size: Optional[int] = None,\n"
+              "        execution_plan: ExecutionPlan | None = None,\n"
+              "        cyclic_tail_tolerance: float = 1e-12,\n",
+              name="space-time signature",
+          )
+          st = replace_exact(
+              st,
+              "        tolerance = float(cyclic_tail_tolerance)\n",
+              "        if execution_plan is not None and not isinstance(\n"
+              "            execution_plan, ExecutionPlan\n"
+              "        ):\n"
+              "            raise TypeError(\n"
+              "                \"execution_plan must be an ExecutionPlan or None.\"\n"
+              "            )\n"
+              "        tolerance = float(cyclic_tail_tolerance)\n",
+              name="space-time plan validation",
+          )
+          st = replace_exact(
+              st,
+              "        self.chunk_size = int(chunk_size) if chunk_size is not None else None\n"
+              "        self.cyclic_tail_tolerance = tolerance\n",
+              "        self.chunk_size = int(chunk_size) if chunk_size is not None else None\n"
+              "        self.execution_plan = execution_plan\n"
+              "        self.cyclic_tail_tolerance = tolerance\n",
+              name="space-time plan storage",
+          )
+          st = replace_exact(
+              st,
+              "        self.spatial_metric_: BaseMetric | None = None\n",
+              "        self.spatial_metric_: BaseMetric | None = None\n"
+              "        self.last_execution_: ResolvedExecutionPlan | None = None\n",
+              name="space-time execution state",
+          )
+          st = replace_exact(
+              st,
+              '''    def _evaluate_asset(self, asset: SpatiotemporalDistanceAsset) -> np.ndarray:\n        (\n            events,\n            spatial_kernel,\n            temporal_kernel,\n            _metric,\n            weights,\n            weight_sum,\n        ) = self._components()\n        if self.dimension_ is None or self.time_domain_ is None:\n            raise RuntimeError("Fitted dimensions and time domain are unavailable.")\n        kernel_values = evaluate_product_kernel(\n            asset.spatial_distances,\n            asset.temporal_offsets,\n            dimension=self.dimension_,\n            spatial_kernel=spatial_kernel,\n            temporal_kernel=temporal_kernel,\n            spatial_bandwidth=self.spatial_bandwidth,\n            temporal_bandwidth=self.temporal_bandwidth,\n            time_domain=self.time_domain_,\n            tail_tolerance=self.cyclic_tail_tolerance,\n        )\n        coefficients = weights / weight_sum if self.target == "density" else weights\n        estimates = np.asarray(kernel_values @ coefficients, dtype=float)\n        estimates[estimates < 0.0] = 0.0\n        if not np.all(np.isfinite(estimates)):\n            raise FloatingPointError("Space-time KDE produced non-finite values.")\n        return estimates\n''',
+              '''    def _evaluate_arrays(\n        self,\n        spatial_distances: np.ndarray,\n        temporal_offsets: np.ndarray,\n    ) -> np.ndarray:\n        (\n            _events,\n            spatial_kernel,\n            temporal_kernel,\n            _metric,\n            weights,\n            weight_sum,\n        ) = self._components()\n        if self.dimension_ is None or self.time_domain_ is None:\n            raise RuntimeError("Fitted dimensions and time domain are unavailable.")\n        kernel_values = evaluate_product_kernel(\n            spatial_distances,\n            temporal_offsets,\n            dimension=self.dimension_,\n            spatial_kernel=spatial_kernel,\n            temporal_kernel=temporal_kernel,\n            spatial_bandwidth=self.spatial_bandwidth,\n            temporal_bandwidth=self.temporal_bandwidth,\n            time_domain=self.time_domain_,\n            tail_tolerance=self.cyclic_tail_tolerance,\n        )\n        coefficients = weights / weight_sum if self.target == "density" else weights\n        estimates = np.asarray(kernel_values @ coefficients, dtype=float)\n        estimates[estimates < 0.0] = 0.0\n        if not np.all(np.isfinite(estimates)):\n            raise FloatingPointError("Space-time KDE produced non-finite values.")\n        return estimates\n\n    def _evaluate_asset(self, asset: SpatiotemporalDistanceAsset) -> np.ndarray:\n        return self._evaluate_arrays(\n            asset.spatial_distances,\n            asset.temporal_offsets,\n        )\n''',
+              name="space-time array evaluator",
+          )
+          st = replace_exact(
+              st,
+              '''    def evaluate(\n        self,\n        support: SpaceTimeSupport,\n        *,\n        distance_asset: SpatiotemporalDistanceAsset | None = None,\n    ) -> np.ndarray:\n        """Evaluate support, optionally reusing a matching distance asset."""\n        self._validate_support(support)\n        events, _, _, metric, _, _ = self._components()\n        if distance_asset is not None:\n            distance_asset.validate_for(events, support, spatial_metric=metric.name)\n            return self._evaluate_asset(distance_asset)\n        chunk_size = self.chunk_size or support.n_points\n        values = np.empty(support.n_points, dtype=float)\n        for start in range(0, support.n_points, chunk_size):\n            stop = min(start + chunk_size, support.n_points)\n            chunk = SpatiotemporalPointSupport.from_arrays(\n                support.spatial_coordinates[start:stop],\n                support.times[start:stop],\n                support_measure=None,\n                ids=np.arange(stop - start),\n                coordinate_names=support.spatial.coordinate_names,\n                crs=support.spatial.crs,\n                spatial_unit=support.spatial.spatial_unit,\n                temporal_unit=support.temporal.temporal_unit,\n                time_domain=support.temporal.domain,\n                temporal_origin=support.temporal.temporal_origin,\n                timezone=support.temporal.timezone,\n            )\n            asset = build_spatiotemporal_distance_asset(\n                events, chunk, spatial_metric=metric\n            )\n            values[start:stop] = self._evaluate_asset(asset)\n        values.setflags(write=False)\n        return values\n''',
+              '''    def evaluate(\n        self,\n        support: SpaceTimeSupport,\n        *,\n        distance_asset: SpatiotemporalDistanceAsset | None = None,\n    ) -> np.ndarray:\n        """Evaluate support, optionally reusing a matching distance asset."""\n        self._validate_support(support)\n        events, _, _, metric, _, _ = self._components()\n        if distance_asset is not None:\n            distance_asset.validate_for(events, support, spatial_metric=metric.name)\n        asset_bytes = (\n            0\n            if distance_asset is None\n            else distance_asset.spatial_distances.nbytes\n            + distance_asset.temporal_offsets.nbytes\n            + distance_asset.temporal_distances.nbytes\n        )\n        resolved = resolve_target_execution(\n            self.execution_plan,\n            operation_name="SpatiotemporalKDE.evaluate",\n            n_targets=support.n_points,\n            n_sources=events.n_events,\n            bytes_per_pair=80 if distance_asset is None else 48,\n            fixed_overhead_bytes=asset_bytes + support.n_points * 8,\n            legacy_target_chunk_size=self.chunk_size,\n        )\n        values = np.empty(support.n_points, dtype=float)\n\n        def worker(start: int, stop: int) -> np.ndarray:\n            if distance_asset is not None:\n                return self._evaluate_arrays(\n                    distance_asset.spatial_distances[start:stop],\n                    distance_asset.temporal_offsets[start:stop],\n                )\n            chunk = SpatiotemporalPointSupport.from_arrays(\n                support.spatial_coordinates[start:stop],\n                support.times[start:stop],\n                support_measure=None,\n                ids=np.arange(stop - start),\n                coordinate_names=support.spatial.coordinate_names,\n                crs=support.spatial.crs,\n                spatial_unit=support.spatial.spatial_unit,\n                temporal_unit=support.temporal.temporal_unit,\n                time_domain=support.temporal.domain,\n                temporal_origin=support.temporal.temporal_origin,\n                timezone=support.temporal.timezone,\n            )\n            asset = build_spatiotemporal_distance_asset(\n                events, chunk, spatial_metric=metric\n            )\n            return self._evaluate_asset(asset)\n\n        for start, stop, chunk_values in execute_target_chunks(resolved, worker):\n            values[start:stop] = chunk_values\n        values.setflags(write=False)\n        self.last_execution_ = resolved\n        return values\n''',
+              name="space-time evaluation",
+          )
+          st = replace_exact(
+              st,
+              "        _, spatial_kernel, temporal_kernel, metric, _, _ = self._components()\n"
+              "        return SpatiotemporalKDEResult(\n",
+              "        _, spatial_kernel, temporal_kernel, metric, _, _ = self._components()\n"
+              "        if self.last_execution_ is None:\n"
+              "            raise RuntimeError(\n"
+              "                \"Resolved execution metadata is unavailable.\"\n"
+              "            )\n"
+              "        metadata = dict(self.fit_metadata_ or {})\n"
+              "        metadata[\"execution\"] = self.last_execution_.to_metadata()\n"
+              "        return SpatiotemporalKDEResult(\n",
+              name="space-time result metadata setup",
+          )
+          st = replace_exact(
+              st,
+              "            metadata=dict(self.fit_metadata_ or {}),\n",
+              "            metadata=metadata,\n",
+              name="space-time result metadata",
+          )
+          st_path.write_text(st, encoding="utf-8")
+          PY
+      - run: python -m black src/pykdex/estimators/spatial_kde.py src/pykdex/estimators/spatiotemporal_kde.py
+      - name: Commit integration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pykdex/estimators/spatial_kde.py src/pykdex/estimators/spatiotemporal_kde.py
+          git commit -m "Integrate execution plans with spatial estimators"
+          git push
