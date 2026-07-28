@@ -1,0 +1,313 @@
+name: Apply network-time execution integration
+
+on:
+  push:
+    branches:
+      - agent/uncertainty-separability-scalable-design
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: ${{ !contains(github.event.head_commit.message, 'Integrate execution plans with TemporalNetworkKDE') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install black==25.1.0 isort==5.13.2
+      - name: Apply exact source transformation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("src/pykdex/estimators/temporal_network_kde.py")
+          text = path.read_text(encoding="utf-8")
+
+          def replace(old: str, new: str, name: str) -> None:
+              global text
+              count = text.count(old)
+              if count != 1:
+                  raise RuntimeError(f"{name}: expected one match, found {count}")
+              text = text.replace(old, new)
+
+          replace(
+              "from pykdex.core.network_time_results import NetworkTimeField\n",
+              "from pykdex.core.network_time_results import NetworkTimeField\n"
+              "from pykdex.execution import ExecutionPlan\n"
+              "from pykdex.execution.chunks import execute_target_chunks\n"
+              "from pykdex.execution.plan import (\n"
+              "    ResolvedExecutionPlan,\n"
+              "    resolve_target_execution,\n"
+              ")\n",
+              "imports",
+          )
+          replace(
+              "        time_chunk_size: Optional[int] = None,\n"
+              "        cyclic_tail_tolerance: float = 1e-12,\n",
+              "        time_chunk_size: Optional[int] = None,\n"
+              "        execution_plan: ExecutionPlan | None = None,\n"
+              "        cyclic_tail_tolerance: float = 1e-12,\n",
+              "signature",
+          )
+          replace(
+              "        tolerance = float(cyclic_tail_tolerance)\n",
+              "        if execution_plan is not None and not isinstance(\n"
+              "            execution_plan, ExecutionPlan\n"
+              "        ):\n"
+              "            raise TypeError(\n"
+              "                \"execution_plan must be an ExecutionPlan or None.\"\n"
+              "            )\n"
+              "        tolerance = float(cyclic_tail_tolerance)\n",
+              "validation",
+          )
+          replace(
+              "        self.time_chunk_size = None if time_chunk_size is None else int(time_chunk_size)\n"
+              "        self.cyclic_tail_tolerance = tolerance\n",
+              "        self.time_chunk_size = None if time_chunk_size is None else int(time_chunk_size)\n"
+              "        self.execution_plan = execution_plan\n"
+              "        self.cyclic_tail_tolerance = tolerance\n",
+              "storage",
+          )
+          replace(
+              "        self.values_: np.ndarray | None = None\n",
+              "        self.values_: np.ndarray | None = None\n"
+              "        self.last_execution_: ResolvedExecutionPlan | None = None\n",
+              "state",
+          )
+
+          old = '''            maximum_spatial_bandwidth = float(np.max(spatial_bandwidth))
+            traces: tuple[PropagationTrace, ...] | None = None
+            distance_asset: NetworkTimeDistanceAsset | None = None
+            if policy.path_based:
+                traces = tuple(
+                    trace_network_propagation(
+                        workspace.network,
+                        int(events.edge_indices[index]),
+                        float(events.offsets[index]),
+                        cutoff=maximum_spatial_bandwidth,
+                        junction_policy=policy,
+                        directed=effective_directed,
+                        coefficient_tolerance=self.coefficient_tolerance,
+                        max_records=self.max_records_per_event,
+                        source_id=events.event_ids[index],
+                    )
+                    for index in range(events.n_events)
+                )
+                spatial_matrix = evaluate_propagation_kernel_matrix(
+                    traces,
+                    NetworkLocations.from_lixels(workspace.arixels.lixels),
+                    spatial_kernel,
+                    spatial_bandwidth,
+                )
+                temporal_offsets = (
+                    workspace.arixels.time_centers[:, None] - events.times[None, :]
+                )
+            else:
+                cutoff = (
+                    maximum_spatial_bandwidth if spatial_kernel.finite_support else None
+                )
+                distance_asset = workspace.distance_asset
+                if not self._asset_usable(
+                    distance_asset,
+                    workspace,
+                    cutoff=cutoff,
+                    directed=effective_directed,
+                ):
+                    distance_asset = build_network_time_distance_asset(
+                        workspace.network_workspace,
+                        events,
+                        workspace.arixels,
+                        cutoff=cutoff,
+                        directed=effective_directed,
+                    )
+                assert distance_asset is not None
+                spatial_matrix = evaluate_distance_kernel_matrix(
+                    distance_asset.network_distances,
+                    spatial_kernel,
+                    spatial_bandwidth,
+                )
+                temporal_offsets = distance_asset.temporal_offsets
+            temporal_matrix = evaluate_temporal_kernel(
+                temporal_offsets,
+                domain=events.temporal.domain,
+                kernel=temporal_kernel,
+                bandwidth=temporal_bandwidth,
+                tail_tolerance=self.cyclic_tail_tolerance,
+            )
+            coefficients = (
+                events.weights / events.weight_sum
+                if self.target == "density"
+                else events.weights
+            )
+            values_2d = np.empty(workspace.arixels.shape, dtype=float)
+            chunk = self.time_chunk_size or workspace.arixels.n_times
+            for start in range(0, workspace.arixels.n_times, chunk):
+                stop = min(start + chunk, workspace.arixels.n_times)
+                values_2d[start:stop] = (
+                    temporal_matrix[start:stop] * coefficients[None, :]
+                ) @ spatial_matrix
+            raw_minimum = float(np.min(values_2d))
+            values_2d[values_2d < 0.0] = 0.0
+            if not np.all(np.isfinite(values_2d)):
+                raise FloatingPointError(
+                    "TemporalNetworkKDE produced non-finite values."
+                )
+            values = np.ascontiguousarray(values_2d.ravel())
+            values.setflags(write=False)
+'''
+          new = '''            maximum_spatial_bandwidth = float(np.max(spatial_bandwidth))
+            traces: tuple[PropagationTrace, ...] | None = None
+            distance_asset: NetworkTimeDistanceAsset | None = None
+            n_records = 0
+            asset_overhead = 0
+            if policy.path_based:
+                traces = tuple(
+                    trace_network_propagation(
+                        workspace.network,
+                        int(events.edge_indices[index]),
+                        float(events.offsets[index]),
+                        cutoff=maximum_spatial_bandwidth,
+                        junction_policy=policy,
+                        directed=effective_directed,
+                        coefficient_tolerance=self.coefficient_tolerance,
+                        max_records=self.max_records_per_event,
+                        source_id=events.event_ids[index],
+                    )
+                    for index in range(events.n_events)
+                )
+                n_records = sum(trace.n_records for trace in traces)
+            else:
+                cutoff = (
+                    maximum_spatial_bandwidth if spatial_kernel.finite_support else None
+                )
+                distance_asset = workspace.distance_asset
+                if not self._asset_usable(
+                    distance_asset,
+                    workspace,
+                    cutoff=cutoff,
+                    directed=effective_directed,
+                ):
+                    distance_asset = build_network_time_distance_asset(
+                        workspace.network_workspace,
+                        events,
+                        workspace.arixels,
+                        cutoff=cutoff,
+                        directed=effective_directed,
+                    )
+                assert distance_asset is not None
+                network_asset = distance_asset.network_distances
+                asset_overhead = (
+                    network_asset.row_indices.nbytes
+                    + network_asset.column_indices.nbytes
+                    + network_asset.distances.nbytes
+                    + distance_asset.temporal_offsets.nbytes
+                )
+            coefficients = (
+                events.weights / events.weight_sum
+                if self.target == "density"
+                else events.weights
+            )
+            n_lixels = workspace.arixels.lixels.n_lixels
+            spatial_matrix_bytes = events.n_events * n_lixels * 8
+            fixed_overhead = (
+                asset_overhead
+                + spatial_matrix_bytes
+                + workspace.arixels.n_arixels * 8
+                + np.asarray(spatial_bandwidth).nbytes
+                + np.asarray(temporal_bandwidth).nbytes
+                + coefficients.nbytes
+                + n_records * 96
+            )
+            resolved_execution = resolve_target_execution(
+                self.execution_plan,
+                operation_name=f"TemporalNetworkKDE.{policy.name}",
+                n_targets=workspace.arixels.n_times,
+                n_sources=events.n_events + n_lixels,
+                bytes_per_pair=40,
+                fixed_overhead_bytes=fixed_overhead,
+                legacy_target_chunk_size=self.time_chunk_size,
+            )
+            if policy.path_based:
+                assert traces is not None
+                spatial_matrix = evaluate_propagation_kernel_matrix(
+                    traces,
+                    NetworkLocations.from_lixels(workspace.arixels.lixels),
+                    spatial_kernel,
+                    spatial_bandwidth,
+                )
+            else:
+                assert distance_asset is not None
+                spatial_matrix = evaluate_distance_kernel_matrix(
+                    distance_asset.network_distances,
+                    spatial_kernel,
+                    spatial_bandwidth,
+                )
+            values_2d = np.empty(workspace.arixels.shape, dtype=float)
+
+            def worker(start: int, stop: int) -> np.ndarray:
+                if distance_asset is None:
+                    temporal_offsets = (
+                        workspace.arixels.time_centers[start:stop, None]
+                        - events.times[None, :]
+                    )
+                else:
+                    temporal_offsets = distance_asset.temporal_offsets[start:stop]
+                temporal_matrix = evaluate_temporal_kernel(
+                    temporal_offsets,
+                    domain=events.temporal.domain,
+                    kernel=temporal_kernel,
+                    bandwidth=temporal_bandwidth,
+                    tail_tolerance=self.cyclic_tail_tolerance,
+                )
+                return (
+                    temporal_matrix * coefficients[None, :]
+                ) @ spatial_matrix
+
+            for start, stop, chunk_values in execute_target_chunks(
+                resolved_execution, worker
+            ):
+                values_2d[start:stop] = chunk_values
+            raw_minimum = float(np.min(values_2d))
+            values_2d[values_2d < 0.0] = 0.0
+            if not np.all(np.isfinite(values_2d)):
+                raise FloatingPointError(
+                    "TemporalNetworkKDE produced non-finite values."
+                )
+            values = np.ascontiguousarray(values_2d.ravel())
+            values.setflags(write=False)
+'''
+          replace(old, new, "fit core")
+          replace(
+              "            self.values_ = values\n"
+              "            self.fit_metadata_ = {\n",
+              "            self.values_ = values\n"
+              "            self.last_execution_ = resolved_execution\n"
+              "            self.fit_metadata_ = {\n",
+              "resolved state",
+          )
+          replace(
+              '''                "n_propagation_records": (
+                    0 if traces is None else sum(trace.n_records for trace in traces)
+                ),
+                "raw_minimum_before_clipping": raw_minimum,
+''',
+              '''                "n_propagation_records": n_records,
+                "raw_minimum_before_clipping": raw_minimum,
+                "execution": resolved_execution.to_metadata(),
+''',
+              "metadata",
+          )
+          path.write_text(text, encoding="utf-8")
+          PY
+      - run: python -m black src/pykdex/estimators/temporal_network_kde.py
+      - run: python -m isort src/pykdex/estimators/temporal_network_kde.py
+      - name: Commit integration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pykdex/estimators/temporal_network_kde.py
+          git commit -m "Integrate execution plans with TemporalNetworkKDE"
+          git push
