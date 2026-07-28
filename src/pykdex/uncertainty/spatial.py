@@ -17,6 +17,7 @@ from pykdex.data._utils import stable_fingerprint
 from pykdex.estimators.spatial_kde import SpatialKDE
 from pykdex.execution import ExecutionPlan
 from pykdex.execution.replicates import (
+    ResolvedReplicateExecution,
     execute_replicate_chunks,
     resolve_replicate_execution,
 )
@@ -83,6 +84,16 @@ def _build_contract(
     support: GridSupport,
 ) -> _SpatialBootstrapContract:
     bandwidth = _require_fixed_scalar_bandwidth(estimator)
+    for name, value in (
+        ("kernel", estimator.kernel),
+        ("metric", estimator.metric),
+        ("boundary_correction", estimator.boundary_correction),
+    ):
+        if not isinstance(value, str):
+            raise ValueError(
+                "bootstrap_kde initially requires built-in string names for "
+                f"kernel, metric, and boundary_correction; {name} was an object."
+            )
     kernel = get_kernel(estimator.kernel)
     metric = get_metric(estimator.metric)
     correction = get_boundary_correction(estimator.boundary_correction)
@@ -186,7 +197,7 @@ def _resolve_spatial_replicate_execution(
     events: SpatialEvents,
     support: GridSupport,
     plan: BootstrapPlan,
-) -> tuple[object, ExecutionPlan, dict[str, int]]:
+) -> tuple[ResolvedReplicateExecution, ExecutionPlan, dict[str, int]]:
     requested = plan.execution_plan or ExecutionPlan()
     target_execution = _target_execution_plan(plan)
     target_rows = min(
