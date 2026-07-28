@@ -15,7 +15,7 @@ Read these records in order:
 
 - repository: `hujinghaoabcd/pyKDEX`;
 - branch: `agent/exposure-relative-risk`;
-- draft PR: `#15 Add exposure-adjusted rate and relative-risk foundations`;
+- draft PR: `#15 Add exposure-adjusted rates and shared-bandwidth relative risk`;
 - base `main`: `1315619afba79a6ddf1fbfd7b91900bf0c0992f1`;
 - exposure-field subunit final state commit: `40fc66841fdde4fa90774ed79ca31bb1fd5b4f58`;
 - event-rate implementation and handoff state documented in progress handoff 02;
@@ -25,9 +25,12 @@ Read these records in order:
   `9eb2686cd0e85b4fafad670ed7ab0de01662ed35`;
 - documentation-update head validated by CI:
   `51523a9e730340c63c884fbce5d310713cfbb666`;
+- final progress-state head:
+  `040b003fd41e0d1af357d9bec2b7bac63056e27b`;
 - first relative-risk CI `#172` (`30353108398`): stopped at Black formatting;
 - corrected relative-risk implementation CI `#177` (`30353630091`): success;
 - complete progress-documentation CI `#201` (`30354857130`): success;
+- final progress-state CI: pending observation;
 - merge: not merged;
 - PR remains Draft;
 - package version remains `0.0.14` until the complete 0.0.15 release unit is finished.
