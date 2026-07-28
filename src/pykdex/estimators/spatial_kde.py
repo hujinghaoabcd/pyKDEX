@@ -34,10 +34,7 @@ from pykdex.corrections import (
 from pykdex.data import SpatialBoundary, SpatialEvents
 from pykdex.execution import ExecutionPlan
 from pykdex.execution.chunks import execute_target_chunks
-from pykdex.execution.plan import (
-    ResolvedExecutionPlan,
-    resolve_target_execution,
-)
+from pykdex.execution.plan import ResolvedExecutionPlan, resolve_target_execution
 from pykdex.kernels import BaseKernel, get_kernel
 from pykdex.metrics import BaseMetric, get_metric
 from pykdex.spatial.evaluation import (

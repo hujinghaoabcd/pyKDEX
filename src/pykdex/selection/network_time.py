@@ -9,9 +9,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from pykdex.core.network_time_results import (
-    NetworkTimeBandwidthSelectionResult,
-)
+from pykdex.core.network_time_results import NetworkTimeBandwidthSelectionResult
 from pykdex.data._utils import readonly_array, stable_fingerprint
 from pykdex.kernels import BaseKernel, get_kernel
 from pykdex.network import (

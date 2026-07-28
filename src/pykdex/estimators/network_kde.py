@@ -9,10 +9,7 @@ from typing import Optional
 
 import numpy as np
 
-from pykdex.bandwidths.network import (
-    BaseNetworkBandwidth,
-    get_network_bandwidth,
-)
+from pykdex.bandwidths.network import BaseNetworkBandwidth, get_network_bandwidth
 from pykdex.core.base import BaseKDE
 from pykdex.core.network_results import NetworkField
 from pykdex.core.results import BandwidthSelectionResult

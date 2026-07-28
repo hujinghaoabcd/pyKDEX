@@ -12,16 +12,13 @@ import numpy as np
 from pykdex.core.base import BaseKDE
 from pykdex.core.spatiotemporal_results import SpatiotemporalKDEResult
 from pykdex.data import SpatiotemporalEvents
-from pykdex.execution import ExecutionPlan
-from pykdex.execution.chunks import execute_target_chunks
-from pykdex.execution.plan import (
-    ResolvedExecutionPlan,
-    resolve_target_execution,
-)
 from pykdex.data.spatiotemporal import (
     SpatiotemporalGridSupport,
     SpatiotemporalPointSupport,
 )
+from pykdex.execution import ExecutionPlan
+from pykdex.execution.chunks import execute_target_chunks
+from pykdex.execution.plan import ResolvedExecutionPlan, resolve_target_execution
 from pykdex.kernels import BaseKernel, get_kernel
 from pykdex.metrics import BaseMetric, get_metric
 from pykdex.spatiotemporal import (

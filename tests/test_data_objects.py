@@ -6,12 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pykdex import (
-    DataProvenance,
-    GridSupport,
-    PointSupport,
-    SpatialEvents,
-)
+from pykdex import DataProvenance, GridSupport, PointSupport, SpatialEvents
 
 
 def test_spatial_events_are_owned_read_only_and_fingerprinted():
