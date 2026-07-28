@@ -114,5 +114,6 @@ nav:
       - 0.0.15 progress 03: development/handoff-0.0.15-progress-03-relative-risk.md
       - 0.0.15 final handoff: development/handoff-0.0.15-exposure-relative-risk.md
       - 0.0.16 design: development/design-0.0.16-uncertainty-separability-scalable.md
+      - 0.0.16 design handoff: development/handoff-0.0.16-design-uncertainty-separability-scalable.md
       - Roadmap: development/roadmap.md
   - 中文: zh/index.md
