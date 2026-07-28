@@ -12,14 +12,18 @@ that the complete 0.0.15 release is finished.
 - Latest stable merged version: `0.0.14`
 - Active development version: `0.0.15`
 - Branch: `agent/exposure-relative-risk`
-- Draft pull request: `#15`
+- Draft pull request: `#15 Add exposure-adjusted rate and relative-risk foundations`
 - Base commit on `main`: `1315619afba79a6ddf1fbfd7b91900bf0c0992f1`
 - Exposure-field foundation head: `40fc66841fdde4fa90774ed79ca31bb1fd5b4f58`
-- Event-rate implementation head before this handoff:
+- Event-rate implementation head before handoff documents:
   `c806f34a2ebba8eb3dd1ae72cadcb7d895ef6ad1`
+- Event-rate handoff-update head validated by CI:
+  `a32652619f3990c91c811ea6e8381adb1727ceaa`
 - First event-rate CI run: `#156` (`30350961687`), Black formatting failure
-- Corrected event-rate CI run: `#162` (`30351398127`), final conclusion pending
-  observation when this document was created
+- Corrected implementation CI run: `#162` (`30351398127`), successful quality,
+  coverage, distributions, and observed platform jobs; superseded by later handoff
+  commits before a final workflow conclusion was used as the authoritative record
+- Complete handoff-update CI run: `#165` (`30351722623`), success
 - PR state: open and draft
 - Merge state: not merged
 - Package version remains `0.0.14` until the complete 0.0.15 unit is finished.
@@ -315,7 +319,7 @@ docs/development/handoff-0.0.15-progress-02-event-rate.md
 A temporary branch-only workflow named
 `.github/workflows/format-event-rate.yml` was created solely to obtain exact
 Black/isort output in the restricted execution environment. It was deleted before the
-corrected clean validation and must not be present in the branch or final PR.
+corrected clean validation and is absent from the validated handoff head.
 
 ## 9. Analytical and contract tests
 
@@ -365,12 +369,19 @@ and `tests/test_event_rate.py`, uploaded the exact formatted output as an Action
 artifact, and was then removed. Only the formatted source and test changes were
 retained.
 
-### 10.3 Corrected clean CI
+### 10.3 Corrected implementation CI
 
-CI run `#162` (`30351398127`) is the corrected validation run for implementation head
-`c806f34a2ebba8eb3dd1ae72cadcb7d895ef6ad1`.
+CI run `#162` (`30351398127`) validated the corrected implementation head
+`c806f34a2ebba8eb3dd1ae72cadcb7d895ef6ad1`. Quality, coverage, distributions, and
+observed platform jobs passed. Subsequent handoff commits superseded this run, so its
+overall workflow conclusion is not used as the final authoritative subunit record.
 
-Observed successful jobs at handoff creation include:
+### 10.4 Complete handoff-update CI
+
+CI run `#165` (`30351722623`) completed successfully for head
+`a32652619f3990c91c811ea6e8381adb1727ceaa`.
+
+Observed successful jobs include:
 
 - Black;
 - isort;
@@ -378,15 +389,15 @@ Observed successful jobs at handoff creation include:
 - mypy;
 - public-API example-map validation;
 - strict MkDocs build;
-- branch coverage;
+- branch-coverage suite;
 - source and wheel distribution build;
 - Twine metadata validation;
 - distribution archive verification;
 - isolated wheel installation and smoke test;
-- completed Linux, Windows, and macOS matrix jobs.
+- Linux, Windows, and macOS tests across Python 3.11, 3.12, 3.13, and 3.14.
 
-The complete workflow conclusion must be updated only after GitHub reports it. Do not
-turn this paragraph into a success claim based only on partial jobs.
+No unobserved local test result is claimed. GitHub Actions is the authoritative
+validation environment for this subunit.
 
 ## 11. Deliberate exclusions
 
