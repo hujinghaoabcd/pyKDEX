@@ -95,11 +95,14 @@ def test_spatial_constant_rate_and_mass_identity() -> None:
     assert rate.to_grid().shape == support.shape
     assert not rate.values.flags.writeable
     assert not rate.invalid_mask.flags.writeable
-    assert rate.fingerprint == estimate_event_rate(
-        intensity,
-        exposure,
-        event_unit="events",
-    ).fingerprint
+    assert (
+        rate.fingerprint
+        == estimate_event_rate(
+            intensity,
+            exposure,
+            event_unit="events",
+        ).fingerprint
+    )
 
 
 def test_event_and_exposure_scaling_laws() -> None:
