@@ -20,7 +20,7 @@ from pykdex.uncertainty.spatial import bootstrap_kde as bootstrap_spatial_kde
 @overload
 def bootstrap_kde(
     estimator: SpatialKDE,
-    data: SpatialEvents,
+    events: SpatialEvents,
     support: GridSupport,
     *,
     plan: BootstrapPlan | None = None,
@@ -30,7 +30,7 @@ def bootstrap_kde(
 @overload
 def bootstrap_kde(
     estimator: NetworkKDE,
-    data: NetworkWorkspace,
+    events: NetworkWorkspace,
     support: None = None,
     *,
     plan: BootstrapPlan | None = None,
@@ -39,30 +39,35 @@ def bootstrap_kde(
 
 def bootstrap_kde(
     estimator: SpatialKDE | NetworkKDE,
-    data: SpatialEvents | NetworkWorkspace,
+    events: SpatialEvents | NetworkWorkspace,
     support: GridSupport | None = None,
     *,
     plan: BootstrapPlan | None = None,
 ) -> BootstrapResult:
-    """Run a closed built-in ordinary Bootstrap adapter for the estimator domain."""
+    """Run a closed built-in ordinary Bootstrap adapter for the estimator domain.
+
+    The second parameter retains the public name ``events`` for compatibility with
+    the original spatial adapter. For ``NetworkKDE`` it receives a prepared
+    ``NetworkWorkspace`` containing already-snapped accepted events.
+    """
     if isinstance(estimator, SpatialKDE):
-        if not isinstance(data, SpatialEvents):
+        if not isinstance(events, SpatialEvents):
             raise TypeError(
-                "SpatialKDE bootstrap requires data to be a SpatialEvents object."
+                "SpatialKDE bootstrap requires events to be a SpatialEvents object."
             )
         if not isinstance(support, GridSupport):
             raise TypeError(
                 "SpatialKDE bootstrap requires an explicit GridSupport object."
             )
-        return bootstrap_spatial_kde(estimator, data, support, plan=plan)
+        return bootstrap_spatial_kde(estimator, events, support, plan=plan)
     if isinstance(estimator, NetworkKDE):
-        if not isinstance(data, NetworkWorkspace):
+        if not isinstance(events, NetworkWorkspace):
             raise TypeError(
-                "NetworkKDE bootstrap requires data to be a NetworkWorkspace object."
+                "NetworkKDE bootstrap requires events to be a NetworkWorkspace object."
             )
         if support is not None:
             raise TypeError(
                 "NetworkKDE bootstrap uses workspace.lixels and does not accept support."
             )
-        return bootstrap_network_kde(estimator, data, plan=plan)
+        return bootstrap_network_kde(estimator, events, plan=plan)
     raise TypeError("estimator must be a SpatialKDE or NetworkKDE.")
