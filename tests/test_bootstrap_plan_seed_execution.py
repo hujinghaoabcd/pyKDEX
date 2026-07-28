@@ -38,12 +38,15 @@ def test_bootstrap_plan_normalizes_and_fingerprints() -> None:
     assert plan.random_state == 17
     assert plan.method == "ordinary"
     assert plan.store_replicates is True
-    assert plan.fingerprint == BootstrapPlan(
-        n_resamples=9,
-        confidence_level=0.9,
-        random_state=17,
-        execution_plan=execution,
-    ).fingerprint
+    assert (
+        plan.fingerprint
+        == BootstrapPlan(
+            n_resamples=9,
+            confidence_level=0.9,
+            random_state=17,
+            execution_plan=execution,
+        ).fingerprint
+    )
 
 
 @pytest.mark.parametrize(
