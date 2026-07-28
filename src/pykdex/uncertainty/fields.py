@@ -114,7 +114,9 @@ class FieldEnsemble:
                 "replicate_values must contain one column per support element."
             )
         if observed.shape != (descriptor.n_elements,):
-            raise ValueError("observed_values must contain one value per support element.")
+            raise ValueError(
+                "observed_values must contain one value per support element."
+            )
         valid = (
             np.ones(descriptor.n_elements, dtype=bool)
             if self.valid_mask is None
@@ -244,10 +246,10 @@ class PointwiseInterval:
                 ("bias", self.bias),
             )
         }
-        if any(
-            value.shape != (descriptor.n_elements,) for value in arrays.values()
-        ):
-            raise ValueError("interval arrays must contain one value per support element.")
+        if any(value.shape != (descriptor.n_elements,) for value in arrays.values()):
+            raise ValueError(
+                "interval arrays must contain one value per support element."
+            )
         valid = (
             np.ones(descriptor.n_elements, dtype=bool)
             if self.valid_mask is None
@@ -273,7 +275,9 @@ class PointwiseInterval:
                 raise ValueError(f"{name} must not contain infinity.")
             if family != "log_relative_risk" and np.any(np.isnan(values[valid])):
                 raise ValueError(f"{name} must be finite at valid support elements.")
-        finite_bounds = valid & np.isfinite(arrays["lower"]) & np.isfinite(arrays["upper"])
+        finite_bounds = (
+            valid & np.isfinite(arrays["lower"]) & np.isfinite(arrays["upper"])
+        )
         if np.any(arrays["lower"][finite_bounds] > arrays["upper"][finite_bounds]):
             raise ValueError("lower must not exceed upper.")
         if isinstance(self.confidence_level, (bool, np.bool_)):
@@ -339,16 +343,36 @@ def pointwise_percentile_interval(
     valid_indices = np.flatnonzero(valid)
     if valid_indices.size:
         values = ensemble.replicate_values[:, valid_indices]
-        lower[valid_indices] = np.quantile(values, alpha / 2.0, axis=0)
-        upper[valid_indices] = np.quantile(values, 1.0 - alpha / 2.0, axis=0)
         finite_columns = np.all(np.isfinite(values), axis=0)
         if np.any(finite_columns):
             selected = valid_indices[finite_columns]
             finite_values = values[:, finite_columns]
+            lower[selected] = np.quantile(finite_values, alpha / 2.0, axis=0)
+            upper[selected] = np.quantile(
+                finite_values,
+                1.0 - alpha / 2.0,
+                axis=0,
+            )
             standard_error[selected] = np.std(finite_values, axis=0, ddof=1)
             bias[selected] = (
                 np.mean(finite_values, axis=0)
                 - ensemble.observed_values[selected]
+            )
+        nonfinite_columns = ~finite_columns
+        if np.any(nonfinite_columns):
+            selected = valid_indices[nonfinite_columns]
+            nonfinite_values = values[:, nonfinite_columns]
+            lower[selected] = np.quantile(
+                nonfinite_values,
+                alpha / 2.0,
+                axis=0,
+                method="inverted_cdf",
+            )
+            upper[selected] = np.quantile(
+                nonfinite_values,
+                1.0 - alpha / 2.0,
+                axis=0,
+                method="inverted_cdf",
             )
     return PointwiseInterval(
         lower=lower,
