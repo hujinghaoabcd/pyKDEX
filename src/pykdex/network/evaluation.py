@@ -7,6 +7,9 @@ from __future__ import annotations
 
 import numpy as np
 
+from pykdex.execution import ExecutionPlan
+from pykdex.execution.chunks import execute_target_chunks
+from pykdex.execution.plan import ResolvedExecutionPlan, resolve_target_execution
 from pykdex.kernels import BaseKernel
 from pykdex.network.distance import (
     NetworkDistanceAsset,
@@ -111,17 +114,14 @@ def evaluate_propagation_kernel_matrix(
     return matrix
 
 
-def evaluate_simple_kernel(
+def _prepare_simple_asset(
     workspace: NetworkWorkspace,
     events: NetworkEvents,
     kernel: BaseKernel,
-    bandwidth: float | np.ndarray,
-    coefficients: np.ndarray,
+    bandwidths: np.ndarray,
     *,
     directed: bool,
-) -> tuple[np.ndarray, NetworkDistanceAsset]:
-    """Evaluate shortest-path radial kernels at all workspace lixel centres."""
-    bandwidths = _as_source_bandwidths(bandwidth, events.n_events)
+) -> NetworkDistanceAsset:
     maximum_bandwidth = float(np.max(bandwidths))
     cutoff = maximum_bandwidth if kernel.finite_support else None
     asset = workspace.distance_asset
@@ -135,15 +135,68 @@ def evaluate_simple_kernel(
             directed=directed,
         )
     assert asset is not None
-    values = np.zeros(workspace.lixels.n_lixels, dtype=float)
-    local_bandwidths = bandwidths[asset.row_indices]
-    kernel_values = kernel(asset.distances / local_bandwidths, 1) / local_bandwidths
-    np.add.at(
-        values,
-        asset.column_indices,
-        kernel_values * coefficients[asset.row_indices],
+    return asset
+
+
+def evaluate_simple_kernel(
+    workspace: NetworkWorkspace,
+    events: NetworkEvents,
+    kernel: BaseKernel,
+    bandwidth: float | np.ndarray,
+    coefficients: np.ndarray,
+    *,
+    directed: bool,
+    execution_plan: ExecutionPlan | None = None,
+) -> tuple[np.ndarray, NetworkDistanceAsset, ResolvedExecutionPlan]:
+    """Evaluate shortest-path radial kernels at all workspace lixel centres."""
+    bandwidths = _as_source_bandwidths(bandwidth, events.n_events)
+    asset = _prepare_simple_asset(
+        workspace,
+        events,
+        kernel,
+        bandwidths,
+        directed=directed,
     )
-    return values, asset
+    target_order = np.argsort(asset.column_indices, kind="stable")
+    ordered_columns = asset.column_indices[target_order]
+    fixed_overhead = (
+        asset.row_indices.nbytes
+        + asset.column_indices.nbytes
+        + asset.distances.nbytes
+        + target_order.nbytes
+        + ordered_columns.nbytes
+        + bandwidths.nbytes
+        + coefficients.nbytes
+        + workspace.lixels.n_lixels * 8
+    )
+    resolved = resolve_target_execution(
+        execution_plan,
+        operation_name="NetworkKDE.simple",
+        n_targets=workspace.lixels.n_lixels,
+        n_sources=events.n_events,
+        bytes_per_pair=48,
+        fixed_overhead_bytes=fixed_overhead,
+    )
+    values = np.zeros(workspace.lixels.n_lixels, dtype=float)
+
+    def worker(start: int, stop: int) -> np.ndarray:
+        left = int(np.searchsorted(ordered_columns, start, side="left"))
+        right = int(np.searchsorted(ordered_columns, stop, side="left"))
+        pair_order = target_order[left:right]
+        local = np.zeros(stop - start, dtype=float)
+        if pair_order.size == 0:
+            return local
+        rows = asset.row_indices[pair_order]
+        columns = asset.column_indices[pair_order] - start
+        local_bandwidths = bandwidths[rows]
+        kernel_values = kernel(asset.distances[pair_order] / local_bandwidths, 1)
+        kernel_values = kernel_values / local_bandwidths
+        np.add.at(local, columns, kernel_values * coefficients[rows])
+        return local
+
+    for start, stop, local in execute_target_chunks(resolved, worker):
+        values[start:stop] = local
+    return values, asset, resolved
 
 
 def _trace_values(
@@ -152,11 +205,16 @@ def _trace_values(
     edge_lixels: tuple[np.ndarray, ...],
     kernel: BaseKernel,
     bandwidth: float,
+    *,
+    start: int = 0,
+    stop: int | None = None,
 ) -> np.ndarray:
-    values = np.zeros(lixels.n_lixels, dtype=float)
+    resolved_stop = lixels.n_lixels if stop is None else int(stop)
+    values = np.zeros(resolved_stop - start, dtype=float)
     tolerance = max(1e-12, bandwidth * 1e-12)
     for record in trace.records:
         indices = edge_lixels[record.edge_index]
+        indices = indices[(indices >= start) & (indices < resolved_stop)]
         if indices.size == 0:
             continue
         centers = lixels.center_offsets[indices]
@@ -174,12 +232,41 @@ def _trace_values(
         inside = distances <= bandwidth + tolerance
         if not np.any(inside):
             continue
-        targets = selected_indices[inside]
+        targets = selected_indices[inside] - start
         contribution = (
             record.coefficient * kernel(distances[inside] / bandwidth, 1) / bandwidth
         )
         np.add.at(values, targets, contribution)
     return values
+
+
+def _build_propagation_traces(
+    workspace: NetworkWorkspace,
+    events: NetworkEvents,
+    policy: JunctionPolicy,
+    bandwidths: np.ndarray,
+    *,
+    directed: bool,
+    coefficient_tolerance: float,
+    max_records_per_event: int,
+) -> tuple[tuple[PropagationTrace, ...], int]:
+    traces: list[PropagationTrace] = []
+    n_records = 0
+    for event_index in range(events.n_events):
+        trace = trace_network_propagation(
+            workspace.network,
+            int(events.edge_indices[event_index]),
+            float(events.offsets[event_index]),
+            cutoff=float(bandwidths[event_index]),
+            junction_policy=policy,
+            directed=directed,
+            coefficient_tolerance=coefficient_tolerance,
+            max_records=max_records_per_event,
+            source_id=events.event_ids[event_index],
+        )
+        traces.append(trace)
+        n_records += trace.n_records
+    return tuple(traces), n_records
 
 
 def evaluate_path_kernel(
@@ -193,7 +280,14 @@ def evaluate_path_kernel(
     directed: bool,
     coefficient_tolerance: float,
     max_records_per_event: int,
-) -> tuple[np.ndarray, tuple[PropagationTrace, ...], float, int]:
+    execution_plan: ExecutionPlan | None = None,
+) -> tuple[
+    np.ndarray,
+    tuple[PropagationTrace, ...],
+    float,
+    int,
+    ResolvedExecutionPlan,
+]:
     """Evaluate equal-split path traces at all workspace lixel centres."""
     lixels = workspace.lixels
     edge_lixels = tuple(
@@ -201,29 +295,46 @@ def evaluate_path_kernel(
         for edge_index in range(workspace.network.n_edges)
     )
     bandwidths = _as_source_bandwidths(bandwidth, events.n_events)
+    traces, n_records = _build_propagation_traces(
+        workspace,
+        events,
+        policy,
+        bandwidths,
+        directed=directed,
+        coefficient_tolerance=coefficient_tolerance,
+        max_records_per_event=max_records_per_event,
+    )
+    fixed_overhead = (
+        lixels.n_lixels * 8
+        + bandwidths.nbytes
+        + coefficients.nbytes
+        + sum(indices.nbytes for indices in edge_lixels)
+        + n_records * 96
+    )
+    resolved = resolve_target_execution(
+        execution_plan,
+        operation_name=f"NetworkKDE.{policy.name}",
+        n_targets=lixels.n_lixels,
+        n_sources=events.n_events,
+        bytes_per_pair=64,
+        fixed_overhead_bytes=fixed_overhead,
+    )
     values = np.zeros(lixels.n_lixels, dtype=float)
-    traces: list[PropagationTrace] = []
-    n_records = 0
-    for event_index in range(events.n_events):
-        event_bandwidth = float(bandwidths[event_index])
-        trace = trace_network_propagation(
-            workspace.network,
-            int(events.edge_indices[event_index]),
-            float(events.offsets[event_index]),
-            cutoff=event_bandwidth,
-            junction_policy=policy,
-            directed=directed,
-            coefficient_tolerance=coefficient_tolerance,
-            max_records=max_records_per_event,
-            source_id=events.event_ids[event_index],
-        )
-        values += float(coefficients[event_index]) * _trace_values(
-            trace,
-            lixels,
-            edge_lixels,
-            kernel,
-            event_bandwidth,
-        )
-        traces.append(trace)
-        n_records += trace.n_records
-    return values, tuple(traces), float(np.min(values)), n_records
+
+    def worker(start: int, stop: int) -> np.ndarray:
+        local = np.zeros(stop - start, dtype=float)
+        for event_index, trace in enumerate(traces):
+            local += float(coefficients[event_index]) * _trace_values(
+                trace,
+                lixels,
+                edge_lixels,
+                kernel,
+                float(bandwidths[event_index]),
+                start=start,
+                stop=stop,
+            )
+        return local
+
+    for start, stop, local in execute_target_chunks(resolved, worker):
+        values[start:stop] = local
+    return values, traces, float(np.min(values)), n_records, resolved
