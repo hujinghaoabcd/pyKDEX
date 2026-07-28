@@ -75,6 +75,7 @@ nav:
       - Workspace persistence: guides/workspace-persistence.md
       - Exposure and relative risk: guides/exposure-relative-risk.md
       - Deterministic execution: guides/execution.md
+      - Bootstrap uncertainty: guides/bootstrap.md
       - Spatial boundary and anisotropy: guides/spatial-boundary-anisotropy.md
       - Kernels: guides/kernels.md
       - Bandwidths: guides/bandwidths.md
@@ -93,6 +94,7 @@ nav:
       - Persistence: api/persistence.md
       - Risk: api/risk.md
       - Execution: api/execution.md
+      - Uncertainty: api/uncertainty.md
       - Boundary corrections: api/corrections.md
       - Kernels: api/kernels.md
       - Bandwidths: api/bandwidths.md
@@ -119,5 +121,6 @@ nav:
       - 0.0.16 design handoff: development/handoff-0.0.16-design-uncertainty-separability-scalable.md
       - 0.0.16 progress 01: development/handoff-0.0.16-progress-01-execution-plan.md
       - 0.0.16 progress 02A: development/handoff-0.0.16-progress-02a-bootstrap-foundation.md
+      - 0.0.16 progress 02B: development/handoff-0.0.16-progress-02b-spatial-bootstrap.md
       - Roadmap: development/roadmap.md
   - 中文: zh/index.md
