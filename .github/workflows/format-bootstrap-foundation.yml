@@ -24,20 +24,11 @@ jobs:
 
           path = Path("src/pykdex/uncertainty/fields.py")
           text = path.read_text(encoding="utf-8")
-          old = '''        values = ensemble.replicate_values[:, valid_indices]
-          lower[valid_indices] = np.quantile(values, alpha / 2.0, axis=0)
-          upper[valid_indices] = np.quantile(values, 1.0 - alpha / 2.0, axis=0)
-          finite_columns = np.all(np.isfinite(values), axis=0)
-          if np.any(finite_columns):
-              selected = valid_indices[finite_columns]
-              finite_values = values[:, finite_columns]
-              standard_error[selected] = np.std(finite_values, axis=0, ddof=1)
-              bias[selected] = (
-                  np.mean(finite_values, axis=0)
-                  - ensemble.observed_values[selected]
-              )
-          '''
-          new = '''        values = ensemble.replicate_values[:, valid_indices]
+          start_marker = "        values = ensemble.replicate_values[:, valid_indices]\n"
+          end_marker = "    return PointwiseInterval(\n"
+          start = text.index(start_marker)
+          end = text.index(end_marker, start)
+          replacement = '''        values = ensemble.replicate_values[:, valid_indices]
           finite_columns = np.all(np.isfinite(values), axis=0)
           if np.any(finite_columns):
               selected = valid_indices[finite_columns]
@@ -70,9 +61,7 @@ jobs:
                   method="inverted_cdf",
               )
           '''
-          if text.count(old) != 1:
-              raise RuntimeError("expected one pointwise quantile block")
-          path.write_text(text.replace(old, new), encoding="utf-8")
+          path.write_text(text[:start] + replacement + text[end:], encoding="utf-8")
           PY
       - run: >-
           python -m black
