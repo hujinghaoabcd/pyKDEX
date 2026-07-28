@@ -47,9 +47,7 @@ class DenominatorPolicy:
                     "validity_threshold=0."
                 )
         elif minimum is not None:
-            raise ValueError(
-                "minimum_denominator is only valid when mode='minimum'."
-            )
+            raise ValueError("minimum_denominator is only valid when mode='minimum'.")
         object.__setattr__(self, "mode", mode)
         object.__setattr__(self, "validity_threshold", threshold)
         object.__setattr__(self, "minimum_denominator", minimum)
