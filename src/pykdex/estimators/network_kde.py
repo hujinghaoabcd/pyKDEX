@@ -91,9 +91,7 @@ class NetworkKDE(BaseKDE):
             raise ValueError("max_records_per_event must be greater than zero.")
         if not isinstance(store_propagation, (bool, np.bool_)):
             raise TypeError("store_propagation must be boolean.")
-        if execution_plan is not None and not isinstance(
-            execution_plan, ExecutionPlan
-        ):
+        if execution_plan is not None and not isinstance(execution_plan, ExecutionPlan):
             raise TypeError("execution_plan must be an ExecutionPlan or None.")
         self.kernel = kernel
         self.bandwidth = bandwidth
@@ -229,9 +227,7 @@ class NetworkKDE(BaseKDE):
             owned_values.setflags(write=False)
 
             selection_result = getattr(bandwidth_strategy, "result_", None)
-            bandwidth_values = np.atleast_1d(
-                np.asarray(fitted_bandwidth, dtype=float)
-            )
+            bandwidth_values = np.atleast_1d(np.asarray(fitted_bandwidth, dtype=float))
             self.workspace_ = workspace
             self.network_events_ = events
             self.lixels_ = workspace.lixels
@@ -239,9 +235,7 @@ class NetworkKDE(BaseKDE):
             self.weights_ = np.ascontiguousarray(events.weights.copy())
             self.n_events_ = events.n_events
             self.dimension_ = 1
-            self.coordinate_names_in_ = np.asarray(
-                ["network_distance"], dtype=object
-            )
+            self.coordinate_names_in_ = np.asarray(["network_distance"], dtype=object)
             self.weight_sum_ = events.weight_sum
             self.bandwidth_ = fitted_bandwidth
             self.event_crs_ = events.crs
