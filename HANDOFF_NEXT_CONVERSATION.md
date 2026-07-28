@@ -23,6 +23,8 @@ Read these records in order:
   `5a42a59815cda5321ee89b52d0f86704b5f7f31f`;
 - relative-risk progress handoff root commit:
   `9eb2686cd0e85b4fafad670ed7ab0de01662ed35`;
+- progress-documentation state head:
+  `08829aeef91d8bc63b8ee72822d181d7c46b3c8c`;
 - first relative-risk CI `#172` (`30353108398`): stopped at Black formatting;
 - corrected relative-risk implementation CI `#177` (`30353630091`): success;
 - documentation-update CI: pending observation after this state update;
