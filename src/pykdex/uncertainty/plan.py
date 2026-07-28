@@ -45,7 +45,9 @@ class BootstrapPlan:
         if resamples < 2:
             raise ValueError("n_resamples must be at least two.")
         if isinstance(self.confidence_level, (bool, np.bool_)):
-            raise TypeError("confidence_level must be a number strictly between zero and one.")
+            raise TypeError(
+                "confidence_level must be a number strictly between zero and one."
+            )
         level = float(self.confidence_level)
         if not np.isfinite(level) or not 0.0 < level < 1.0:
             raise ValueError(
@@ -92,9 +94,5 @@ class BootstrapPlan:
             self.random_state,
             self.method,
             self.store_replicates,
-            (
-                None
-                if self.execution_plan is None
-                else self.execution_plan.fingerprint
-            ),
+            (None if self.execution_plan is None else self.execution_plan.fingerprint),
         )
