@@ -61,13 +61,9 @@ class BootstrapResult:
         if not family:
             raise ValueError("estimator_family must be non-empty.")
         seed_metadata = dict(self.seed_metadata)
-        seed_fingerprint = str(
-            seed_metadata.get("seed_ledger_fingerprint", "")
-        ).strip()
+        seed_fingerprint = str(seed_metadata.get("seed_ledger_fingerprint", "")).strip()
         if not seed_fingerprint:
-            raise ValueError(
-                "seed_metadata must contain seed_ledger_fingerprint."
-            )
+            raise ValueError("seed_metadata must contain seed_ledger_fingerprint.")
         if seed_fingerprint != self.ensemble.seed_ledger_fingerprint:
             raise ValueError("seed metadata and ensemble seed fingerprints differ.")
         if int(seed_metadata.get("n_logical_tasks", -1)) != self.ensemble.n_replicates:
