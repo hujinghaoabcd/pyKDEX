@@ -20,9 +20,7 @@ _VALID_BACKENDS = frozenset({"sequential", "thread"})
 def _positive_int_or_none(value: int | None, *, name: str) -> int | None:
     if value is None:
         return None
-    if isinstance(value, (bool, np.bool_)) or not isinstance(
-        value, (int, np.integer)
-    ):
+    if isinstance(value, (bool, np.bool_)) or not isinstance(value, (int, np.integer)):
         raise TypeError(f"{name} must be a positive integer or None.")
     resolved = int(value)
     if resolved <= 0:
@@ -289,9 +287,7 @@ def resolve_target_execution(
                 raise MemoryError(
                     f"{operation_name} fixed overhead exceeds memory_budget_bytes."
                 )
-            row_bytes = int(
-                ceil(sources * pair_bytes * factor * concurrent_workers)
-            )
+            row_bytes = int(ceil(sources * pair_bytes * factor * concurrent_workers))
             if row_bytes > 0:
                 maximum_chunk = min(targets, available // row_bytes)
                 if maximum_chunk < 1:
@@ -316,11 +312,7 @@ def resolve_target_execution(
         estimated = int(
             ceil(
                 overhead
-                + resolved_chunk
-                * sources
-                * pair_bytes
-                * factor
-                * resolved_workers
+                + resolved_chunk * sources * pair_bytes * factor * resolved_workers
             )
         )
 

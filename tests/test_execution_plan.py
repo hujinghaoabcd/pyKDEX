@@ -24,13 +24,16 @@ def test_execution_plan_is_normalized_and_fingerprinted() -> None:
     assert plan.backend == "thread"
     assert plan.n_jobs == 2
     assert plan.fingerprint == plan.fingerprint
-    assert plan.fingerprint != ExecutionPlan(
-        memory_budget_bytes=1024,
-        target_chunk_size=8,
-        replicate_chunk_size=4,
-        n_jobs=1,
-        backend="thread",
-    ).fingerprint
+    assert (
+        plan.fingerprint
+        != ExecutionPlan(
+            memory_budget_bytes=1024,
+            target_chunk_size=8,
+            replicate_chunk_size=4,
+            n_jobs=1,
+            backend="thread",
+        ).fingerprint
+    )
 
 
 @pytest.mark.parametrize(
@@ -74,8 +77,7 @@ def test_budget_resolution_accounts_for_parallel_workers() -> None:
     assert resolved.estimated_peak_bytes == 1000
     assert resolved.n_target_chunks == 4
     assert (
-        resolved.to_metadata()["resolved_execution_fingerprint"]
-        == resolved.fingerprint
+        resolved.to_metadata()["resolved_execution_fingerprint"] == resolved.fingerprint
     )
 
 
