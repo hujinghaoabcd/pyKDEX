@@ -16,8 +16,12 @@ point. It does not claim that the complete 0.0.15 release is finished.
 - Base commit on `main`: `1315619afba79a6ddf1fbfd7b91900bf0c0992f1`
 - Relative-risk implementation and formatter-removal head:
   `5a42a59815cda5321ee89b52d0f86704b5f7f31f`
+- Relative-risk progress handoff root commit:
+  `9eb2686cd0e85b4fafad670ed7ab0de01662ed35`
 - First relative-risk CI run: `#172` (`30353108398`), stopped at Black formatting
 - Corrected implementation CI run: `#177` (`30353630091`), success
+- Documentation-update CI: pending observation after progress records and MkDocs
+  navigation updates
 - PR state: open and draft
 - Merge state: not merged
 - Package version remains `0.0.14` until the final 0.0.15 public API, example,
@@ -334,6 +338,7 @@ Changed:
 src/pykdex/risk/__init__.py
 HANDOFF_NEXT_CONVERSATION.md
 docs/development/handoff-0.0.15-progress-03-relative-risk.md
+mkdocs.yml
 ```
 
 A temporary branch-only workflow
@@ -410,6 +415,12 @@ Successful jobs include:
 
 GitHub Actions is the authoritative validation environment. No unobserved local test
 result is claimed.
+
+### 10.4 Progress-documentation CI
+
+The progress root handoff, development page, MkDocs navigation, current handoff entry,
+and PR description were added after CI `#177`. Their complete CI result must be copied
+from GitHub only after the documentation-update head has completed validation.
 
 ## 11. Deliberate exclusions
 
