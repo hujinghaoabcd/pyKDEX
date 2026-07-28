@@ -224,6 +224,10 @@ def test_spatiotemporal_bootstrap_is_invariant_to_workers_and_both_chunks() -> N
         threaded.ensemble.seed_ledger_fingerprint
         == sequential.ensemble.seed_ledger_fingerprint
     )
+    assert (
+        threaded.ensemble.observed_field_fingerprint
+        == sequential.ensemble.observed_field_fingerprint
+    )
     assert sequential.ensemble.execution_metadata["parallel_axis"] == "none"
     assert threaded.ensemble.execution_metadata["parallel_axis"] == "replicates"
 
@@ -249,7 +253,10 @@ def test_cyclic_bootstrap_preserves_domain_origin_and_pairing() -> None:
     )
     assert result.metadata["temporal_origin"] == "study-hour-zero"
     assert result.metadata["timezone"] == "UTC"
-    assert result.ensemble.descriptor.time_domain_fingerprint == support.time_domain.fingerprint
+    assert (
+        result.ensemble.descriptor.time_domain_fingerprint
+        == support.time_domain.fingerprint
+    )
     assert np.all(np.isfinite(result.ensemble.replicate_values))
 
 
@@ -364,7 +371,9 @@ def test_spatiotemporal_bootstrap_rejects_open_or_incompatible_contracts() -> No
         bootstrap_kde(_estimator(), events, incompatible, plan=_plan())
 
 
-def test_spatiotemporal_bootstrap_accepts_events_keyword_and_rejects_small_budget() -> None:
+def test_spatiotemporal_bootstrap_accepts_events_keyword_and_rejects_small_budget() -> (
+    None
+):
     events = _events()
     support = _support()
     result = bootstrap_kde(
