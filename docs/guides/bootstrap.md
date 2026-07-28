@@ -7,11 +7,12 @@ The currently implemented estimator adapters are:
 SpatialEvents + GridSupport + SpatialKDE
 NetworkWorkspace + NetworkKDE
 NetworkWorkspace + HeatNetworkKDE
+SpatiotemporalEvents + SpatiotemporalGridSupport + SpatiotemporalKDE
 ```
 
-All adapters keep the observed event count fixed, resample event identities with replacement,
-refit the same fixed estimator contract, store the complete replicate ensemble, and report
-pointwise percentile intervals. They do not model unconditional Poisson count uncertainty.
+All adapters keep the observed event count fixed, resample complete event identities with
+replacement, refit the same fixed estimator contract, store the complete replicate ensemble, and
+report pointwise percentile intervals. They do not model unconditional Poisson count uncertainty.
 
 ## Spatial example
 
@@ -158,6 +159,75 @@ Heat solves are global. `target_chunk_size` is therefore rejected rather than si
 Outer replicate ranges may use the thread backend, while every inner heat solve remains
 sequential and unchunked.
 
+## Spatiotemporal example
+
+Ordinary space-time Bootstrap samples each observed location and time together as one event row.
+It does not permute time independently of space.
+
+```python
+from pykdex import (
+    CyclicTimeDomain,
+    GridSupport,
+    SpatiotemporalEvents,
+    SpatiotemporalGridSupport,
+    SpatiotemporalKDE,
+)
+from pykdex.execution import ExecutionPlan
+from pykdex.uncertainty import BootstrapPlan, bootstrap_kde
+
+time_domain = CyclicTimeDomain(24.0)
+events = SpatiotemporalEvents.from_arrays(
+    [[0.25, 0.25], [1.0, 0.75], [1.75, 0.25]],
+    [23.5, 0.5, 8.0],
+    spatial_unit="km",
+    temporal_unit="hours",
+    time_domain=time_domain,
+    temporal_origin="study-hour-zero",
+    timezone="UTC",
+)
+spatial = GridSupport.from_bounds(
+    (0.0, 0.0, 2.0, 1.0),
+    resolution=0.5,
+    spatial_unit="km",
+)
+support = SpatiotemporalGridSupport.from_spatial_grid(
+    spatial,
+    temporal_resolution=6.0,
+    temporal_unit="hours",
+    time_domain=time_domain,
+    temporal_origin="study-hour-zero",
+    timezone="UTC",
+)
+
+result = bootstrap_kde(
+    SpatiotemporalKDE(
+        spatial_bandwidth=0.7,
+        temporal_bandwidth=2.0,
+        spatial_kernel="epanechnikov",
+        temporal_kernel="gaussian",
+        target="density",
+    ),
+    events,
+    support,
+    plan=BootstrapPlan(
+        n_resamples=999,
+        confidence_level=0.95,
+        random_state=20260729,
+        execution_plan=ExecutionPlan(
+            memory_budget_bytes=512 * 1024 * 1024,
+            target_chunk_size=64,
+            replicate_chunk_size=2,
+            n_jobs=2,
+            backend="thread",
+        ),
+    ),
+)
+```
+
+The built-in adapter requires the complete measured product-grid support
+`SpatiotemporalGridSupport`. Arbitrary `SpatiotemporalPointSupport` is not accepted in the first
+built-in release.
+
 ## Network resampling semantics
 
 For every radial or heat-network replicate, pyKDEX:
@@ -198,6 +268,26 @@ not consume them. Each replicate instead:
 A replicate can omit source-event offsets but cannot introduce a new offset. The source heat mesh
 therefore provides a conservative upper bound on replicate degrees of freedom.
 
+## Paired space-time resampling semantics
+
+For every ordinary spatiotemporal replicate, pyKDEX:
+
+1. draws complete source event-row indices with replacement;
+2. selects spatial coordinates and time with the same sampled-index sequence;
+3. selects optional marks with the same event identity;
+4. preserves the observed event count;
+5. creates new unique replicate-local IDs;
+6. preserves coordinate names, CRS, spatial and temporal units, temporal origin, timezone, and
+   exact `TimeDomain` fingerprint;
+7. retains sampled source indices and the source event fingerprint in spatial, temporal, and joint
+   provenance;
+8. fits a fresh fixed-contract `SpatiotemporalKDE`;
+9. evaluates the exact original measured spatial-grid-by-time-bin support.
+
+Linear and cyclic time domains are supported. A cyclic replicate preserves the same period,
+origin, timezone, and cyclic tail tolerance. No independent time permutation, cyclic phase shift,
+or space-time reassignment occurs.
+
 ## Fixed estimator contracts
 
 The built-in spatial adapter requires:
@@ -228,6 +318,19 @@ The built-in heat-network adapter requires:
 - no heat-time selection inside replicates;
 - global, sequential, unchunked inner solves.
 
+The built-in spatiotemporal adapter requires:
+
+- immutable `SpatiotemporalEvents`;
+- exact `SpatiotemporalGridSupport`;
+- unit event weights;
+- finite positive numeric scalar spatial and temporal bandwidths;
+- built-in spatial-kernel, temporal-kernel, and spatial-metric string names;
+- fixed density/intensity target and cyclic tail tolerance;
+- exact spatial dimension, CRS, spatial unit, temporal unit, temporal origin, timezone, and
+  time-domain compatibility;
+- paired spatial-time event-row resampling;
+- no bandwidth selection inside replicates.
+
 Custom estimator components, selectors, adaptive bandwidths, arbitrary callbacks, changing
 support, and weighted built-in resampling are rejected.
 
@@ -247,6 +350,9 @@ Consequently replicate `b` does not change when the user changes:
 When `random_state=None`, generated root entropy is retained in `result.seed_metadata` and can be
 used to replay the run.
 
+Target and replicate chunks are execution controls, not statistical parameters. Observed
+space-time field fingerprints deliberately exclude execution metadata.
+
 ## Pointwise percentile intervals
 
 The returned `BootstrapResult` contains:
@@ -264,7 +370,7 @@ observed estimate, replicate standard error with `ddof=1`, empirical bias, confi
 `method="percentile"`.
 
 These are pointwise intervals, not simultaneous confidence bands. They do not provide family-wise
-coverage over the entire grid or network.
+coverage over the entire grid, network, or space-time product field.
 
 ## Complete replicate storage and memory
 
@@ -272,11 +378,14 @@ coverage over the entire grid or network.
 ensembles are not implemented.
 
 Before scheduling, the adapters account for the full ensemble and conservative per-worker working
-storage. Radial network bootstrap includes accepted-event arrays, lixels, prepared assets,
+storage. Radial network Bootstrap includes accepted-event arrays, lixels, prepared assets,
 reconstructed workspaces, output fields, kernel arrays, and a hard propagation-record upper bound.
-Heat bootstrap includes reconstructed snapped events, the global finite-element operator,
+Heat Bootstrap includes reconstructed snapped events, the global finite-element operator,
 generator, stored spectral state where applicable, numerical work arrays, output fields, and an
 additional conservative solver-temporary allowance for every requested concurrent replicate.
+Spatiotemporal Bootstrap includes source coordinates and times, the complete product support,
+reconstructed paired events, full replicate outputs, and target-chunk spatial and temporal
+kernel-distance working blocks for every requested concurrent worker.
 
 If fixed overhead or one replicate cannot fit, the operation raises `MemoryError` before replicate
 scheduling. Each inner estimator uses one worker, so outer replicate and inner estimator thread
@@ -303,15 +412,16 @@ result.ensemble.metadata["memory_model"]
 
 Network results record source and replicate workspace fingerprints. Heat results additionally
 record the fixed solver route, dense threshold, source and replicate heat-compute-plan
-fingerprints, and the source-mesh DOF upper bound.
+fingerprints, and the source-mesh DOF upper bound. Spatiotemporal results record the exact time
+domain, temporal origin, timezone, and paired-event resampling unit.
 
 ## Current exclusions
 
-The current built-in bootstrap does not include:
+The current built-in Bootstrap does not include:
 
-- ordinary space-time or temporal-network adapters;
-- event-rate or relative-risk bootstrap;
-- weighted, smoothed, parametric, Bayesian, block, or wild bootstrap;
+- temporal-network Bootstrap;
+- event-rate or relative-risk Bootstrap;
+- weighted, smoothed, parametric, Bayesian, block, or wild Bootstrap;
 - adaptive bandwidth uncertainty or replicate-wise bandwidth/time selection;
 - basic, bootstrap-t, BCa, or simultaneous intervals;
 - streaming or approximate quantiles;
