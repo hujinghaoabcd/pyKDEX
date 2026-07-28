@@ -23,11 +23,11 @@ Read these records in order:
   `5a42a59815cda5321ee89b52d0f86704b5f7f31f`;
 - relative-risk progress handoff root commit:
   `9eb2686cd0e85b4fafad670ed7ab0de01662ed35`;
-- progress-documentation state head:
-  `08829aeef91d8bc63b8ee72822d181d7c46b3c8c`;
+- documentation-update head validated by CI:
+  `51523a9e730340c63c884fbce5d310713cfbb666`;
 - first relative-risk CI `#172` (`30353108398`): stopped at Black formatting;
 - corrected relative-risk implementation CI `#177` (`30353630091`): success;
-- documentation-update CI: pending observation after this state update;
+- complete progress-documentation CI `#201` (`30354857130`): success;
 - merge: not merged;
 - PR remains Draft;
 - package version remains `0.0.14` until the complete 0.0.15 release unit is finished.
@@ -99,10 +99,11 @@ absent from the branch and final PR.
 
 ## Validation
 
-Corrected implementation CI `#177` passed:
+Corrected implementation CI `#177` and complete progress-documentation CI `#201`
+passed:
 
 - Black, isort, Ruff, mypy, API mapping, and strict MkDocs;
-- branch coverage;
+- branch coverage and the complete regression suite;
 - source/wheel distributions, Twine, archive verification, and isolated wheel smoke;
 - Linux, Windows, and macOS on Python 3.11, 3.12, 3.13, and 3.14.
 
