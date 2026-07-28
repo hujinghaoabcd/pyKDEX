@@ -21,8 +21,11 @@ Read these records in order:
 - event-rate implementation and handoff state documented in progress handoff 02;
 - relative-risk implementation and formatter-removal head:
   `5a42a59815cda5321ee89b52d0f86704b5f7f31f`;
+- relative-risk progress handoff root commit:
+  `9eb2686cd0e85b4fafad670ed7ab0de01662ed35`;
 - first relative-risk CI `#172` (`30353108398`): stopped at Black formatting;
 - corrected relative-risk implementation CI `#177` (`30353630091`): success;
+- documentation-update CI: pending observation after this state update;
 - merge: not merged;
 - PR remains Draft;
 - package version remains `0.0.14` until the complete 0.0.15 release unit is finished.
