@@ -7,38 +7,35 @@ Read these records in order:
 
 1. `HANDOFF_0.0.14_WORKSPACE_PERSISTENCE.md`;
 2. `docs/development/design-0.0.15-exposure-relative-risk.md`;
-3. `HANDOFF_0.0.15_PROGRESS_01_EXPOSURE_FIELD.md`.
+3. `HANDOFF_0.0.15_PROGRESS_01_EXPOSURE_FIELD.md`;
+4. `HANDOFF_0.0.15_PROGRESS_02_EVENT_RATE.md`.
 
 ## Current state
 
 - repository: `hujinghaoabcd/pyKDEX`;
 - branch: `agent/exposure-relative-risk`;
-- draft PR: `#15 Add exposure-field foundation for pyKDEX 0.0.15`;
+- draft PR: `#15`;
 - base `main`: `1315619afba79a6ddf1fbfd7b91900bf0c0992f1`;
-- clean implementation head before handoff updates:
-  `85dc5fc1a5fb71e8ec54841c8a4d4ba7d8584d26`;
-- corrected implementation CI `#146` (`30348884054`): success;
-- complete CI after progress-handoff updates `#149` (`30349367994`): success;
-- handoff-state record commit: pending this file update;
+- exposure-field subunit final state commit: `40fc66841fdde4fa90774ed79ca31bb1fd5b4f58`;
+- event-rate implementation head before handoff updates:
+  `c806f34a2ebba8eb3dd1ae72cadcb7d895ef6ad1`;
+- first event-rate CI `#156` (`30350961687`): stopped at Black formatting;
+- corrected event-rate CI `#162` (`30351398127`): quality, coverage,
+  distributions, and completed platform jobs succeeded; final workflow conclusion
+  pending observation when this file was updated;
 - merge: not merged;
 - package version remains `0.0.14` until the complete 0.0.15 unit is finished.
 
-Do not merge PR #15 after only this first subunit.
+Do not merge PR #15 after only the exposure and event-rate subunits.
 
 ## Implemented in progress subunit 01
 
-- fixed the statistical distinction between exposure-adjusted event rates and
-  case-control density-ratio relative risk;
-- inspected `sparr`, `spatstat.explore`, `spatstat.linnet`, and `spNetwork` as
-  methodological references without copying GPL source;
-- added a closed measured-support contract for spatial grids, lixels, measured
-  space-time points, space-time grids, and arixels;
-- added immutable `SupportDescriptor` identity, measure, CRS, unit, temporal-domain,
-  identifier, fingerprint, and shape contracts;
-- added immutable `ExposureField` construction from density or per-element amounts;
-- retained explicit exposure unit, provenance, metadata, total exposure, fingerprint,
-  and supported table/grid/geospatial exports;
-- added focused tests across spatial, network, space-time, and network-time supports.
+- closed measured-support identity for spatial grids, lixels, measured space-time
+  points, space-time grids, and arixels;
+- immutable `SupportDescriptor`;
+- immutable `ExposureField` from density or per-element exposure amounts;
+- explicit exposure units, provenance, measured totals, fingerprints, and exports;
+- analytical support and exposure tests across all four domains.
 
 The canonical exposure convention is:
 
@@ -47,48 +44,68 @@ exposure_amount_j = exposure_density_j * support_measure_j
 total_exposure = sum_j exposure_amount_j
 ```
 
-Unmeasured point support is rejected. Equal array shape is not support compatibility.
-A zero exposure field may be constructed for inspection, but later rate estimation
-must apply an explicit denominator policy.
+## Implemented in progress subunit 02
 
-## Validation
+- immutable `DenominatorPolicy` with explicit `raise`, `nan`, and `minimum` modes;
+- no hidden epsilon and no stored positive infinity;
+- closed intensity adapters for `SpatialKDEResult`, `NetworkField`,
+  `SpatiotemporalKDEResult`, and `NetworkTimeField`;
+- strict rejection of `target="density"` as an event-rate numerator;
+- exact support, CRS, unit, temporal-domain, network, direction, kernel, metric,
+  junction, and source-metadata retention;
+- immutable `EventRateField`;
+- `estimate_event_rate(...)` with mandatory event unit;
+- original intensity, original/effective exposure, invalid/adjusted masks, event mass,
+  exposure totals, and documented exposure-weighted summaries;
+- analytical tests for constant rates, scaling laws, all denominator policies, unequal
+  grid measures, lixels, cyclic space-time grids, and cyclic arixels.
 
-The first CI run `#143` found only a Black formatting failure. A temporary branch-only
-formatting workflow generated the exact correction and was removed immediately.
+The event-rate definition is:
 
-Corrected CI run `#146` and handoff-update CI run `#149` passed:
+```text
+event_rate_j = event_intensity_j / exposure_density_j
+rate_unit = event_unit / exposure_unit
+```
 
-- Black, isort, Ruff, mypy, API mapping, and strict MkDocs;
-- branch coverage;
-- distributions, Twine, archive verification, and isolated wheel smoke testing;
-- Linux, Windows, and macOS on Python 3.11-3.14.
+A temporary `.github/workflows/format-event-rate.yml` workflow was used only to obtain
+exact Black/isort output and was deleted before corrected validation. Confirm it remains
+absent.
 
 ## Exact next subunit
 
-1. Add denominator policies: `raise`, `nan`, and explicit positive `minimum`.
-2. Add closed adapters for existing spatial, network, space-time, and network-time
-   result objects.
-3. Reject probability-density numerators; event rates require intensity.
-4. Validate exact support, CRS, units, time domain, network direction, and estimator
-   metadata.
-5. Add immutable `EventRateField` and `estimate_event_rate(...)`.
-6. Retain raw intensity, effective exposure, invalid mask, event mass, total exposure,
-   and exposure-weighted mean rate.
-7. Add analytical constant-exposure and zero-denominator tests on all four domains.
-8. Create progress handoff 02 before case-control relative risk.
+Build shared-fixed-bandwidth case-control relative risk:
 
-Do not add adaptive relative risk, bandwidth selection, shrinkage, uncertainty,
-separability diagnostics, PostGIS/Zarr, or distributed execution in this subunit.
+1. add closed density-result adapters for the same four result families;
+2. require `target="density"` for case and control;
+3. require exact measured-support identity and density-integral validation;
+4. require scalar fixed bandwidths and equal case/control bandwidths;
+5. require equal kernels, metric or junction policy, boundary correction, direction,
+   network identity, temporal domain, CRS, and units;
+6. add immutable `RelativeRiskField`;
+7. implement raw density ratio and log relative risk;
+8. reuse explicit `raise`, `nan`, and `minimum` policies for control density;
+9. retain both densities, effective control, masks, source fingerprints, bandwidth
+   contract, and estimator metadata;
+10. test identical densities, swapped inputs, reciprocal and negation identities,
+    control-weighted normalization, denominator policies, and all four domains;
+11. create progress handoff 03 before finalizing the 0.0.15 public API.
+
+Do not add adaptive relative risk, independent bandwidth selection, inference,
+uncertainty, separability diagnostics, PostGIS/Zarr, or distributed execution.
 
 ## Recovery checklist
 
-1. Inspect PR #15 and verify its real head, draft state, and CI.
-2. Confirm `.github/workflows/format-diagnostic.yml` is absent.
-3. Read the three records listed at the top.
-4. Inspect `src/pykdex/risk/support.py` and `src/pykdex/risk/exposure.py`.
-5. Run `tests/test_exposure_field.py` and the complete repository validation matrix.
-6. Continue on `agent/exposure-relative-risk`.
+1. Inspect PR #15 and verify its actual head, draft state, and CI.
+2. Confirm `.github/workflows/format-event-rate.yml` is absent.
+3. Read the four records listed at the top.
+4. Inspect `src/pykdex/risk/support.py`, `exposure.py`, `policies.py`, `intensity.py`,
+   and `rate.py`.
+5. Run `tests/test_exposure_field.py` and `tests/test_event_rate.py`.
+6. Run the full regression, coverage, quality, docs, distribution, isolated-wheel, and
+   platform matrix.
+7. Continue on `agent/exposure-relative-risk` with relative risk only after the branch
+   is clean.
 
 The final release must still create
-`HANDOFF_0.0.15_EXPOSURE_RELATIVE_RISK.md` with actual final version, public API,
-validation, PR, CI, and merge evidence.
+`HANDOFF_0.0.15_EXPOSURE_RELATIVE_RISK.md` with actual final version, complete public
+API, examples, validation, PR, CI, and merge evidence.
