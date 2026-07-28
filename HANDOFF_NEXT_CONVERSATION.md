@@ -1,193 +1,209 @@
 # pyKDEX current handoff
 
-The latest merged release is **0.0.15**. Active development is the **0.0.16 deterministic
-execution-foundation phase**, following completion of the detailed design.
+The latest merged release is **0.0.15**. Active development is pyKDEX **0.0.16** on Draft
+PR #16. The deterministic execution foundation is complete; the exact next subunit is the
+empirical bootstrap uncertainty foundation.
 
-Read these records in order:
+## Read these records in order
 
 1. `HANDOFF_0.0.15_EXPOSURE_RELATIVE_RISK.md`;
 2. `docs/development/design-0.0.16-uncertainty-separability-scalable.md`;
 3. `HANDOFF_0.0.16_DESIGN_UNCERTAINTY_SEPARABILITY_SCALABLE.md`;
-4. `HANDOFF_0.0.16_DESIGN_VALIDATION.md`.
+4. `HANDOFF_0.0.16_DESIGN_VALIDATION.md`;
+5. `HANDOFF_0.0.16_PROGRESS_01_EXECUTION_PLAN.md`.
 
-## Current state
+## Current repository state
 
 - repository: `hujinghaoabcd/pyKDEX`;
 - stable base: pyKDEX `0.0.15` on `main`;
 - base commit: `8b3b2d8626a2e3e5bfd6dae497f71ea344d2ac0e`;
 - active branch: `agent/uncertainty-separability-scalable-design`;
 - Draft PR: `#16 Design pyKDEX 0.0.16 uncertainty, separability, and scalable execution`;
-- detailed design commit: `fc6d62bef0abed166c8674dc58275657568eab62`;
-- root design-handoff commit: `fd00faac75362bb0710ab146ad8ccb0c77b15c22`;
-- validated design head: `744bf7fce1de2621a023c7b0c9d1e771cd445318`;
-- design CI: `#234` (`30361402955`), success;
-- design-validation record commit: `de38f78209b186a42bbd5a68d956427450ee8657`;
-- numerical implementation: not started;
 - package version: still `0.0.15`;
-- provisional 0.0.16 top-level exports: none;
 - merge: not merged;
 - PR remains Draft;
-- exact next unit: deterministic execution foundation.
+- 0.0.16 top-level provisional exports: none;
+- public execution import: `from pykdex.execution import ExecutionPlan`;
+- exact next unit: empirical bootstrap uncertainty foundation.
 
-The accidental empty `docs/development/.keep` file created during PR preparation was
-removed before PR creation. It is absent from the validated branch diff.
+Clean execution implementation head:
 
-Do not bump the package version or expose provisional API names during the first progress
-subunit.
+```text
+cef94f9b26c3faab6aaeab85dadf0740bcc34078
+```
 
-## Observed design validation
+CI #281, run `30369196085`, passed the complete repository matrix at that head.
+Documentation and handoff commits after that implementation head require their own latest
+CI check before being called validated.
 
-CI #234 passed:
+## Completed subunit 01
+
+The following are implemented:
+
+```text
+ExecutionPlan
+private ResolvedExecutionPlan
+conservative target memory resolution
+sequential target execution
+threaded target execution
+logical output ordering
+legacy chunk compatibility
+execution metadata and fingerprints
+```
+
+Integrated estimators:
+
+```text
+SpatialKDE
+SpatiotemporalKDE
+NetworkKDE: simple, discontinuous, continuous
+TemporalNetworkKDE
+HeatNetworkKDE: non-chunkable budget audit only
+```
+
+Execution implementation files:
+
+```text
+src/pykdex/execution/__init__.py
+src/pykdex/execution/plan.py
+src/pykdex/execution/chunks.py
+src/pykdex/estimators/spatial_kde.py
+src/pykdex/estimators/spatiotemporal_kde.py
+src/pykdex/estimators/network_kde.py
+src/pykdex/estimators/temporal_network_kde.py
+src/pykdex/estimators/heat_network_kde.py
+src/pykdex/network/evaluation.py
+```
+
+Tests:
+
+```text
+tests/test_execution_plan.py
+tests/test_execution_spatial_integration.py
+tests/test_execution_network_integration.py
+tests/test_execution_network_time_integration.py
+tests/test_execution_heat_integration.py
+```
+
+Documentation and benchmark:
+
+```text
+docs/guides/execution.md
+docs/api/execution.md
+benchmarks/benchmark_execution_plan.py
+docs/development/handoff-0.0.16-progress-01-execution-plan.md
+```
+
+## Execution rules that must not change
+
+- Omitting a plan preserves legacy unbounded estimator defaults.
+- Explicit `ExecutionPlan()` uses the default 256 MiB budget.
+- Backends are only `sequential` and `thread`.
+- `backend="sequential"` requires `n_jobs=1`.
+- Only independent target chunks run concurrently in ordinary estimation.
+- Source-event reduction order remains stable.
+- Completed chunks write to fixed logical output slices.
+- Chunk size and worker count are operational, not statistical parameters.
+- Execution metadata is excluded from estimator and asset compatibility.
+- Legacy chunks and explicit plan target chunks are mutually exclusive.
+- `HeatNetworkKDE` is a global solve and must not expose fake target threading.
+- No process pool, Dask, Joblib, Ray, GPU, approximate kernel, or distributed runtime is
+  part of 0.0.16.
+
+## Validation evidence
+
+CI #281 passed:
 
 - Black, isort, Ruff, and mypy;
-- complete top-level public API example mapping;
+- complete public API example mapping;
 - strict MkDocs;
-- branch coverage and complete pytest regression suite;
-- source/wheel distributions, Twine, archive verification, and installed-wheel smoke;
+- full pytest regression suite;
+- branch coverage;
+- source and wheel distributions;
+- Twine and archive verification;
+- isolated wheel installation and smoke test;
 - Linux, Windows, and macOS;
 - Python 3.11, 3.12, 3.13, and 3.14.
 
-The status records after CI #234 are documentation-only commits. Inspect PR #16 and its
-latest workflow before claiming that a newer branch head is validated.
+A temporary focused workflow ran the 39 execution tests. It identified one overly narrow
+error-message assertion, not a numerical defect. The assertion was corrected and the clean
+implementation then passed CI #281. Temporary diagnostic and formatting workflows were
+deleted and must remain absent from the PR diff.
 
-## 0.0.16 fixed architecture
+## Exact next subunit: bootstrap uncertainty
 
-The version is split into three ordered subunits:
+Implement in this order:
 
-```text
-01 deterministic execution foundation
-02 empirical bootstrap uncertainty
-03 first-order separability diagnostic and Poisson permutation test
-```
+1. inspect immutable event containers and workspace reconstruction paths;
+2. implement immutable `BootstrapPlan`;
+3. allow only `method="ordinary"` initially;
+4. create a private NumPy `SeedSequence` ledger;
+5. generate all child seeds in logical replicate order before scheduling work;
+6. make replicate identity independent of worker completion order, `n_jobs`, target chunks,
+   and replicate chunks;
+7. implement immutable exact-support `FieldEnsemble` with full replicate storage;
+8. validate support fingerprints, identifiers, measures, CRS, units, network, direction,
+   and time domain;
+9. implement pointwise percentile `PointwiseInterval`;
+10. implement immutable fail-fast `BootstrapResult`;
+11. implement `bootstrap_kde` first;
+12. implement fixed-exposure `bootstrap_event_rate`;
+13. implement independently resampled case/control `bootstrap_relative_risk`;
+14. default relative-risk intervals to the log-risk scale;
+15. use `ExecutionPlan.replicate_chunk_size` for deterministic logical replicate batches;
+16. include complete ensemble storage in the memory budget before scheduling;
+17. add cross-domain, seed-invariance, ordering, memory, denominator-policy, and failure
+    tests;
+18. add guide, API, executable example, benchmark, and
+    `HANDOFF_0.0.16_PROGRESS_02_BOOTSTRAP.md`;
+19. pass complete repository CI before starting separability.
 
-The order is mandatory. Bootstrap and permutation must share the execution foundation's
-seed, chunk, memory, worker, ordering, and audit contracts.
+## Bootstrap restrictions
 
-## Subunit 01 contract
+The built-in bootstrap must require:
 
-Implement immutable `ExecutionPlan` with conservative memory-budget chunk resolution.
-Initial execution backends are restricted to:
+- immutable pyKDEX event objects or prepared workspaces;
+- unit event weights;
+- fixed event count within each resampled group;
+- fixed support;
+- fixed scalar bandwidths;
+- fixed kernel, metric, boundary correction, junction policy, direction, network, and time
+  domain;
+- no bandwidth reselection inside replicates.
 
-```text
-sequential
-thread
-```
+Interpretation:
 
-Only independent target chunks may execute concurrently in this subunit. Source-event
-reductions remain in stable source order. Completed work is written into fixed output
-slices by logical chunk index.
+- `bootstrap_kde` is conditional on observed event count;
+- `bootstrap_event_rate` resamples only the event-intensity numerator and treats exposure as
+  fixed;
+- `bootstrap_relative_risk` independently resamples cases and controls within groups;
+- pointwise percentile intervals are not simultaneous confidence bands.
 
-Changing target chunk size or `n_jobs` must not change the statistical estimate. Exact
-bitwise equality across operating systems and BLAS implementations is not promised;
-numerical equivalence uses explicit repository tolerances.
+## Do not add in subunit 02
 
-Existing estimator parameters remain compatible:
-
-```text
-SpatialKDE.chunk_size
-SpatiotemporalKDE.chunk_size
-TemporalNetworkKDE.time_chunk_size
-```
-
-A legacy explicit chunk and a conflicting explicit `ExecutionPlan` chunk must raise an
-error. Existing defaults remain unchanged when no plan is supplied.
-
-Execution metadata is retained for audit but is excluded from statistical estimator
-compatibility and asset-cache identity.
-
-## Future bootstrap boundary
-
-After Subunit 01 is fully validated, Subunit 02 may add:
-
-```python
-BootstrapPlan
-FieldEnsemble
-PointwiseInterval
-BootstrapResult
-bootstrap_kde
-bootstrap_event_rate
-bootstrap_relative_risk
-```
-
-The initial built-in bootstrap is deliberately restricted to unit weights, fixed scalar
-bandwidths, fixed support, and fixed estimator contracts. Bandwidth reselection, adaptive
-bandwidths, matrices, balloon bandwidths, and arbitrary weighted-event bootstrap are
-excluded.
-
-`bootstrap_event_rate` treats exposure as fixed. `bootstrap_relative_risk` independently
-resamples cases and controls within their groups and defaults to log-risk pointwise
-percentile intervals.
-
-Pointwise intervals are not simultaneous confidence bands.
-
-## Future separability boundary
-
-After the bootstrap execution infrastructure is validated, Subunit 03 may add descriptive
-first-order separability diagnostics on complete product supports only:
-
-```text
-SpatiotemporalGridSupport
-ArixelSupport
-```
-
-The measured reconstruction is:
-
-```text
-p_space_i = sum_j p_ij * dt_j
-p_time_j  = sum_i p_ij * a_i
-p_sep_ij  = p_space_i * p_time_j
-```
-
-Primary scalar diagnostics are total variation and squared Hellinger distance.
-
-The initial test is explicitly `assumption="poisson"`: keep locations fixed and permute
-observed event times. Its right-tail Monte Carlo p-value is:
-
-```text
-p = (1 + count(T_b >= T_observed)) / (B + 1)
-```
-
-This test must not claim validity for a general clustered or inhibited non-Poisson process.
-Block permutation, stochastic reconstruction, HSIC, local significance maps, and global
-envelope tests are excluded.
-
-## 0.0.16 execution exclusions
-
-Do not add in Subunit 01:
-
-- bootstrap or permutation code;
-- process pools;
-- Dask, Joblib, Ray, or distributed runtime dependencies;
-- GPU or approximate kernels;
-- parallel source-event reductions;
-- disk or Zarr-backed arrays;
-- PostGIS execution;
-- persistence-schema changes;
-- placeholder public exports.
-
-## Exact next tasks
-
-1. inspect every current chunking route and its peak live arrays;
-2. design operation-specific conservative byte estimators;
-3. implement immutable `ExecutionPlan` and fingerprint;
-4. implement resolved private execution records;
-5. integrate legacy chunk normalization;
-6. integrate `SpatialKDE` first with exact sequential equivalence;
-7. add thread execution over target chunks with fixed output order;
-8. extend the same contract across ordinary space-time, network, and network-time families;
-9. add budget, equivalence, ordering, metadata, and failure tests;
-10. add an execution guide, API page, benchmark, and progress handoff;
-11. create `HANDOFF_0.0.16_PROGRESS_01_EXECUTION_PLAN.md`;
-12. run the complete quality, typing, docs, coverage, distribution, wheel, and platform CI
-    matrix.
+- smoothed, parametric, Bayesian, block, wild, or weighted bootstrap;
+- arbitrary non-unit weights;
+- adaptive bandwidths or bandwidth matrices;
+- replicate-wise bandwidth selection;
+- unconditional Poisson count uncertainty;
+- uncertain-exposure resampling;
+- pooled case/control sampling;
+- basic, bootstrap-t, BCa, or simultaneous intervals;
+- approximate or streaming quantiles;
+- Zarr or disk-backed ensembles;
+- separability diagnostics;
+- permutation p-values;
+- local significance maps;
+- global envelopes;
+- package version bump or release merge.
 
 ## Recovery checklist
 
-1. Inspect branch, PR #16, current head, changed files, and live CI.
-2. Confirm package version remains `0.0.15`.
-3. Confirm no provisional 0.0.16 top-level exports exist.
-4. Read all four records listed at the top.
-5. Preserve the single NumPy/SciPy numerical route and current estimator defaults.
-6. Begin only the deterministic execution foundation.
-7. Do not start bootstrap or separability implementation before Subunit 01 passes complete
-   CI and receives its root progress handoff.
+1. Inspect branch, PR #16, current head, changed files, and latest CI.
+2. Confirm PR #16 remains open, Draft, and unmerged.
+3. Confirm package version remains `0.0.15`.
+4. Confirm temporary workflow and diagnostic files are absent.
+5. Read the five required records at the top.
+6. Preserve the execution contract exactly.
+7. Begin only the bootstrap subunit.
+8. Do not start separability until bootstrap has its own successful full-CI handoff.
