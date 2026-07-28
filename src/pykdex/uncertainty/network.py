@@ -22,10 +22,7 @@ from pykdex.execution.replicates import (
     resolve_replicate_execution,
 )
 from pykdex.kernels import get_kernel
-from pykdex.network.distance import (
-    NetworkDistanceAsset,
-    NetworkLocations,
-)
+from pykdex.network.distance import NetworkDistanceAsset, NetworkLocations
 from pykdex.network.events import NetworkEvents, SnapResult
 from pykdex.network.propagation import get_junction_policy
 from pykdex.network.workspace import NetworkWorkspace
@@ -129,9 +126,7 @@ def _require_fixed_scalar_bandwidth(estimator: NetworkKDE) -> float:
         )
     bandwidth = float(value)
     if not np.isfinite(bandwidth) or bandwidth <= 0.0:
-        raise ValueError(
-            "network bootstrap_kde bandwidth must be finite and positive."
-        )
+        raise ValueError("network bootstrap_kde bandwidth must be finite and positive.")
     return bandwidth
 
 
@@ -289,12 +284,8 @@ def _reindex_event_lixel_asset(
         rows.append(np.full(pair_count, new_index, dtype=np.int64))
         columns.append(asset.column_indices[selected])
         distances.append(asset.distances[selected])
-    row_values = (
-        np.concatenate(rows) if rows else np.empty(0, dtype=np.int64)
-    )
-    column_values = (
-        np.concatenate(columns) if columns else np.empty(0, dtype=np.int64)
-    )
+    row_values = np.concatenate(rows) if rows else np.empty(0, dtype=np.int64)
+    column_values = np.concatenate(columns) if columns else np.empty(0, dtype=np.int64)
     distance_values = (
         np.concatenate(distances) if distances else np.empty(0, dtype=float)
     )
@@ -357,12 +348,8 @@ def _reindex_event_event_asset(
         rows.append(np.repeat(new_rows, new_columns.size))
         columns.append(np.tile(new_columns, new_rows.size))
         distances.append(np.full(pair_count, float(distance), dtype=float))
-    row_values = (
-        np.concatenate(rows) if rows else np.empty(0, dtype=np.int64)
-    )
-    column_values = (
-        np.concatenate(columns) if columns else np.empty(0, dtype=np.int64)
-    )
+    row_values = np.concatenate(rows) if rows else np.empty(0, dtype=np.int64)
+    column_values = np.concatenate(columns) if columns else np.empty(0, dtype=np.int64)
     distance_values = (
         np.concatenate(distances) if distances else np.empty(0, dtype=float)
     )
@@ -497,9 +484,7 @@ def _resolve_network_replicate_execution(
     )
     propagation_record_bound = 0
     if contract.junction_policy != "simple":
-        propagation_record_bound = (
-            events.n_events * contract.max_records_per_event
-        )
+        propagation_record_bound = events.n_events * contract.max_records_per_event
     inner_working_bytes = (
         target_rows * events.n_events * 64
         + workspace.lixels.n_lixels * 8
@@ -571,12 +556,10 @@ def bootstrap_network_kde(
     events = workspace.events
     if events is None:
         raise ValueError("workspace contains no accepted network events.")
-    resolved, target_execution, memory_model = (
-        _resolve_network_replicate_execution(
-            workspace,
-            contract,
-            bootstrap_plan,
-        )
+    resolved, target_execution, memory_model = _resolve_network_replicate_execution(
+        workspace,
+        contract,
+        bootstrap_plan,
     )
     seed_ledger: SeedLedger = build_seed_ledger(
         bootstrap_plan.random_state,
@@ -595,7 +578,9 @@ def bootstrap_network_kde(
         None
     ] * bootstrap_plan.n_resamples
 
-    def worker(start: int, stop: int) -> tuple[np.ndarray, tuple[str, ...], tuple[str, ...]]:
+    def worker(
+        start: int, stop: int
+    ) -> tuple[np.ndarray, tuple[str, ...], tuple[str, ...]]:
         block = np.empty((stop - start, workspace.lixels.n_lixels), dtype=float)
         event_fingerprints: list[str] = []
         workspace_fingerprints: list[str] = []
@@ -642,9 +627,7 @@ def bootstrap_network_kde(
         str(value) for value in replicate_fingerprints if value is not None
     )
     completed_workspace_fingerprints = tuple(
-        str(value)
-        for value in replicate_workspace_fingerprints
-        if value is not None
+        str(value) for value in replicate_workspace_fingerprints if value is not None
     )
     ensemble = FieldEnsemble(
         replicate_values=replicate_values,
