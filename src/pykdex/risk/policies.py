@@ -12,8 +12,6 @@ import numpy as np
 
 from pykdex.data._utils import readonly_array
 
-DenominatorPolicyInput: TypeAlias = "DenominatorPolicy | str"
-
 
 @dataclass(frozen=True)
 class DenominatorPolicy:
@@ -70,6 +68,9 @@ class DenominatorPolicy:
     def minimum(cls, minimum_denominator: float) -> "DenominatorPolicy":
         """Floor denominators at an explicit positive lower bound."""
         return cls(mode="minimum", minimum_denominator=minimum_denominator)
+
+
+DenominatorPolicyInput: TypeAlias = DenominatorPolicy | str
 
 
 @dataclass(frozen=True)
