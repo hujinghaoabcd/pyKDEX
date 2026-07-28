@@ -1,0 +1,42 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.14, pytest-9.1.1, pluggy-1.6.0 -- /opt/hostedtoolcache/Python/3.13.14/x64/bin/python
+cachedir: .pytest_cache
+rootdir: /home/runner/work/pyKDEX/pyKDEX
+configfile: pyproject.toml
+plugins: cov-7.1.0
+collecting ... collected 21 items
+
+tests/test_execution_plan.py::test_execution_plan_is_normalized_and_fingerprinted PASSED [  4%]
+tests/test_execution_plan.py::test_execution_plan_rejects_invalid_requests[kwargs0-TypeError] PASSED [  9%]
+tests/test_execution_plan.py::test_execution_plan_rejects_invalid_requests[kwargs1-ValueError] PASSED [ 14%]
+tests/test_execution_plan.py::test_execution_plan_rejects_invalid_requests[kwargs2-ValueError] PASSED [ 19%]
+tests/test_execution_plan.py::test_execution_plan_rejects_invalid_requests[kwargs3-TypeError] PASSED [ 23%]
+tests/test_execution_plan.py::test_execution_plan_rejects_invalid_requests[kwargs4-ValueError] PASSED [ 28%]
+tests/test_execution_plan.py::test_execution_plan_rejects_invalid_requests[kwargs5-ValueError] PASSED [ 33%]
+tests/test_execution_plan.py::test_execution_plan_rejects_invalid_requests[kwargs6-ValueError] PASSED [ 38%]
+tests/test_execution_plan.py::test_budget_resolution_accounts_for_parallel_workers PASSED [ 42%]
+tests/test_execution_plan.py::test_explicit_chunk_must_fit_the_memory_budget PASSED [ 47%]
+tests/test_execution_plan.py::test_legacy_chunk_and_plan_chunk_are_mutually_exclusive PASSED [ 52%]
+tests/test_execution_plan.py::test_implicit_and_legacy_plans_preserve_unbounded_defaults PASSED [ 57%]
+tests/test_execution_plan.py::test_nonchunkable_operations_reject_parallel_or_small_chunks PASSED [ 61%]
+tests/test_execution_plan.py::test_threaded_chunks_are_yielded_in_logical_order PASSED [ 66%]
+tests/test_execution_spatial_integration.py::test_spatial_thread_plan_matches_legacy_chunking_and_records_metadata FAILED [ 71%]
+tests/test_execution_spatial_integration.py::test_spatial_legacy_and_plan_chunks_are_mutually_exclusive PASSED [ 76%]
+tests/test_execution_spatial_integration.py::test_spatial_budget_rejects_before_pairwise_evaluation PASSED [ 80%]
+tests/test_execution_spatial_integration.py::test_spatiotemporal_thread_plan_matches_legacy_without_asset PASSED [ 85%]
+tests/test_execution_spatial_integration.py::test_spatiotemporal_thread_plan_reuses_full_distance_asset PASSED [ 90%]
+tests/test_execution_spatial_integration.py::test_spatiotemporal_asset_memory_counts_against_budget PASSED [ 95%]
+tests/test_execution_spatial_integration.py::test_estimators_reject_non_execution_plan_objects PASSED [100%]
+
+=================================== FAILURES ===================================
+____ test_spatial_thread_plan_matches_legacy_chunking_and_records_metadata _____
+tests/test_execution_spatial_integration.py:22: in test_spatial_thread_plan_matches_legacy_chunking_and_records_metadata
+    support = GridSupport.from_bounds((0.0, 1.0), resolution=0.25)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/pykdex/data/support.py:333: in from_bounds
+    raise ValueError("bounds must contain (xmin, ymin, xmax, ymax).")
+E   ValueError: bounds must contain (xmin, ymin, xmax, ymax).
+=========================== short test summary info ============================
+FAILED tests/test_execution_spatial_integration.py::test_spatial_thread_plan_matches_legacy_chunking_and_records_metadata - ValueError: bounds must contain (xmin, ymin, xmax, ymax).
+========================= 1 failed, 20 passed in 1.28s =========================
+exit_status=1
