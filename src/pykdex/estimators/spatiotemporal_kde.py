@@ -12,6 +12,12 @@ import numpy as np
 from pykdex.core.base import BaseKDE
 from pykdex.core.spatiotemporal_results import SpatiotemporalKDEResult
 from pykdex.data import SpatiotemporalEvents
+from pykdex.execution import ExecutionPlan
+from pykdex.execution.chunks import execute_target_chunks
+from pykdex.execution.plan import (
+    ResolvedExecutionPlan,
+    resolve_target_execution,
+)
 from pykdex.data.spatiotemporal import (
     SpatiotemporalGridSupport,
     SpatiotemporalPointSupport,
@@ -61,6 +67,7 @@ class SpatiotemporalKDE(BaseKDE):
         spatial_metric: str | BaseMetric = "euclidean",
         target: str = "density",
         chunk_size: Optional[int] = None,
+        execution_plan: ExecutionPlan | None = None,
         cyclic_tail_tolerance: float = 1e-12,
         random_state: Optional[int] = None,
         verbose: bool = False,
@@ -79,6 +86,8 @@ class SpatiotemporalKDE(BaseKDE):
                 raise TypeError("chunk_size must be a positive integer or None.")
             if int(chunk_size) <= 0:
                 raise ValueError("chunk_size must be greater than zero.")
+        if execution_plan is not None and not isinstance(execution_plan, ExecutionPlan):
+            raise TypeError("execution_plan must be an ExecutionPlan or None.")
         tolerance = float(cyclic_tail_tolerance)
         if not np.isfinite(tolerance) or not 0.0 < tolerance < 1.0:
             raise ValueError(
@@ -88,6 +97,7 @@ class SpatiotemporalKDE(BaseKDE):
         self.temporal_kernel = temporal_kernel
         self.spatial_metric = spatial_metric
         self.chunk_size = int(chunk_size) if chunk_size is not None else None
+        self.execution_plan = execution_plan
         self.cyclic_tail_tolerance = tolerance
         self._reset_fit_state()
 
@@ -101,6 +111,7 @@ class SpatiotemporalKDE(BaseKDE):
         self.spatial_kernel_: BaseKernel | None = None
         self.temporal_kernel_: BaseKernel | None = None
         self.spatial_metric_: BaseMetric | None = None
+        self.last_execution_: ResolvedExecutionPlan | None = None
 
     def fit(self, events: SpatiotemporalEvents) -> "SpatiotemporalKDE":
         """Fit immutable weighted space-time events."""
@@ -186,9 +197,13 @@ class SpatiotemporalKDE(BaseKDE):
         ):
             raise TypeError("support must be a space-time support object.")
 
-    def _evaluate_asset(self, asset: SpatiotemporalDistanceAsset) -> np.ndarray:
+    def _evaluate_arrays(
+        self,
+        spatial_distances: np.ndarray,
+        temporal_offsets: np.ndarray,
+    ) -> np.ndarray:
         (
-            events,
+            _events,
             spatial_kernel,
             temporal_kernel,
             _metric,
@@ -198,8 +213,8 @@ class SpatiotemporalKDE(BaseKDE):
         if self.dimension_ is None or self.time_domain_ is None:
             raise RuntimeError("Fitted dimensions and time domain are unavailable.")
         kernel_values = evaluate_product_kernel(
-            asset.spatial_distances,
-            asset.temporal_offsets,
+            spatial_distances,
+            temporal_offsets,
             dimension=self.dimension_,
             spatial_kernel=spatial_kernel,
             temporal_kernel=temporal_kernel,
@@ -215,6 +230,12 @@ class SpatiotemporalKDE(BaseKDE):
             raise FloatingPointError("Space-time KDE produced non-finite values.")
         return estimates
 
+    def _evaluate_asset(self, asset: SpatiotemporalDistanceAsset) -> np.ndarray:
+        return self._evaluate_arrays(
+            asset.spatial_distances,
+            asset.temporal_offsets,
+        )
+
     def evaluate(
         self,
         support: SpaceTimeSupport,
@@ -226,11 +247,30 @@ class SpatiotemporalKDE(BaseKDE):
         events, _, _, metric, _, _ = self._components()
         if distance_asset is not None:
             distance_asset.validate_for(events, support, spatial_metric=metric.name)
-            return self._evaluate_asset(distance_asset)
-        chunk_size = self.chunk_size or support.n_points
+        asset_bytes = (
+            0
+            if distance_asset is None
+            else distance_asset.spatial_distances.nbytes
+            + distance_asset.temporal_offsets.nbytes
+            + distance_asset.temporal_distances.nbytes
+        )
+        resolved = resolve_target_execution(
+            self.execution_plan,
+            operation_name="SpatiotemporalKDE.evaluate",
+            n_targets=support.n_points,
+            n_sources=events.n_events,
+            bytes_per_pair=80 if distance_asset is None else 48,
+            fixed_overhead_bytes=asset_bytes + support.n_points * 8,
+            legacy_target_chunk_size=self.chunk_size,
+        )
         values = np.empty(support.n_points, dtype=float)
-        for start in range(0, support.n_points, chunk_size):
-            stop = min(start + chunk_size, support.n_points)
+
+        def worker(start: int, stop: int) -> np.ndarray:
+            if distance_asset is not None:
+                return self._evaluate_arrays(
+                    distance_asset.spatial_distances[start:stop],
+                    distance_asset.temporal_offsets[start:stop],
+                )
             chunk = SpatiotemporalPointSupport.from_arrays(
                 support.spatial_coordinates[start:stop],
                 support.times[start:stop],
@@ -247,8 +287,12 @@ class SpatiotemporalKDE(BaseKDE):
             asset = build_spatiotemporal_distance_asset(
                 events, chunk, spatial_metric=metric
             )
-            values[start:stop] = self._evaluate_asset(asset)
+            return self._evaluate_asset(asset)
+
+        for start, stop, chunk_values in execute_target_chunks(resolved, worker):
+            values[start:stop] = chunk_values
         values.setflags(write=False)
+        self.last_execution_ = resolved
         return values
 
     predict = evaluate
@@ -262,6 +306,10 @@ class SpatiotemporalKDE(BaseKDE):
         """Evaluate and return a structured measured result."""
         values = self.evaluate(support, distance_asset=distance_asset)
         _, spatial_kernel, temporal_kernel, metric, _, _ = self._components()
+        if self.last_execution_ is None:
+            raise RuntimeError("Resolved execution metadata is unavailable.")
+        metadata = dict(self.fit_metadata_ or {})
+        metadata["execution"] = self.last_execution_.to_metadata()
         return SpatiotemporalKDEResult(
             values=values,
             support=support,
@@ -271,7 +319,7 @@ class SpatiotemporalKDE(BaseKDE):
             spatial_kernel=spatial_kernel.name,
             temporal_kernel=temporal_kernel.name,
             spatial_metric=metric.name,
-            metadata=dict(self.fit_metadata_ or {}),
+            metadata=metadata,
         )
 
     def fit_predict(
