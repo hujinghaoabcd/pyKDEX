@@ -20,7 +20,9 @@ _VALID_BACKENDS = frozenset({"sequential", "thread"})
 def _positive_int_or_none(value: int | None, *, name: str) -> int | None:
     if value is None:
         return None
-    if isinstance(value, (bool, np.bool_)) or not isinstance(value, (int, np.integer)):
+    if isinstance(value, (bool, np.bool_)) or not isinstance(
+        value, (int, np.integer)
+    ):
         raise TypeError(f"{name} must be a positive integer or None.")
     resolved = int(value)
     if resolved <= 0:
@@ -126,7 +128,11 @@ class ResolvedExecutionPlan:
             (self.resolved_n_jobs, "resolved_n_jobs"),
         ):
             _positive_int(value, name=name)
-        if self.n_sources < 0 or self.bytes_per_pair < 0 or self.fixed_overhead_bytes < 0:
+        if (
+            self.n_sources < 0
+            or self.bytes_per_pair < 0
+            or self.fixed_overhead_bytes < 0
+        ):
             raise ValueError("source counts and byte estimates must be non-negative.")
         if not np.isfinite(self.safety_factor) or self.safety_factor < 1.0:
             raise ValueError("safety_factor must be finite and at least one.")
@@ -268,13 +274,13 @@ def resolve_target_execution(
         if requested_chunk is not None and requested_effective < targets:
             raise ValueError(f"{operation_name} does not support target chunking.")
         if effective.backend == "thread" and requested_workers > 1:
-            raise ValueError(f"{operation_name} does not expose a threaded target axis.")
+            raise ValueError(
+                f"{operation_name} does not expose a threaded target axis."
+            )
         resolved_chunk = targets
         resolved_workers = 1
         parallel_axis = "none"
-        estimated = int(
-            ceil(overhead + targets * sources * pair_bytes * factor)
-        )
+        estimated = int(ceil(overhead + targets * sources * pair_bytes * factor))
     else:
         maximum_chunk = targets
         if effective.memory_budget_bytes is not None:
@@ -283,7 +289,9 @@ def resolve_target_execution(
                 raise MemoryError(
                     f"{operation_name} fixed overhead exceeds memory_budget_bytes."
                 )
-            row_bytes = int(ceil(sources * pair_bytes * factor * concurrent_workers))
+            row_bytes = int(
+                ceil(sources * pair_bytes * factor * concurrent_workers)
+            )
             if row_bytes > 0:
                 maximum_chunk = min(targets, available // row_bytes)
                 if maximum_chunk < 1:
