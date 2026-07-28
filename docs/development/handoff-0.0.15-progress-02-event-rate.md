@@ -77,8 +77,9 @@ unequal spatial measures, lixel lengths, cyclic space-time grids, and cyclic ari
 
 The first event-rate CI run stopped at Black formatting. A temporary branch-only
 formatter workflow generated the exact Black/isort correction and was then deleted.
-The corrected CI run is `#162` (`30351398127`); its complete conclusion must be copied
-from GitHub only after it is observed.
+Complete handoff-update CI run `#165` (`30351722623`) passed formatting, lint, typing,
+API mapping, strict documentation, branch coverage, distributions, isolated-wheel
+smoke testing, and Linux/Windows/macOS tests on Python 3.11-3.14.
 
 ## Next subunit
 
