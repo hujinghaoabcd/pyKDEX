@@ -247,10 +247,7 @@ def test_cyclic_bootstrap_preserves_domain_origin_and_pairing() -> None:
     )
 
     assert result.metadata["time_domain"] == "cyclic"
-    assert (
-        result.metadata["time_domain_fingerprint"]
-        == events.temporal.domain.fingerprint
-    )
+    assert result.metadata["time_domain_fingerprint"] == events.temporal.domain.fingerprint
     assert result.metadata["temporal_origin"] == "study-hour-zero"
     assert result.metadata["timezone"] == "UTC"
     assert (
