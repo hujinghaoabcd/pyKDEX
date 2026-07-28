@@ -18,10 +18,11 @@ point. It does not claim that the complete 0.0.15 release is finished.
   `5a42a59815cda5321ee89b52d0f86704b5f7f31f`
 - Relative-risk progress handoff root commit:
   `9eb2686cd0e85b4fafad670ed7ab0de01662ed35`
+- Documentation-update head validated by CI:
+  `51523a9e730340c63c884fbce5d310713cfbb666`
 - First relative-risk CI run: `#172` (`30353108398`), stopped at Black formatting
 - Corrected implementation CI run: `#177` (`30353630091`), success
-- Documentation-update CI: pending observation after progress records and MkDocs
-  navigation updates
+- Complete progress-documentation CI run: `#201` (`30354857130`), success
 - PR state: open and draft
 - Merge state: not merged
 - Package version remains `0.0.14` until the final 0.0.15 public API, example,
@@ -416,11 +417,20 @@ Successful jobs include:
 GitHub Actions is the authoritative validation environment. No unobserved local test
 result is claimed.
 
-### 10.4 Progress-documentation CI
+### 10.4 Complete progress-documentation CI
 
-The progress root handoff, development page, MkDocs navigation, current handoff entry,
-and PR description were added after CI `#177`. Their complete CI result must be copied
-from GitHub only after the documentation-update head has completed validation.
+CI run `#201` (`30354857130`) completed successfully for documentation-update head
+`51523a9e730340c63c884fbce5d310713cfbb666`.
+
+The successful run revalidated:
+
+- Black, isort, Ruff, mypy, public-API example mapping, and strict MkDocs;
+- branch coverage and the complete regression suite;
+- source and wheel distributions, Twine, archive verification, and isolated wheel smoke;
+- Linux, Windows, and macOS tests on Python 3.11, 3.12, 3.13, and 3.14.
+
+This CI validated the progress root handoff, development page, MkDocs navigation, and
+current handoff entry together with the numerical implementation.
 
 ## 11. Deliberate exclusions
 
