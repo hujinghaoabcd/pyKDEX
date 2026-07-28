@@ -8,15 +8,21 @@ from __future__ import annotations
 from typing import overload
 
 from pykdex.data import GridSupport, SpatialEvents
+from pykdex.data.spatiotemporal import (
+    SpatiotemporalEvents,
+    SpatiotemporalGridSupport,
+)
 from pykdex.estimators.heat_network_kde import HeatNetworkKDE
 from pykdex.estimators.network_kde import NetworkKDE
 from pykdex.estimators.spatial_kde import SpatialKDE
+from pykdex.estimators.spatiotemporal_kde import SpatiotemporalKDE
 from pykdex.network.workspace import NetworkWorkspace
 from pykdex.uncertainty.heat import bootstrap_heat_network_kde
 from pykdex.uncertainty.network import bootstrap_network_kde
 from pykdex.uncertainty.plan import BootstrapPlan
 from pykdex.uncertainty.results import BootstrapResult
 from pykdex.uncertainty.spatial import bootstrap_kde as bootstrap_spatial_kde
+from pykdex.uncertainty.spatiotemporal import bootstrap_spatiotemporal_kde
 
 
 @overload
@@ -49,10 +55,20 @@ def bootstrap_kde(
 ) -> BootstrapResult: ...
 
 
+@overload
 def bootstrap_kde(
-    estimator: SpatialKDE | NetworkKDE | HeatNetworkKDE,
-    events: SpatialEvents | NetworkWorkspace,
-    support: GridSupport | None = None,
+    estimator: SpatiotemporalKDE,
+    events: SpatiotemporalEvents,
+    support: SpatiotemporalGridSupport,
+    *,
+    plan: BootstrapPlan | None = None,
+) -> BootstrapResult: ...
+
+
+def bootstrap_kde(
+    estimator: SpatialKDE | NetworkKDE | HeatNetworkKDE | SpatiotemporalKDE,
+    events: SpatialEvents | NetworkWorkspace | SpatiotemporalEvents,
+    support: GridSupport | SpatiotemporalGridSupport | None = None,
     *,
     plan: BootstrapPlan | None = None,
 ) -> BootstrapResult:
@@ -94,4 +110,24 @@ def bootstrap_kde(
                 "support."
             )
         return bootstrap_heat_network_kde(estimator, events, plan=plan)
-    raise TypeError("estimator must be a SpatialKDE, NetworkKDE, or HeatNetworkKDE.")
+    if isinstance(estimator, SpatiotemporalKDE):
+        if not isinstance(events, SpatiotemporalEvents):
+            raise TypeError(
+                "SpatiotemporalKDE bootstrap requires events to be a "
+                "SpatiotemporalEvents object."
+            )
+        if not isinstance(support, SpatiotemporalGridSupport):
+            raise TypeError(
+                "SpatiotemporalKDE bootstrap requires an explicit "
+                "SpatiotemporalGridSupport object."
+            )
+        return bootstrap_spatiotemporal_kde(
+            estimator,
+            events,
+            support,
+            plan=plan,
+        )
+    raise TypeError(
+        "estimator must be a SpatialKDE, NetworkKDE, HeatNetworkKDE, or "
+        "SpatiotemporalKDE."
+    )
