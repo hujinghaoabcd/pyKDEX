@@ -86,7 +86,7 @@ def test_heat_budget_counts_compute_plan_and_solver_arrays() -> None:
         execution_plan=ExecutionPlan(memory_budget_bytes=100),
     )
 
-    with pytest.raises(MemoryError, match="fixed overhead"):
+    with pytest.raises(MemoryError, match="estimated peak memory exceeds"):
         model.fit(workspace)
     assert not model.is_fitted_
     assert model.values_ is None
