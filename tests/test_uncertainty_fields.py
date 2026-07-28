@@ -94,9 +94,7 @@ def test_nan_validity_contract_is_shared_by_observed_and_all_replicates() -> Non
         {"observed_values": np.ones(3)},
         {"replicate_values": np.array([[1.0, np.nan], [2.0, 4.0], [3.0, 6.0]])},
         {
-            "replicate_values": np.array(
-                [[1.0, np.nan], [2.0, np.nan], [3.0, np.nan]]
-            ),
+            "replicate_values": np.array([[1.0, np.nan], [2.0, np.nan], [3.0, np.nan]]),
             "observed_values": np.array([2.0, 4.0]),
             "valid_mask": np.array([True, False]),
         },
@@ -114,9 +112,7 @@ def test_field_ensemble_rejects_invalid_contracts(overrides: dict[str, object]) 
 
 def test_log_relative_risk_allows_negative_infinity_without_positive_infinity() -> None:
     ensemble = _ensemble(
-        replicate_values=np.array(
-            [[-np.inf, 0.0], [-np.inf, 0.5], [0.0, 1.0]]
-        ),
+        replicate_values=np.array([[-np.inf, 0.0], [-np.inf, 0.5], [0.0, 1.0]]),
         observed_values=np.array([-np.inf, 0.5]),
         field_family="log_relative_risk",
     )
@@ -124,9 +120,7 @@ def test_log_relative_risk_allows_negative_infinity_without_positive_infinity() 
     assert np.isneginf(ensemble.replicate_values[0, 0])
     with pytest.raises(ValueError, match="positive infinity"):
         _ensemble(
-            replicate_values=np.array(
-                [[np.inf, 0.0], [0.0, 0.5], [1.0, 1.0]]
-            ),
+            replicate_values=np.array([[np.inf, 0.0], [0.0, 0.5], [1.0, 1.0]]),
             observed_values=np.array([0.0, 0.5]),
             field_family="log_relative_risk",
         )
@@ -134,9 +128,7 @@ def test_log_relative_risk_allows_negative_infinity_without_positive_infinity() 
 
 def test_pointwise_log_interval_uses_empirical_order_for_negative_infinity() -> None:
     ensemble = _ensemble(
-        replicate_values=np.array(
-            [[-np.inf, 0.0], [-np.inf, 0.5], [0.0, 1.0]]
-        ),
+        replicate_values=np.array([[-np.inf, 0.0], [-np.inf, 0.5], [0.0, 1.0]]),
         observed_values=np.array([-np.inf, 0.5]),
         field_family="log_relative_risk",
     )
