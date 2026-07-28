@@ -73,8 +73,9 @@ def test_budget_resolution_accounts_for_parallel_workers() -> None:
     assert resolved.parallel_axis == "targets"
     assert resolved.estimated_peak_bytes == 1000
     assert resolved.n_target_chunks == 4
-    assert resolved.to_metadata()["resolved_execution_fingerprint"] == (
-        resolved.fingerprint
+    assert (
+        resolved.to_metadata()["resolved_execution_fingerprint"]
+        == resolved.fingerprint
     )
 
 
