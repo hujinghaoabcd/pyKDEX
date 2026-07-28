@@ -1,9 +1,10 @@
 # pyKDEX current handoff
 
 The latest merged release is **0.0.15**. Active development is pyKDEX **0.0.16** on Draft
-PR #16. Deterministic execution, the empirical Bootstrap foundation, and the closed spatial
-`bootstrap_kde` adapter are complete. The exact next unit is ordinary radial Bootstrap for
-accepted, already snapped events in a prepared network workspace.
+PR #16. The deterministic execution foundation, common Bootstrap foundation, spatial
+Bootstrap adapter, and radial network Bootstrap adapter are complete in the development branch.
+
+The exact next implementation unit is ordinary Bootstrap for `HeatNetworkKDE` only.
 
 ## Read these records in order
 
@@ -13,7 +14,8 @@ accepted, already snapped events in a prepared network workspace.
 4. `HANDOFF_0.0.16_DESIGN_VALIDATION.md`;
 5. `HANDOFF_0.0.16_PROGRESS_01_EXECUTION_PLAN.md`;
 6. `HANDOFF_0.0.16_PROGRESS_02A_BOOTSTRAP_FOUNDATION.md`;
-7. `HANDOFF_0.0.16_PROGRESS_02B_SPATIAL_BOOTSTRAP.md`.
+7. `HANDOFF_0.0.16_PROGRESS_02B_SPATIAL_BOOTSTRAP.md`;
+8. `HANDOFF_0.0.16_PROGRESS_02C_NETWORK_BOOTSTRAP.md`.
 
 ## Current repository state
 
@@ -25,42 +27,19 @@ accepted, already snapped events in a prepared network workspace.
 - package version remains `0.0.15`;
 - PR remains open, Draft, and unmerged;
 - no 0.0.16 top-level provisional exports;
-- public execution import: `from pykdex.execution import ExecutionPlan`;
-- public uncertainty import: `from pykdex.uncertainty import ...`;
-- exact next unit: prepared radial-network `bootstrap_kde` adapter;
-- heat-equation network Bootstrap remains a separate later unit.
+- public execution namespace: `pykdex.execution`;
+- public uncertainty namespace: `pykdex.uncertainty`;
+- exact next unit: `NetworkWorkspace + HeatNetworkKDE` ordinary Bootstrap.
 
-Validated spatial Bootstrap implementation head:
-
-```text
-957c8551744f52a642103e83c91f1fdb2159f305
-```
-
-CI #332, run `30376591895`, passed the complete repository matrix at that head.
-
-Validated guide/API/example head:
-
-```text
-b18dea683cd4de29ad80bf705fcb6261f06d2fef
-```
-
-CI #335, run `30377065654`, passed the complete repository matrix at that head.
-
-The 02B handoff and navigation/status commits after `b18dea6...` require inspection of their
-own latest CI before being called validated.
+Always inspect the current PR head and latest CI before continuing. Do not infer the live head
+from a recorded implementation commit because documentation/status commits may follow it.
 
 ## Completed subunit 01: deterministic execution
 
-Implemented:
+Public object:
 
 ```text
 ExecutionPlan
-private ResolvedExecutionPlan
-conservative target memory resolution
-sequential and thread target execution
-logical output ordering
-legacy chunk compatibility
-execution metadata and fingerprints
 ```
 
 Integrated estimators:
@@ -70,21 +49,20 @@ SpatialKDE
 SpatiotemporalKDE
 NetworkKDE: simple, discontinuous, continuous
 TemporalNetworkKDE
-HeatNetworkKDE: non-chunkable budget audit only
+HeatNetworkKDE: global-solver budget audit only
 ```
 
-Execution rules that must not change:
+Rules that must not change:
 
-- omitting a plan preserves legacy unbounded estimator defaults;
-- explicit `ExecutionPlan()` uses the default 256 MiB budget;
-- backends are only `sequential` and `thread`;
-- only independent target chunks run concurrently;
+- execution chunks and workers are operational, not statistical;
+- only independent target chunks are threaded;
 - source-event reduction order remains stable;
-- logical output slices are fixed before scheduling;
-- chunking and worker count are operational, not statistical;
-- execution metadata is excluded from estimator and asset compatibility;
-- legacy and explicit target chunks are mutually exclusive;
+- output slices are fixed before scheduling;
+- explicit memory budgets fail before large work allocations;
 - `HeatNetworkKDE` must not expose fake target threading.
+
+Clean execution implementation head `cef94f9b26c3faab6aaeab85dadf0740bcc34078`
+passed CI #281 (`30369196085`).
 
 ## Completed subunit 02A: Bootstrap foundation
 
@@ -92,6 +70,7 @@ Public dedicated-namespace objects:
 
 ```text
 BootstrapPlan
+BootstrapResult
 FieldEnsemble
 PointwiseInterval
 pointwise_percentile_interval
@@ -101,266 +80,154 @@ Private foundations:
 
 ```text
 SeedLedger
-build_seed_ledger
 ResolvedReplicateExecution
 resolve_replicate_execution
 replicate_chunk_ranges
 execute_replicate_chunks
 ```
 
-### Plan rules
+Core rules:
 
-- `n_resamples >= 2`;
-- confidence level lies strictly in `(0, 1)`;
-- root seed is optional and non-negative;
-- only `method="ordinary"`;
+- only ordinary event Bootstrap;
 - complete replicate storage is mandatory;
-- `store_replicates=False` is rejected;
-- optional `ExecutionPlan` controls memory and replicate scheduling;
-- immutable stable fingerprint.
+- NumPy `SeedSequence`/`PCG64` streams are assigned in logical replicate order;
+- replicate identity is independent of workers and chunks;
+- one shared exact measured support and validity mask;
+- pointwise percentile intervals only;
+- fail-fast, no partial ensemble;
+- no process pool, distributed scheduler, streaming quantiles, or disk-backed ensemble.
 
-### Seed rules
-
-- use NumPy `SeedSequence` and `PCG64`;
-- create child streams in logical replicate order before scheduling;
-- store root entropy and spawn keys;
-- generated entropy from `random_state=None` is replayable;
-- replicate identity is independent of workers, completion order, target chunks, and replicate
-  chunks.
-
-### Replicate execution rules
-
-- Bootstrap default execution uses the explicit 256 MiB budget;
-- callers include the complete ensemble in fixed overhead;
-- fixed overhead and at least one replicate must fit before work starts;
-- requested replicate chunks must fit;
-- thread workers execute independent logical ranges;
-- results are yielded in logical range order;
-- the first replicate error aborts;
-- no process pool, distributed scheduler, streaming quantile, or disk-backed ensemble.
-
-### Ensemble and interval rules
-
-- full `(B, M)` replicate array;
-- observed field on the exact same measured support;
-- shared support validity mask;
-- invalid cells are `NaN` in observed and every replicate;
-- closed families: `density`, `intensity`, `event_rate`, `relative_risk`,
-  `log_relative_risk`;
-- arrays read-only, mappings immutable;
-- percentile endpoints, observed estimate, `ddof=1` standard error, and empirical bias;
-- finite columns use ordinary linear quantiles;
-- log-risk columns containing `-inf` use empirical order quantiles;
-- `+inf` rejected;
-- pointwise intervals are not simultaneous bands.
+Clean foundation head `b9d5110f7ea1879311b4edcdbd588a18c5662ca3` passed
+CI #314 (`30374221919`).
 
 ## Completed subunit 02B: spatial Bootstrap
 
-Public additions:
+Closed domain:
 
 ```text
-BootstrapResult
-bootstrap_kde
+SpatialEvents + GridSupport + SpatialKDE -> bootstrap_kde
 ```
 
-Closed signature:
+Rules:
 
-```python
-bootstrap_kde(
-    estimator: SpatialKDE,
-    events: SpatialEvents,
-    support: GridSupport,
-    *,
-    plan: BootstrapPlan | None = None,
-) -> BootstrapResult
-```
+- unit weights;
+- fixed positive numeric scalar bandwidth;
+- built-in kernel, metric, and correction string names;
+- fixed optional boundary and exact GridSupport;
+- observed event count fixed;
+- new unique replicate event IDs;
+- sampled source indices retained in provenance;
+- fresh estimator per observed/replicate fit;
+- complete ensemble and kernel working memory audited before scheduling;
+- outer replicate threading, inner target execution sequential;
+- existing `events=` keyword remains part of the public call.
 
-### Spatial statistical semantics
+Clean spatial implementation head `957c8551744f52a642103e83c91f1fdb2159f305`
+passed CI #332 (`30376591895`). Guide/API/example head
+`b18dea683cd4de29ad80bf705fcb6261f06d2fef` passed CI #335
+(`30377065654`). Final 02B handoff state passed CI #339 (`30378427092`).
 
-- ordinary event-index sampling with replacement;
-- fixed observed event count;
-- duplicate selected events remain duplicate contributions;
-- density and intensity uncertainty are conditional on event count;
-- no unconditional Poisson count uncertainty;
-- no bandwidth-selection uncertainty;
-- observed and replicate fields use the same fixed estimator contract;
-- default summaries are pointwise percentile intervals.
+## Completed subunit 02C: radial network Bootstrap
 
-### Spatial input boundary
-
-Accept only:
+Closed domain:
 
 ```text
-SpatialKDE
-SpatialEvents
-GridSupport
+NetworkWorkspace + NetworkKDE -> bootstrap_kde
 ```
 
-Require:
-
-- exact unit event weights;
-- finite positive scalar numeric bandwidth;
-- built-in string kernel;
-- built-in string metric;
-- built-in string boundary correction;
-- fixed target;
-- fixed optional `SpatialBoundary`;
-- exact fixed `GridSupport`.
-
-Reject:
-
-- raw arrays and DataFrames;
-- arbitrary estimators and callbacks;
-- weighted events;
-- selector, adaptive, matrix, and balloon bandwidths;
-- Boolean and invalid scalar bandwidths;
-- custom kernel, metric, and correction objects;
-- changing support or configuration.
-
-### Replicate event rule
-
-Each replicate:
-
-- receives new unique local event IDs;
-- preserves sampled source indices in provenance;
-- records the logical replicate index and source fingerprint;
-- preserves coordinates, CRS, unit, coordinate names, and optional marks;
-- is constructed as a new immutable event object.
-
-### Estimator isolation
-
-- source estimator may be fitted or unfitted;
-- only constructor configuration is used;
-- fitted state is not reused or mutated;
-- observed and every replicate use separate new estimator instances;
-- inner KDE execution is sequential with one worker;
-- outer execution owns replicate concurrency;
-- target chunk size still controls inner working memory.
-
-### Spatial memory rule
-
-Pre-execution fixed overhead includes:
-
-- complete ensemble;
-- observed field and validity mask;
-- event and support inputs;
-- per-worker sampled indices and resampled event arrays;
-- per-worker output field;
-- target-by-event kernel working estimate;
-- safety factor and requested workers.
-
-Insufficient memory raises before replicate work begins.
-
-### Spatial implementation files
+Supported policies:
 
 ```text
-src/pykdex/uncertainty/results.py
-src/pykdex/uncertainty/spatial.py
-src/pykdex/uncertainty/__init__.py
-tests/test_bootstrap_spatial_kde.py
-tests/test_bootstrap_spatial_closed_components.py
-docs/guides/bootstrap.md
-docs/api/uncertainty.md
-examples/18_spatial_bootstrap.py
+simple
+discontinuous
+continuous
 ```
 
-### Spatial test coverage
+Statistical boundary:
 
-- immutable cross-object result validation;
-- one-event degenerate fields;
-- manual seed/reconstruction agreement;
-- provenance and unique IDs;
-- sequential/thread invariance;
-- target/replicate chunk invariance;
-- logical ordering;
-- source estimator immutability;
-- density/intensity labels;
-- support identity;
-- read-only arrays and mappings;
-- invalid input, weight, bandwidth, component, boundary, and memory cases.
+- resample accepted snapped-event identities after snapping;
+- condition on observed accepted-event count and snapping/rejection outcome;
+- preserve exact network, lixels, CRS, units, direction, and snap audit;
+- do not repeat raw-geometry snapping;
+- unit weights and fixed positive numeric scalar bandwidth only;
+- built-in kernel and junction-policy string names only;
+- no bandwidth selection in replicates;
+- source estimator/workspace remain unchanged.
 
-## Validation evidence
+Prepared assets:
 
-CI #332 passed the clean spatial implementation across:
+- event-to-lixel asset is reindexed along the event/source axis;
+- event-to-event asset is reindexed along both event axes;
+- duplicate selections create duplicate logical rows/columns;
+- stored distances, network, target support, weight mode, direction, and cutoff remain fixed;
+- reconstructed assets are validated before estimation.
 
-- Black, isort, Ruff, mypy;
-- public API example mapping;
-- strict MkDocs;
-- full pytest and branch coverage;
-- source/wheel distributions, Twine, archive verification, isolated-wheel smoke;
-- Linux, Windows, macOS;
-- Python 3.11, 3.12, 3.13, 3.14.
+Execution and memory:
 
-CI #335 repeated the complete successful matrix after adding the guide, API page, and numbered
-example.
+- logical seed/result identity is invariant to workers and chunks;
+- outer replicate ranges may be threaded;
+- inner `NetworkKDE` runs sequentially with one worker;
+- complete ensemble, events, lixels, assets, reconstructed workspaces, output, and kernel working
+  arrays are audited before scheduling;
+- path policies reserve `n_events * max_records_per_event * 96` bytes per concurrent worker as a
+  conservative propagation-record upper bound;
+- first replicate failure aborts the operation.
 
-Temporary formatting, patching, mypy, and quality workflows were deleted and must remain
-absent from the PR diff.
+Implementation commit `d6fcfefa55e1095d280735e3c056f92ab4008c98` passed all
+network tests, coverage, distributions, and completed platform jobs in CI #343
+(`30379267533`); the only failure was Black formatting. Exact format commit
+`78ac248d193fec62c858074dc65c8b5daf53dfac` changed layout only. Temporary workflow was deleted
+at `d23e8e28f04b65dd9de57e8a14141b9366fa1f1e`, where the full quality chain passed in CI #346.
+The latest documentation/handoff head requires its own complete CI inspection.
 
-## Exact next unit: prepared radial-network Bootstrap
+## Exact next unit: heat-equation Bootstrap
 
-Implement only an ordinary Bootstrap adapter for already accepted and snapped network events
-with radial `NetworkKDE`.
+Implement only:
 
-Required steps:
+```text
+NetworkWorkspace + HeatNetworkKDE
+```
 
-1. inspect current `NetworkWorkspace`, accepted `NetworkEvents`, `LixelSupport`, distance
-   assets, and estimator constructors;
-2. identify which workspace arrays have an event axis and can be exactly column-reindexed;
-3. sample accepted event identities after snapping;
-4. never re-snap selected duplicate events;
-5. keep network geometry, lixels, support, rejected-event audit, CRS, unit, directed setting,
-   and topology fixed;
-6. create new unique replicate event IDs;
-7. retain sampled accepted-event indices and source fingerprints;
-8. require unit event weights;
-9. require finite positive fixed scalar bandwidth;
-10. require built-in kernel name and fixed junction policy;
-11. keep target, network fingerprint, support fingerprint, direction, and estimator semantics
-    fixed;
-12. build independent replicate workspace/estimator state without mutating source objects;
-13. include complete ensemble and per-worker network working memory before scheduling;
-14. preserve seed, result, and logical replicate identity across workers/chunks;
-15. test duplicate-event contributions, exact asset reindexing, immutability, memory failures,
-    and scheduling invariance;
-16. generate `HANDOFF_0.0.16_PROGRESS_02C_NETWORK_BOOTSTRAP.md` and docs counterpart;
-17. pass complete repository CI before beginning heat or later domains.
+Required contract:
 
-## Network design cautions
+1. ordinary accepted snapped-event resampling after snapping;
+2. unit accepted-event weights;
+3. fixed exact network, lixels, snapping audit, CRS, units, and topology;
+4. fixed numeric heat time/bandwidth configuration, no selector or replicate-wise reselection;
+5. fresh `HeatNetworkKDE` and fresh global finite-element solve per replicate;
+6. deterministic logical `SeedSequence` identity;
+7. outer replicate scheduling only;
+8. inner heat solve sequential and non-chunked;
+9. full global solver state included in conservative per-worker memory accounting;
+10. explicit rejection of unsupported target threading or partial target chunks;
+11. source estimator/workspace immutability;
+12. degenerate/manual, scheduling, memory, and contract tests;
+13. `HANDOFF_0.0.16_PROGRESS_02D_HEAT_BOOTSTRAP.md` before any further domain.
 
-- sampling occurs after accepted-event snapping;
-- rejected source events are not in the sampling population;
-- rejected-event audit remains fixed and unchanged;
-- duplicate selected accepted events are duplicate contributions;
-- network geometry is never rebuilt per replicate;
-- event-axis assets may need exact sampled-index reindexing;
-- do not assume every prepared asset can be shared unchanged;
-- do not allow configuration changes across replicates;
-- do not expose user callbacks;
-- do not mix heat-equation support into the radial adapter.
+## Do not begin during 02D
 
-## Do not begin in 02C
-
-- heat-equation network Bootstrap;
-- spatiotemporal or network-time Bootstrap;
-- fixed-exposure event-rate Bootstrap;
-- case-control relative-risk Bootstrap;
-- separability or permutation testing;
-- weighted, adaptive, selected-bandwidth, BCa, bootstrap-t, basic, or simultaneous methods;
+- spatiotemporal Bootstrap;
+- temporal-network Bootstrap;
+- event-rate Bootstrap;
+- relative-risk Bootstrap;
+- separability diagnostics;
+- permutation p-values;
+- weighted or adaptive built-in Bootstrap;
+- heat-time/bandwidth selection inside replicates;
+- BCa, bootstrap-t, basic, or simultaneous intervals;
 - uncertain exposure;
+- streaming or disk-backed ensembles;
 - persistence changes;
-- top-level exports;
 - package version bump;
-- ready-for-review status or merge.
+- ready-for-review transition or merge.
 
 ## Recovery checklist
 
-1. Inspect PR #16, branch head, changed files, and latest CI.
-2. Confirm PR remains open, Draft, and unmerged.
-3. Confirm package version remains `0.0.15`.
-4. Confirm temporary workflows and diagnostic files are absent.
-5. Read all seven required records.
-6. Preserve execution, seed, support, fail-fast, and full-ensemble contracts.
-7. Start only the prepared radial-network adapter.
-8. Do not start heat or later uncertainty/separability work before a successful 02C full-CI
-   handoff.
+1. Inspect PR #16, current branch head, changed files, and latest CI once.
+2. Confirm PR is open, Draft, unmerged, and version remains `0.0.15`.
+3. Confirm all temporary workflows and diagnostic logs are absent from the PR diff.
+4. Read all eight required records.
+5. Preserve execution, seed ordering, fixed support, and fail-fast contracts.
+6. Implement only heat-equation Bootstrap.
+7. Generate the 02D root and docs handoff after full CI.
+8. Do not move to space-time or risk-derived Bootstrap before 02D closes.
