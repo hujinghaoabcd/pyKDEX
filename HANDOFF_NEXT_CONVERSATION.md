@@ -17,8 +17,9 @@ Read these records in order:
 - base `main`: `1315619afba79a6ddf1fbfd7b91900bf0c0992f1`;
 - clean implementation head before handoff updates:
   `85dc5fc1a5fb71e8ec54841c8a4d4ba7d8584d26`;
-- corrected CI run `#146` (`30348884054`): success;
-- final CI after handoff updates: pending observation;
+- corrected implementation CI `#146` (`30348884054`): success;
+- complete CI after progress-handoff updates `#149` (`30349367994`): success;
+- handoff-state record commit: pending this file update;
 - merge: not merged;
 - package version remains `0.0.14` until the complete 0.0.15 unit is finished.
 
@@ -55,7 +56,7 @@ must apply an explicit denominator policy.
 The first CI run `#143` found only a Black formatting failure. A temporary branch-only
 formatting workflow generated the exact correction and was removed immediately.
 
-Corrected CI run `#146` passed:
+Corrected CI run `#146` and handoff-update CI run `#149` passed:
 
 - Black, isort, Ruff, mypy, API mapping, and strict MkDocs;
 - branch coverage;
