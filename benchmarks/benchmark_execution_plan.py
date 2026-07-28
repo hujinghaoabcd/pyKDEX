@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 from time import perf_counter
+from typing import Any
 
 import numpy as np
 
@@ -13,7 +14,11 @@ from pykdex import GridSupport, SpatialKDE
 from pykdex.execution import ExecutionPlan
 
 
-def _run(events: np.ndarray, support: GridSupport, plan: ExecutionPlan) -> tuple[np.ndarray, float, dict]:
+def _run(
+    events: np.ndarray,
+    support: GridSupport,
+    plan: ExecutionPlan,
+) -> tuple[np.ndarray, float, dict[str, Any]]:
     started = perf_counter()
     model = SpatialKDE(
         bandwidth=65.0,
@@ -56,7 +61,12 @@ def main() -> None:
         ),
     )
 
-    np.testing.assert_allclose(threaded_values, sequential_values, rtol=1e-13, atol=1e-15)
+    np.testing.assert_allclose(
+        threaded_values,
+        sequential_values,
+        rtol=1e-13,
+        atol=1e-15,
+    )
     print(
         {
             "n_events": events.shape[0],
