@@ -1,13 +1,14 @@
 # pyKDEX current handoff
 
-The latest merged release is **0.0.15**. Active development is the **0.0.16 design and
-execution-foundation phase**.
+The latest merged release is **0.0.15**. Active development is the **0.0.16 deterministic
+execution-foundation phase**, following completion of the detailed design.
 
 Read these records in order:
 
 1. `HANDOFF_0.0.15_EXPOSURE_RELATIVE_RISK.md`;
 2. `docs/development/design-0.0.16-uncertainty-separability-scalable.md`;
-3. `HANDOFF_0.0.16_DESIGN_UNCERTAINTY_SEPARABILITY_SCALABLE.md`.
+3. `HANDOFF_0.0.16_DESIGN_UNCERTAINTY_SEPARABILITY_SCALABLE.md`;
+4. `HANDOFF_0.0.16_DESIGN_VALIDATION.md`.
 
 ## Current state
 
@@ -15,16 +16,39 @@ Read these records in order:
 - stable base: pyKDEX `0.0.15` on `main`;
 - base commit: `8b3b2d8626a2e3e5bfd6dae497f71ea344d2ac0e`;
 - active branch: `agent/uncertainty-separability-scalable-design`;
+- Draft PR: `#16 Design pyKDEX 0.0.16 uncertainty, separability, and scalable execution`;
 - detailed design commit: `fc6d62bef0abed166c8674dc58275657568eab62`;
 - root design-handoff commit: `fd00faac75362bb0710ab146ad8ccb0c77b15c22`;
+- validated design head: `744bf7fce1de2621a023c7b0c9d1e771cd445318`;
+- design CI: `#234` (`30361402955`), success;
+- design-validation record commit: `de38f78209b186a42bbd5a68d956427450ee8657`;
 - numerical implementation: not started;
 - package version: still `0.0.15`;
 - provisional 0.0.16 top-level exports: none;
 - merge: not merged;
+- PR remains Draft;
 - exact next unit: deterministic execution foundation.
 
-Do not bump the package version or expose provisional API names during the design or first
-progress subunit.
+The accidental empty `docs/development/.keep` file created during PR preparation was
+removed before PR creation. It is absent from the validated branch diff.
+
+Do not bump the package version or expose provisional API names during the first progress
+subunit.
+
+## Observed design validation
+
+CI #234 passed:
+
+- Black, isort, Ruff, and mypy;
+- complete top-level public API example mapping;
+- strict MkDocs;
+- branch coverage and complete pytest regression suite;
+- source/wheel distributions, Twine, archive verification, and installed-wheel smoke;
+- Linux, Windows, and macOS;
+- Python 3.11, 3.12, 3.13, and 3.14.
+
+The status records after CI #234 are documentation-only commits. Inspect PR #16 and its
+latest workflow before claiming that a newer branch head is validated.
 
 ## 0.0.16 fixed architecture
 
@@ -159,10 +183,10 @@ Do not add in Subunit 01:
 
 ## Recovery checklist
 
-1. Inspect the branch, Draft PR if present, current head, and live CI.
+1. Inspect branch, PR #16, current head, changed files, and live CI.
 2. Confirm package version remains `0.0.15`.
 3. Confirm no provisional 0.0.16 top-level exports exist.
-4. Read the detailed design and root design handoff in full.
+4. Read all four records listed at the top.
 5. Preserve the single NumPy/SciPy numerical route and current estimator defaults.
 6. Begin only the deterministic execution foundation.
 7. Do not start bootstrap or separability implementation before Subunit 01 passes complete
