@@ -59,8 +59,10 @@ class DensityFieldView:
         if not family or not fingerprint:
             raise ValueError("result_family and source_fingerprint must be non-empty.")
         bandwidths = tuple(float(value) for value in self.bandwidths)
-        if not bandwidths or not np.all(np.isfinite(bandwidths)) or any(
-            value <= 0.0 for value in bandwidths
+        if (
+            not bandwidths
+            or not np.all(np.isfinite(bandwidths))
+            or any(value <= 0.0 for value in bandwidths)
         ):
             raise ValueError("bandwidths must contain finite positive scalars.")
         tolerance = _validate_normalization_tolerance(self.normalization_tolerance)
