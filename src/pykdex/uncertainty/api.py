@@ -8,9 +8,11 @@ from __future__ import annotations
 from typing import overload
 
 from pykdex.data import GridSupport, SpatialEvents
+from pykdex.estimators.heat_network_kde import HeatNetworkKDE
 from pykdex.estimators.network_kde import NetworkKDE
 from pykdex.estimators.spatial_kde import SpatialKDE
 from pykdex.network.workspace import NetworkWorkspace
+from pykdex.uncertainty.heat import bootstrap_heat_network_kde
 from pykdex.uncertainty.network import bootstrap_network_kde
 from pykdex.uncertainty.plan import BootstrapPlan
 from pykdex.uncertainty.results import BootstrapResult
@@ -37,8 +39,18 @@ def bootstrap_kde(
 ) -> BootstrapResult: ...
 
 
+@overload
 def bootstrap_kde(
-    estimator: SpatialKDE | NetworkKDE,
+    estimator: HeatNetworkKDE,
+    events: NetworkWorkspace,
+    support: None = None,
+    *,
+    plan: BootstrapPlan | None = None,
+) -> BootstrapResult: ...
+
+
+def bootstrap_kde(
+    estimator: SpatialKDE | NetworkKDE | HeatNetworkKDE,
     events: SpatialEvents | NetworkWorkspace,
     support: GridSupport | None = None,
     *,
@@ -47,7 +59,7 @@ def bootstrap_kde(
     """Run a closed built-in ordinary Bootstrap adapter for the estimator domain.
 
     The second parameter retains the public name ``events`` for compatibility with
-    the original spatial adapter. For ``NetworkKDE`` it receives a prepared
+    the original spatial adapter. For network estimators it receives a prepared
     ``NetworkWorkspace`` containing already-snapped accepted events.
     """
     if isinstance(estimator, SpatialKDE):
@@ -70,4 +82,18 @@ def bootstrap_kde(
                 "NetworkKDE bootstrap uses workspace.lixels and does not accept support."
             )
         return bootstrap_network_kde(estimator, events, plan=plan)
-    raise TypeError("estimator must be a SpatialKDE or NetworkKDE.")
+    if isinstance(estimator, HeatNetworkKDE):
+        if not isinstance(events, NetworkWorkspace):
+            raise TypeError(
+                "HeatNetworkKDE bootstrap requires events to be a "
+                "NetworkWorkspace object."
+            )
+        if support is not None:
+            raise TypeError(
+                "HeatNetworkKDE bootstrap uses workspace.lixels and does not accept "
+                "support."
+            )
+        return bootstrap_heat_network_kde(estimator, events, plan=plan)
+    raise TypeError(
+        "estimator must be a SpatialKDE, NetworkKDE, or HeatNetworkKDE."
+    )
