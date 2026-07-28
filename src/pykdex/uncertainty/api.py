@@ -13,9 +13,12 @@ from pykdex.estimators.heat_network_kde import HeatNetworkKDE
 from pykdex.estimators.network_kde import NetworkKDE
 from pykdex.estimators.spatial_kde import SpatialKDE
 from pykdex.estimators.spatiotemporal_kde import SpatiotemporalKDE
+from pykdex.estimators.temporal_network_kde import TemporalNetworkKDE
 from pykdex.network.workspace import NetworkWorkspace
+from pykdex.network_time.workspace import NetworkTimeWorkspace
 from pykdex.uncertainty.heat import bootstrap_heat_network_kde
 from pykdex.uncertainty.network import bootstrap_network_kde
+from pykdex.uncertainty.network_time import bootstrap_temporal_network_kde
 from pykdex.uncertainty.plan import BootstrapPlan
 from pykdex.uncertainty.results import BootstrapResult
 from pykdex.uncertainty.spatial import bootstrap_kde as bootstrap_spatial_kde
@@ -62,9 +65,27 @@ def bootstrap_kde(
 ) -> BootstrapResult: ...
 
 
+@overload
 def bootstrap_kde(
-    estimator: SpatialKDE | NetworkKDE | HeatNetworkKDE | SpatiotemporalKDE,
-    events: SpatialEvents | NetworkWorkspace | SpatiotemporalEvents,
+    estimator: TemporalNetworkKDE,
+    events: NetworkTimeWorkspace,
+    support: None = None,
+    *,
+    plan: BootstrapPlan | None = None,
+) -> BootstrapResult: ...
+
+
+def bootstrap_kde(
+    estimator: (
+        SpatialKDE
+        | NetworkKDE
+        | HeatNetworkKDE
+        | SpatiotemporalKDE
+        | TemporalNetworkKDE
+    ),
+    events: (
+        SpatialEvents | NetworkWorkspace | SpatiotemporalEvents | NetworkTimeWorkspace
+    ),
     support: GridSupport | SpatiotemporalGridSupport | None = None,
     *,
     plan: BootstrapPlan | None = None,
@@ -73,7 +94,7 @@ def bootstrap_kde(
 
     The second parameter retains the public name ``events`` for compatibility with
     the original spatial adapter. For network estimators it receives a prepared
-    ``NetworkWorkspace`` containing already-snapped accepted events.
+    workspace containing already-snapped accepted events.
     """
     if isinstance(estimator, SpatialKDE):
         if not isinstance(events, SpatialEvents):
@@ -124,7 +145,19 @@ def bootstrap_kde(
             support,
             plan=plan,
         )
+    if isinstance(estimator, TemporalNetworkKDE):
+        if not isinstance(events, NetworkTimeWorkspace):
+            raise TypeError(
+                "TemporalNetworkKDE bootstrap requires events to be a "
+                "NetworkTimeWorkspace object."
+            )
+        if support is not None:
+            raise TypeError(
+                "TemporalNetworkKDE bootstrap uses workspace.arixels and does not "
+                "accept support."
+            )
+        return bootstrap_temporal_network_kde(estimator, events, plan=plan)
     raise TypeError(
-        "estimator must be a SpatialKDE, NetworkKDE, HeatNetworkKDE, or "
-        "SpatiotemporalKDE."
+        "estimator must be a SpatialKDE, NetworkKDE, HeatNetworkKDE, "
+        "SpatiotemporalKDE, or TemporalNetworkKDE."
     )
