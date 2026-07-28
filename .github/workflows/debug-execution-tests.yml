@@ -1,0 +1,21 @@
+name: Debug execution integration tests
+
+on:
+  push:
+    branches:
+      - agent/uncertainty-separability-scalable-design
+
+permissions:
+  contents: read
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e ".[test]"
+      - run: python -m pytest -vv --tb=short tests/test_execution_plan.py tests/test_execution_spatial_integration.py
