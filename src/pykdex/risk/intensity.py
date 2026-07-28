@@ -54,7 +54,10 @@ class IntensityFieldView:
         fingerprint = str(self.source_fingerprint).strip()
         if not family or not fingerprint:
             raise ValueError("result_family and source_fingerprint must be non-empty.")
-        if describe_measured_support(self.support).fingerprint != self.descriptor.fingerprint:
+        if (
+            describe_measured_support(self.support).fingerprint
+            != self.descriptor.fingerprint
+        ):
             raise ValueError("support and descriptor fingerprints do not match.")
         object.__setattr__(self, "values", values)
         object.__setattr__(self, "event_unit", unit)
@@ -108,9 +111,13 @@ def _adapt_spatial(
         raise TypeError("SpatialKDEResult event rates require GridSupport exposure.")
     descriptor = describe_measured_support(support)
     if result.support_fingerprint is None:
-        raise ValueError("SpatialKDEResult requires support_fingerprint for event rates.")
+        raise ValueError(
+            "SpatialKDEResult requires support_fingerprint for event rates."
+        )
     if result.support_fingerprint != descriptor.fingerprint:
-        raise ValueError("Spatial result and exposure use different support fingerprints.")
+        raise ValueError(
+            "Spatial result and exposure use different support fingerprints."
+        )
     if result.support_measure is None or result.support_ids is None:
         raise ValueError(
             "SpatialKDEResult requires support_measure and support_ids for event rates."
