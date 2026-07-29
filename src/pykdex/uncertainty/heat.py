@@ -28,6 +28,7 @@ from pykdex.network.heat import (
     build_network_heat_operator,
 )
 from pykdex.network.workspace import NetworkWorkspace
+from pykdex.uncertainty.contracts import build_relative_risk_contract
 from pykdex.uncertainty.fields import FieldEnsemble, pointwise_percentile_interval
 from pykdex.uncertainty.network import (
     _direct_array_bytes,
@@ -522,8 +523,27 @@ def bootstrap_heat_network_kde(
     completed_plan_fingerprints = tuple(
         str(value) for value in replicate_plan_fingerprints if value is not None
     )
+    relative_risk_contract, relative_risk_contract_fingerprint = (
+        build_relative_risk_contract(
+            result_family="heat_network",
+            support_fingerprint=contract.support_fingerprint,
+            target=contract.target,
+            bandwidths=(contract.diffusion_time,),
+            components={
+                "estimator_kind": "heat_equation",
+                "diffusion_time": contract.diffusion_time,
+                "mesh_size": contract.mesh_size,
+                "negative_tolerance": contract.negative_tolerance,
+                "network_fingerprint": contract.network_fingerprint,
+                "solver_policy": "source_dof_threshold_auto",
+                "dense_threshold_policy": _DEFAULT_DENSE_THRESHOLD,
+            },
+        )
+    )
     common_metadata: dict[str, Any] = {
         "estimator_contract_fingerprint": contract.fingerprint,
+        "relative_risk_contract": relative_risk_contract,
+        "relative_risk_contract_fingerprint": relative_risk_contract_fingerprint,
         "source_workspace_fingerprint": workspace.fingerprint,
         "source_event_fingerprint": events.fingerprint,
         "network_fingerprint": workspace.network.fingerprint,

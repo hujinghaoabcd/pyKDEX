@@ -26,6 +26,7 @@ from pykdex.network.distance import NetworkDistanceAsset, NetworkLocations
 from pykdex.network.events import NetworkEvents, SnapResult
 from pykdex.network.propagation import get_junction_policy
 from pykdex.network.workspace import NetworkWorkspace
+from pykdex.uncertainty.contracts import build_relative_risk_contract
 from pykdex.uncertainty.fields import FieldEnsemble, pointwise_percentile_interval
 from pykdex.uncertainty.plan import BootstrapPlan
 from pykdex.uncertainty.results import BootstrapResult
@@ -629,6 +630,23 @@ def bootstrap_network_kde(
     completed_workspace_fingerprints = tuple(
         str(value) for value in replicate_workspace_fingerprints if value is not None
     )
+    relative_risk_contract, relative_risk_contract_fingerprint = (
+        build_relative_risk_contract(
+            result_family="network",
+            support_fingerprint=contract.support_fingerprint,
+            target=contract.target,
+            bandwidths=(contract.bandwidth,),
+            components={
+                "kernel": contract.kernel,
+                "junction_policy": contract.junction_policy,
+                "directed": contract.effective_directed,
+                "network_fingerprint": contract.network_fingerprint,
+                "path_based": contract.junction_policy != "simple",
+                "coefficient_tolerance": contract.coefficient_tolerance,
+                "max_records_per_event": contract.max_records_per_event,
+            },
+        )
+    )
     ensemble = FieldEnsemble(
         replicate_values=replicate_values,
         observed_values=observed_result.values,
@@ -642,6 +660,8 @@ def bootstrap_network_kde(
         metadata={
             "estimator_family": "network",
             "estimator_contract_fingerprint": contract.fingerprint,
+            "relative_risk_contract": relative_risk_contract,
+            "relative_risk_contract_fingerprint": relative_risk_contract_fingerprint,
             "source_workspace_fingerprint": workspace.fingerprint,
             "source_event_fingerprint": events.fingerprint,
             "network_fingerprint": workspace.network.fingerprint,
@@ -670,6 +690,8 @@ def bootstrap_network_kde(
         seed_metadata=seed_ledger.to_metadata(),
         metadata={
             "estimator_contract_fingerprint": contract.fingerprint,
+            "relative_risk_contract": relative_risk_contract,
+            "relative_risk_contract_fingerprint": relative_risk_contract_fingerprint,
             "observed_result_fingerprint": observed_fingerprint,
             "source_workspace_fingerprint": workspace.fingerprint,
             "source_event_fingerprint": events.fingerprint,

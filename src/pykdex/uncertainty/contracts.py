@@ -21,7 +21,9 @@ def _bandwidth_tuple(values: Sequence[float]) -> tuple[float, ...]:
         or not np.all(np.isfinite(bandwidths))
         or any(value <= 0.0 for value in bandwidths)
     ):
-        raise ValueError("relative-risk contract bandwidths must be finite and positive.")
+        raise ValueError(
+            "relative-risk contract bandwidths must be finite and positive."
+        )
     return bandwidths
 
 
@@ -51,7 +53,9 @@ def build_relative_risk_contract(
     for key, value in components.items():
         name = str(key).strip()
         if not name:
-            raise ValueError("relative-risk contract component names must be non-empty.")
+            raise ValueError(
+                "relative-risk contract component names must be non-empty."
+            )
         if name in normalized:
             raise ValueError(f"relative-risk contract component duplicates {name!r}.")
         normalized[name] = value

@@ -28,7 +28,6 @@ from pykdex import (
 from pykdex.execution import ExecutionPlan
 from pykdex.uncertainty import BootstrapPlan, BootstrapResult, bootstrap_kde
 
-
 _FAMILIES = ("spatial", "network", "heat_network", "spatiotemporal", "network_time")
 
 
@@ -78,9 +77,7 @@ def _spatial_result(*, variant: bool, changed: bool = False) -> BootstrapResult:
 def _network_workspace(*, variant: bool) -> NetworkWorkspace:
     network = load_t_junction().network
     coordinates = (
-        [[-0.25, 0.0], [0.0, 0.75]]
-        if variant
-        else [[-0.75, 0.0], [0.50, 0.0]]
+        [[-0.25, 0.0], [0.0, 0.75]] if variant else [[-0.75, 0.0], [0.50, 0.0]]
     )
     events = SpatialEvents.from_array(
         coordinates,
@@ -168,9 +165,7 @@ def _spatiotemporal_result(*, variant: bool, changed: bool = False) -> Bootstrap
 def _network_time_result(*, variant: bool, changed: bool = False) -> BootstrapResult:
     network = load_t_junction().network
     coordinates = (
-        [[-0.25, 0.0], [0.0, 0.75]]
-        if variant
-        else [[-0.75, 0.0], [0.50, 0.0]]
+        [[-0.25, 0.0], [0.0, 0.75]] if variant else [[-0.75, 0.0], [0.50, 0.0]]
     )
     times = [0.75, 1.25] if variant else [0.25, 1.75]
     events = SpatialEvents.from_array(
@@ -231,14 +226,15 @@ def test_all_density_families_expose_one_read_only_serializable_contract(
     contract, fingerprint = _contract(result)
 
     assert result.ensemble.metadata["relative_risk_contract"] is contract
-    assert (
-        result.ensemble.metadata["relative_risk_contract_fingerprint"] == fingerprint
-    )
+    assert result.ensemble.metadata["relative_risk_contract_fingerprint"] == fingerprint
     assert contract["schema_version"] == 1
     assert contract["result_family"] == family
     assert contract["target"] == "density"
     assert contract["support_fingerprint"] == result.ensemble.descriptor.fingerprint
-    assert json.loads(json.dumps(dict(contract), sort_keys=True))["result_family"] == family
+    assert (
+        json.loads(json.dumps(dict(contract), sort_keys=True))["result_family"]
+        == family
+    )
     with pytest.raises(TypeError):
         contract["new_key"] = "not allowed"  # type: ignore[index]
 
@@ -254,7 +250,10 @@ def test_event_data_and_execution_changes_do_not_change_shared_contract(
 
     assert dict(first_contract) == dict(second_contract)
     assert first_fingerprint == second_fingerprint
-    assert first.metadata["source_event_fingerprint"] != second.metadata["source_event_fingerprint"]
+    assert (
+        first.metadata["source_event_fingerprint"]
+        != second.metadata["source_event_fingerprint"]
+    )
     assert first.ensemble.execution_metadata != second.ensemble.execution_metadata
 
 

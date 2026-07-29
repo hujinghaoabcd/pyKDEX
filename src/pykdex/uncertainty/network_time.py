@@ -26,6 +26,7 @@ from pykdex.network.propagation import get_junction_policy
 from pykdex.network_time.distance import NetworkTimeDistanceAsset
 from pykdex.network_time.events import NetworkTimeEvents
 from pykdex.network_time.workspace import NetworkTimeWorkspace
+from pykdex.uncertainty.contracts import build_relative_risk_contract
 from pykdex.uncertainty.fields import FieldEnsemble, pointwise_percentile_interval
 from pykdex.uncertainty.network import (
     _direct_array_bytes,
@@ -561,8 +562,30 @@ def bootstrap_temporal_network_kde(
     completed_workspace_fingerprints = tuple(
         str(value) for value in replicate_workspace_fingerprints if value is not None
     )
+    relative_risk_contract, relative_risk_contract_fingerprint = (
+        build_relative_risk_contract(
+            result_family="network_time",
+            support_fingerprint=contract.support_fingerprint,
+            target=contract.target,
+            bandwidths=(contract.spatial_bandwidth, contract.temporal_bandwidth),
+            components={
+                "spatial_kernel": contract.spatial_kernel,
+                "temporal_kernel": contract.temporal_kernel,
+                "junction_policy": contract.junction_policy,
+                "directed": contract.effective_directed,
+                "network_fingerprint": contract.network_fingerprint,
+                "path_based": contract.junction_policy != "simple",
+                "cyclic_tail_tolerance": contract.cyclic_tail_tolerance,
+                "coefficient_tolerance": contract.coefficient_tolerance,
+                "max_records_per_event": contract.max_records_per_event,
+                "time_domain_fingerprint": contract.time_domain_fingerprint,
+            },
+        )
+    )
     common_metadata: dict[str, Any] = {
         "estimator_contract_fingerprint": contract.fingerprint,
+        "relative_risk_contract": relative_risk_contract,
+        "relative_risk_contract_fingerprint": relative_risk_contract_fingerprint,
         "source_workspace_fingerprint": workspace.fingerprint,
         "source_event_fingerprint": events.fingerprint,
         "network_fingerprint": workspace.network.fingerprint,

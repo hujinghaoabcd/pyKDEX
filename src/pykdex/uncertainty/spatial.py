@@ -23,6 +23,7 @@ from pykdex.execution.replicates import (
 )
 from pykdex.kernels import get_kernel
 from pykdex.metrics import get_metric
+from pykdex.uncertainty.contracts import build_relative_risk_contract
 from pykdex.uncertainty.fields import FieldEnsemble, pointwise_percentile_interval
 from pykdex.uncertainty.plan import BootstrapPlan
 from pykdex.uncertainty.results import BootstrapResult
@@ -343,6 +344,22 @@ def bootstrap_kde(
     completed_fingerprints = tuple(
         str(value) for value in replicate_fingerprints if value is not None
     )
+    relative_risk_contract, relative_risk_contract_fingerprint = (
+        build_relative_risk_contract(
+            result_family="spatial",
+            support_fingerprint=contract.support_fingerprint,
+            target=contract.target,
+            bandwidths=(contract.bandwidth,),
+            components={
+                "kernel": contract.kernel,
+                "metric": contract.metric,
+                "boundary_correction": contract.boundary_correction,
+                "boundary_fingerprint": (
+                    None if contract.boundary is None else contract.boundary.fingerprint
+                ),
+            },
+        )
+    )
     ensemble = FieldEnsemble(
         replicate_values=replicate_values,
         observed_values=observed_result.values,
@@ -356,6 +373,8 @@ def bootstrap_kde(
         metadata={
             "estimator_family": "spatial",
             "estimator_contract_fingerprint": contract.fingerprint,
+            "relative_risk_contract": relative_risk_contract,
+            "relative_risk_contract_fingerprint": relative_risk_contract_fingerprint,
             "source_event_fingerprint": events.fingerprint,
             "support_fingerprint": support.fingerprint,
             "conditional_on_observed_event_count": True,
@@ -377,6 +396,8 @@ def bootstrap_kde(
         seed_metadata=seed_ledger.to_metadata(),
         metadata={
             "estimator_contract_fingerprint": contract.fingerprint,
+            "relative_risk_contract": relative_risk_contract,
+            "relative_risk_contract_fingerprint": relative_risk_contract_fingerprint,
             "observed_result_fingerprint": observed_fingerprint,
             "source_event_fingerprint": events.fingerprint,
             "support_fingerprint": support.fingerprint,

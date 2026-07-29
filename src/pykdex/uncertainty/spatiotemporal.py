@@ -27,6 +27,7 @@ from pykdex.execution.replicates import (
 )
 from pykdex.kernels import get_kernel
 from pykdex.metrics import get_metric
+from pykdex.uncertainty.contracts import build_relative_risk_contract
 from pykdex.uncertainty.fields import FieldEnsemble, pointwise_percentile_interval
 from pykdex.uncertainty.plan import BootstrapPlan
 from pykdex.uncertainty.results import BootstrapResult
@@ -409,8 +410,25 @@ def bootstrap_spatiotemporal_kde(
     completed_fingerprints = tuple(
         str(value) for value in replicate_fingerprints if value is not None
     )
+    relative_risk_contract, relative_risk_contract_fingerprint = (
+        build_relative_risk_contract(
+            result_family="spatiotemporal",
+            support_fingerprint=contract.support_fingerprint,
+            target=contract.target,
+            bandwidths=(contract.spatial_bandwidth, contract.temporal_bandwidth),
+            components={
+                "spatial_kernel": contract.spatial_kernel,
+                "temporal_kernel": contract.temporal_kernel,
+                "spatial_metric": contract.spatial_metric,
+                "cyclic_tail_tolerance": contract.cyclic_tail_tolerance,
+                "time_domain_fingerprint": contract.event_time_domain_fingerprint,
+            },
+        )
+    )
     common_metadata = {
         "estimator_contract_fingerprint": contract.fingerprint,
+        "relative_risk_contract": relative_risk_contract,
+        "relative_risk_contract_fingerprint": relative_risk_contract_fingerprint,
         "source_event_fingerprint": events.fingerprint,
         "support_fingerprint": support.fingerprint,
         "time_domain_fingerprint": events.temporal.domain.fingerprint,
