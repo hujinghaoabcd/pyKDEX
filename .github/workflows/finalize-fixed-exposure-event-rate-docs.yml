@@ -1,0 +1,300 @@
+name: Finalize fixed-exposure event-rate Bootstrap documentation
+
+on:
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/uncertainty-separability-scalable-design
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e ".[dev,docs]"
+      - name: Update fixed-exposure event-rate documentation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          guide = Path("docs/guides/bootstrap.md")
+          text = guide.read_text(encoding="utf-8")
+          marker = "## Pointwise percentile intervals\n"
+          addition = """## Fixed-exposure event-rate Bootstrap
+
+          `bootstrap_event_rate` transforms a completed intensity Bootstrap on an exact measured
+          support using one fixed `ExposureField`:
+
+          ```python
+          from pykdex.risk import ExposureField
+          from pykdex.uncertainty import bootstrap_event_rate
+
+          exposure = ExposureField.from_density(
+              exposure_density,
+              intensity_bootstrap.ensemble.support,
+              exposure_unit="person",
+          )
+          rate_bootstrap = bootstrap_event_rate(
+              intensity_bootstrap,
+              exposure,
+              event_unit="event",
+              zero_policy="raise",
+          )
+          ```
+
+          The source must be a completed `bootstrap_kde` result with
+          `field_family="intensity"`. Probability-density ensembles are rejected because density has
+          discarded total event mass.
+
+          For every replicate and valid support element, the transformation is:
+
+          ```text
+          event_rate = event_intensity / effective_exposure_density
+          ```
+
+          Exposure is applied identically to the observed intensity and every replicate. It is not
+          resampled. The returned intervals therefore describe event-resampling uncertainty
+          **conditional on fixed exposure** and do not include uncertainty in population,
+          person-time, traffic volume, monitoring effort, or another exposure measurement.
+
+          ### Exact support and supported families
+
+          The exposure and source ensemble must share the exact measured-support fingerprint. The
+          transformation supports completed intensity ensembles on:
+
+          ```text
+          GridSupport
+          LixelSupport
+          measured SpatiotemporalPointSupport
+          SpatiotemporalGridSupport
+          ArixelSupport
+          ```
+
+          Built-in Bootstrap estimator adapters currently generate the spatial-grid, network-lixel,
+          spatiotemporal-grid, and network-time-arixel families.
+
+          ### Explicit denominator policy
+
+          The same denominator policy used by deterministic event-rate fields is retained:
+
+          - `raise` rejects exposure at or below `validity_threshold`;
+          - `nan` marks those support columns invalid in observed, replicate, and interval arrays;
+          - `minimum` applies only the user-supplied positive `minimum_denominator` and keeps adjusted
+            cells valid.
+
+          No hidden epsilon, pseudocount, or undocumented clipping rule is introduced. The output
+          validity mask combines the source intensity validity mask with finite effective exposure.
+
+          ### Seed, identity, and memory
+
+          No KDE is refitted and no new random stream is created. The source Bootstrap plan, seed
+          ledger, logical replicate order, confidence level, and estimator-family label are retained.
+
+          Derived observed and replicate fingerprints combine source intensity identity, fixed
+          exposure, denominator policy, event unit, and exact support. The optional transformation
+          memory budget is operational and does not change statistical identity.
+
+          `memory_budget_bytes` is explicit and separate from the earlier KDE execution budget. The
+          preflight peak includes the resident source intensity ensemble, exposure and denominator
+          state, and the complete event-rate output ensemble. Insufficient budgets fail before the
+          complete output matrix is allocated.
+
+          """
+          if text.count(marker) != 1:
+              raise RuntimeError("expected one pointwise interval heading")
+          text = text.replace(marker, addition + marker)
+          text = text.replace(
+              "- event-rate or relative-risk Bootstrap;\n",
+              "- relative-risk Bootstrap;\n",
+          )
+          guide.write_text(text, encoding="utf-8")
+
+          api = Path("docs/api/uncertainty.md")
+          text = api.read_text(encoding="utf-8")
+          marker = "## Pointwise percentile summary\n"
+          addition = """## Fixed-exposure event-rate Bootstrap
+
+          Transform a completed intensity Bootstrap into event-rate uncertainty conditional on one
+          fixed measured exposure field.
+
+          ::: pykdex.uncertainty.bootstrap_event_rate
+
+          """
+          if text.count(marker) != 1:
+              raise RuntimeError("expected one pointwise summary API heading")
+          api.write_text(text.replace(marker, addition + marker), encoding="utf-8")
+
+          mkdocs = Path("mkdocs.yml")
+          text = mkdocs.read_text(encoding="utf-8")
+          old = "      - 0.0.16 progress 02F: development/handoff-0.0.16-progress-02f-temporal-network-bootstrap.md\n"
+          new = old + "      - 0.0.16 progress 02G: development/handoff-0.0.16-progress-02g-fixed-exposure-event-rate-bootstrap.md\n"
+          if text.count(old) != 1:
+              raise RuntimeError("expected one 02F MkDocs entry")
+          mkdocs.write_text(text.replace(old, new), encoding="utf-8")
+
+          handoff = Path("HANDOFF_NEXT_CONVERSATION.md")
+          text = handoff.read_text(encoding="utf-8")
+          old = "7. ordinary temporal-network Bootstrap on measured arixel support.\n"
+          new = old + "8. fixed-exposure event-rate Bootstrap on exact measured support.\n"
+          if text.count(old) != 1:
+              raise RuntimeError("expected one completed 02F list entry")
+          text = text.replace(old, new)
+          old = """The exact next implementation unit is fixed-exposure event-rate Bootstrap. Do not begin
+          independent case-control relative-risk Bootstrap, uncertain-exposure Bootstrap, separability
+          diagnostics, or permutation testing before the fixed-exposure event-rate unit is designed,
+          implemented, documented, and validated.
+          """
+          new = """The exact next unit is a detailed design for independent case-control relative-risk
+          Bootstrap. Do not begin numerical implementation until replicate pairing, independent seed
+          ledgers, shared fixed-bandwidth compatibility, normalization, raw/log linked outputs, and
+          memory accounting are fixed in the design.
+          """
+          if text.count(old) != 1:
+              raise RuntimeError("expected one 02G next-unit summary")
+          text = text.replace(old, new)
+          old = "11. `HANDOFF_0.0.16_PROGRESS_02F_TEMPORAL_NETWORK_BOOTSTRAP.md`.\n"
+          new = old + "12. `HANDOFF_0.0.16_PROGRESS_02G_FIXED_EXPOSURE_EVENT_RATE_BOOTSTRAP.md`.\n"
+          if text.count(old) != 1:
+              raise RuntimeError("expected one read-order 02F ending")
+          text = text.replace(old, new)
+          text = text.replace(
+              "- exact next unit: fixed-exposure event-rate Bootstrap.\n",
+              "- exact next unit: 02H independent case-control relative-risk Bootstrap design.\n",
+          )
+          start = text.index("## Exact next unit: 02G fixed-exposure event-rate Bootstrap\n")
+          suffix = """## Completed subunit 02G: fixed-exposure event-rate Bootstrap
+
+          Public operation:
+
+          ```text
+          intensity BootstrapResult + fixed ExposureField -> bootstrap_event_rate
+          ```
+
+          Statistical rules:
+
+          - accept only completed `bootstrap_kde` intensity ensembles;
+          - preserve the source Bootstrap plan, seed ledger, replicate identities, and confidence level;
+          - require exact measured-support identity between source ensemble and exposure;
+          - treat exposure as fixed and never resample it;
+          - return event uncertainty conditional on fixed exposure;
+          - reject probability-density source ensembles;
+          - reuse explicit `raise`, `nan`, and `minimum` denominator policies;
+          - introduce no hidden epsilon or pseudocount;
+          - combine source validity with finite effective exposure;
+          - retain distinct source-intensity, exposure, and event-rate fingerprints.
+
+          Execution and memory:
+
+          - no KDE is refitted and no random stream is generated;
+          - observed and replicate rates are deterministic transforms of stored intensity fields;
+          - an explicit derived-operation memory budget is separate from the earlier KDE budget;
+          - preflight includes the resident source ensemble, exposure/denominator state, and complete
+            output ensemble;
+          - source result and exposure remain immutable.
+
+          Supported measured support families:
+
+          ```text
+          spatial_grid
+          network_lixel
+          measured spatiotemporal_points when a valid intensity ensemble exists
+          spatiotemporal_grid
+          network_time_arixel
+          ```
+
+          Clean implementation head:
+
+          ```text
+          50686d4a05195c41d40c9acd0ec010d3a67c17f4
+          ```
+
+          CI #416 (`30416870784`) passed quality, strict documentation, full tests, branch coverage,
+          distributions, installed-wheel smoke, Linux, Windows, macOS, and Python 3.11-3.14.
+
+          ## Exact next unit: 02H independent case-control relative-risk Bootstrap design
+
+          Inspect:
+
+          ```text
+          src/pykdex/risk/density.py
+          src/pykdex/risk/relative_risk.py
+          src/pykdex/uncertainty/
+          existing relative-risk tests and 0.0.15 handoffs
+          ```
+
+          Produce a detailed design before numerical code. It must decide:
+
+          1. whether initial case and control ensembles must have equal replicate counts;
+          2. how replicate rows are paired while preserving independent within-group resampling;
+          3. whether distinct seed-ledger fingerprints are mandatory and how accidental shared streams
+             are rejected;
+          4. how exact support, result family, shared scalar bandwidths, kernels, metrics, policies, and
+             correction contracts are compared;
+          5. how observed and every replicate density are verified to integrate to one;
+          6. how denominator `raise`, `nan`, and `minimum` policies define raw-risk validity;
+          7. how zero case density yields raw risk zero and log risk `-inf` without becoming an invalid
+             denominator;
+          8. how `FieldEnsemble` validation represents valid `-inf` log-risk values;
+          9. whether the public return is two linked `BootstrapResult` objects or one dedicated linked
+             result container;
+          10. how complete case, control, raw-risk, and log-risk ensembles are budgeted without hidden
+              streaming;
+          11. how pooled case-control resampling and mark permutation are kept outside this operation;
+          12. which analytical and independent numerical fixtures validate the first release.
+
+          Required design records:
+
+          ```text
+          docs/development/design-0.0.16-relative-risk-bootstrap.md
+          HANDOFF_0.0.16_DESIGN_RELATIVE_RISK_BOOTSTRAP.md
+          ```
+
+          Do not write numerical relative-risk Bootstrap code until the design answers all twelve
+          questions.
+
+          ## Do not begin during the 02H design unit
+
+          - pooled case-control resampling;
+          - case/control mark permutation;
+          - uncertain exposure;
+          - separability diagnostics;
+          - permutation p-values;
+          - adaptive or independently selected case/control bandwidths;
+          - BCa, bootstrap-t, basic, or simultaneous intervals;
+          - streaming or disk-backed ensembles;
+          - persistence changes;
+          - package version bump;
+          - ready-for-review transition or merge.
+
+          ## Recovery checklist
+
+          1. Inspect PR #16, current head, changed files, and latest CI once.
+          2. Confirm PR is open, Draft, unmerged, and version remains `0.0.15`.
+          3. Confirm temporary workflows, formatting artifacts, placeholders, and diagnostic logs are absent.
+          4. Read all twelve required records.
+          5. Preserve exact support, independent group identities, seed provenance, and explicit denominator rules.
+          6. Write only the 02H relative-risk Bootstrap design and tests/fixtures plan.
+          7. Open no new public API and write no numerical ratio ensemble code during the design unit.
+          8. Update the current handoff after the design passes strict documentation and full CI.
+          """
+          handoff.write_text(text[:start] + suffix, encoding="utf-8")
+          PY
+      - run: python -m black examples/23_fixed_exposure_event_rate_bootstrap.py
+      - run: python -m isort examples/23_fixed_exposure_event_rate_bootstrap.py
+      - run: python examples/23_fixed_exposure_event_rate_bootstrap.py
+      - run: python -m pytest tests/test_bootstrap_event_rate.py -q
+      - run: python -m mkdocs build --strict
+      - name: Commit documentation closure
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add examples/23_fixed_exposure_event_rate_bootstrap.py docs/guides/bootstrap.md docs/api/uncertainty.md docs/development/handoff-0.0.16-progress-02g-fixed-exposure-event-rate-bootstrap.md HANDOFF_0.0.16_PROGRESS_02G_FIXED_EXPOSURE_EVENT_RATE_BOOTSTRAP.md HANDOFF_NEXT_CONVERSATION.md mkdocs.yml
+          git commit -m "Document fixed-exposure event-rate Bootstrap"
+          git push origin HEAD:agent/uncertainty-separability-scalable-design
