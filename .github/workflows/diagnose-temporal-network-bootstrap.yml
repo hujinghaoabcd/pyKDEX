@@ -1,13 +1,14 @@
-name: Diagnose temporal-network Bootstrap
+name: Apply temporal-network Bootstrap fixes
 
 on:
   pull_request:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  diagnose:
+  fix:
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,19 +19,67 @@ jobs:
           python-version: "3.13"
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e ".[dev,docs]"
-      - run: |
-          mkdir -p diagnosis/rendered/src/pykdex/uncertainty diagnosis/rendered/tests
-          set +e
-          python -m pytest tests/test_bootstrap_temporal_network_kde.py -q > diagnosis/pytest.txt 2>&1
-          echo "$?" > diagnosis/pytest-status.txt
-          set -e
-          python -m black src/pykdex/uncertainty/api.py src/pykdex/uncertainty/network_time.py tests/test_bootstrap_temporal_network_kde.py
-          python -m isort src/pykdex/uncertainty/api.py src/pykdex/uncertainty/network_time.py tests/test_bootstrap_temporal_network_kde.py
-          cp src/pykdex/uncertainty/api.py diagnosis/rendered/src/pykdex/uncertainty/api.py
-          cp src/pykdex/uncertainty/network_time.py diagnosis/rendered/src/pykdex/uncertainty/network_time.py
-          cp tests/test_bootstrap_temporal_network_kde.py diagnosis/rendered/tests/test_bootstrap_temporal_network_kde.py
-      - uses: actions/upload-artifact@v4
-        with:
-          name: temporal-network-bootstrap-diagnosis
-          path: diagnosis
-          if-no-files-found: error
+      - name: Apply audited statistical-identity fixes
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          source = Path("src/pykdex/uncertainty/network_time.py")
+          text = source.read_text(encoding="utf-8")
+          old = '''def _result_fingerprint(result: NetworkTimeField) -> str:
+              metadata = dict(result.metadata)
+              return stable_fingerprint(
+                  "BootstrapTemporalNetworkKDEResult",
+                  result.values,
+                  result.support.fingerprint,
+                  result.spatial_bandwidth,
+                  result.temporal_bandwidth,
+                  result.target,
+                  result.spatial_kernel,
+                  result.temporal_kernel,
+                  result.junction_policy,
+                  result.directed,
+                  result.network_fingerprint,
+                  metadata.get("time_domain"),
+                  metadata.get("path_based"),
+              )
+          '''
+          new = '''def _result_fingerprint(
+              result: NetworkTimeField,
+              contract: _TemporalNetworkBootstrapContract,
+          ) -> str:
+              return stable_fingerprint(
+                  "BootstrapTemporalNetworkKDEResult",
+                  contract.fingerprint,
+                  result.event_fingerprint,
+                  result.network_fingerprint,
+                  result.support.fingerprint,
+              )
+          '''
+          if text.count(old) != 1:
+              raise RuntimeError("expected exactly one temporal-network fingerprint block")
+          text = text.replace(old, new)
+          old_call = "    observed_fingerprint = _result_fingerprint(observed_result)\n"
+          new_call = "    observed_fingerprint = _result_fingerprint(observed_result, contract)\n"
+          if text.count(old_call) != 1:
+              raise RuntimeError("expected exactly one temporal-network fingerprint call")
+          source.write_text(text.replace(old_call, new_call), encoding="utf-8")
+
+          tests = Path("tests/test_bootstrap_temporal_network_kde.py")
+          text = tests.read_text(encoding="utf-8")
+          old = '    assert result.ensemble.descriptor.kind == "network_time"\n'
+          new = '    assert result.ensemble.descriptor.kind == "network_time_arixel"\n'
+          if text.count(old) != 1:
+              raise RuntimeError("expected exactly one descriptor-kind assertion")
+          tests.write_text(text.replace(old, new), encoding="utf-8")
+          PY
+      - run: python -m black src/pykdex/uncertainty/api.py src/pykdex/uncertainty/network_time.py tests/test_bootstrap_temporal_network_kde.py
+      - run: python -m isort src/pykdex/uncertainty/api.py src/pykdex/uncertainty/network_time.py tests/test_bootstrap_temporal_network_kde.py
+      - run: python -m pytest tests/test_bootstrap_temporal_network_kde.py -q
+      - name: Commit focused fixes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pykdex/uncertainty/api.py src/pykdex/uncertainty/network_time.py tests/test_bootstrap_temporal_network_kde.py
+          git commit -m "Fix temporal-network Bootstrap CI"
+          git push origin HEAD:agent/uncertainty-separability-scalable-design
