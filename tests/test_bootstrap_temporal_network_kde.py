@@ -111,7 +111,7 @@ def test_temporal_network_bootstrap_returns_complete_arixel_result() -> None:
     assert result.ensemble.n_replicates == 4
     assert result.ensemble.n_elements == workspace.arixels.n_arixels
     assert result.ensemble.descriptor.fingerprint == workspace.arixels.fingerprint
-    assert result.ensemble.descriptor.kind == "network_time"
+    assert result.ensemble.descriptor.kind == "network_time_arixel"
     assert result.ensemble.field_family == "density"
     assert result.interval.confidence_level == pytest.approx(0.8)
     assert result.metadata["conditional_on_observed_event_count"] is True
@@ -207,7 +207,10 @@ def test_factorized_distance_asset_reindexes_network_rows_and_time_columns() -> 
         workspace.distance_asset.temporal_distances[:, sampled],
     )
     assert replicate.distance_asset.event_fingerprint == replicate.events.fingerprint
-    assert replicate.distance_asset.workspace_fingerprint == replicate.network_workspace.fingerprint
+    assert (
+        replicate.distance_asset.workspace_fingerprint
+        == replicate.network_workspace.fingerprint
+    )
     assert replicate.arixels is workspace.arixels
     assert replicate.validate().valid
 
@@ -345,7 +348,9 @@ def test_bootstrap_does_not_mutate_fitted_source_or_workspace() -> None:
     values = source.values_.copy()
     event_fingerprint = source.event_fingerprint_
     workspace_fingerprint = workspace.fingerprint
-    distance_fingerprint = workspace.distance_asset.fingerprint if workspace.distance_asset else None
+    distance_fingerprint = (
+        workspace.distance_asset.fingerprint if workspace.distance_asset else None
+    )
 
     bootstrap_kde(source, workspace, plan=_plan())
 
@@ -354,7 +359,9 @@ def test_bootstrap_does_not_mutate_fitted_source_or_workspace() -> None:
     assert source.event_fingerprint_ == event_fingerprint
     assert workspace.fingerprint == workspace_fingerprint
     assert (
-        None if workspace.distance_asset is None else workspace.distance_asset.fingerprint
+        None
+        if workspace.distance_asset is None
+        else workspace.distance_asset.fingerprint
     ) == distance_fingerprint
 
 
@@ -418,7 +425,9 @@ def test_temporal_network_bootstrap_rejects_open_or_adaptive_contracts() -> None
         )
 
 
-def test_temporal_network_bootstrap_accepts_events_keyword_and_rejects_support() -> None:
+def test_temporal_network_bootstrap_accepts_events_keyword_and_rejects_support() -> (
+    None
+):
     workspace = _workspace()
     result = bootstrap_kde(
         estimator=_estimator(),

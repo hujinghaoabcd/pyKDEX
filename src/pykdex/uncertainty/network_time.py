@@ -234,7 +234,9 @@ def _resample_network_time_events(
     if sampled.shape != (events.n_events,):
         raise ValueError("sampled indices must preserve the accepted event count.")
     if np.any(sampled < 0) or np.any(sampled >= events.n_events):
-        raise IndexError("sampled network-time event index is outside the source events.")
+        raise IndexError(
+            "sampled network-time event index is outside the source events."
+        )
     metadata = {
         "replicate_index": int(replicate_index),
         "sampled_source_indices": sampled.tolist(),
@@ -334,22 +336,16 @@ def _resample_network_time_workspace(
     )
 
 
-def _result_fingerprint(result: NetworkTimeField) -> str:
-    metadata = dict(result.metadata)
+def _result_fingerprint(
+    result: NetworkTimeField,
+    contract: _TemporalNetworkBootstrapContract,
+) -> str:
     return stable_fingerprint(
         "BootstrapTemporalNetworkKDEResult",
-        result.values,
-        result.support.fingerprint,
-        result.spatial_bandwidth,
-        result.temporal_bandwidth,
-        result.target,
-        result.spatial_kernel,
-        result.temporal_kernel,
-        result.junction_policy,
-        result.directed,
+        contract.fingerprint,
+        result.event_fingerprint,
         result.network_fingerprint,
-        metadata.get("time_domain"),
-        metadata.get("path_based"),
+        result.support.fingerprint,
     )
 
 
@@ -374,9 +370,7 @@ def _resolve_replicate_execution(
     n_events = events.n_events
     n_lixels = workspace.arixels.lixels.n_lixels
     n_arixels = workspace.arixels.n_arixels
-    ensemble_bytes = int(
-        plan.n_resamples * n_arixels * 8 + n_arixels * 8 + n_arixels
-    )
+    ensemble_bytes = int(plan.n_resamples * n_arixels * 8 + n_arixels * 8 + n_arixels)
     rejected_bytes = int(
         workspace.network_workspace.snap_result.rejected.memory_usage(
             index=True,
@@ -438,9 +432,7 @@ def _resolve_replicate_execution(
     )
     resolved = resolve_replicate_execution(
         plan.execution_plan,
-        operation_name=(
-            f"bootstrap_kde.temporal_network.{contract.junction_policy}"
-        ),
+        operation_name=(f"bootstrap_kde.temporal_network.{contract.junction_policy}"),
         n_replicates=plan.n_resamples,
         bytes_per_replicate=n_arixels * 8,
         fixed_overhead_bytes=fixed_overhead,
@@ -499,7 +491,7 @@ def bootstrap_temporal_network_kde(
         raise RuntimeError(
             "observed temporal-network Bootstrap support fingerprint changed."
         )
-    observed_fingerprint = _result_fingerprint(observed_result)
+    observed_fingerprint = _result_fingerprint(observed_result, contract)
     replicate_values = np.empty(
         (bootstrap_plan.n_resamples, workspace.arixels.n_arixels),
         dtype=float,
