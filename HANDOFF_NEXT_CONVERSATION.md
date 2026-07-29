@@ -11,10 +11,12 @@ Completed development subunits:
 4. radial network ordinary Bootstrap;
 5. heat-equation network ordinary Bootstrap;
 6. ordinary spatiotemporal Bootstrap on measured product grids.
+7. ordinary temporal-network Bootstrap on measured arixel support.
 
-The exact next implementation unit is ordinary Bootstrap for the existing temporal-network KDE
-family. Do not begin risk-derived Bootstrap, separability diagnostics, or permutation testing
-before the temporal-network unit is designed, implemented, documented, and validated.
+The exact next implementation unit is fixed-exposure event-rate Bootstrap. Do not begin
+independent case-control relative-risk Bootstrap, uncertain-exposure Bootstrap, separability
+diagnostics, or permutation testing before the fixed-exposure event-rate unit is designed,
+implemented, documented, and validated.
 
 ## Read these records in order
 
@@ -28,6 +30,7 @@ before the temporal-network unit is designed, implemented, documented, and valid
 8. `HANDOFF_0.0.16_PROGRESS_02C_NETWORK_BOOTSTRAP.md`;
 9. `HANDOFF_0.0.16_PROGRESS_02D_HEAT_BOOTSTRAP.md`;
 10. `HANDOFF_0.0.16_PROGRESS_02E_SPATIOTEMPORAL_BOOTSTRAP.md`.
+11. `HANDOFF_0.0.16_PROGRESS_02F_TEMPORAL_NETWORK_BOOTSTRAP.md`.
 
 ## Current repository state
 
@@ -41,7 +44,7 @@ before the temporal-network unit is designed, implemented, documented, and valid
 - no provisional 0.0.16 top-level exports;
 - public execution namespace: `pykdex.execution`;
 - public uncertainty namespace: `pykdex.uncertainty`;
-- exact next unit: temporal-network ordinary Bootstrap.
+- exact next unit: fixed-exposure event-rate Bootstrap.
 
 Inspect the current PR head, latest CI, and changed-file list once before continuing. Documentation
 and handoff commits may follow a separately validated numerical implementation head.
@@ -239,52 +242,87 @@ eb650cd371f1da7838103aad3e114d7d9d884949
 CI #390 (`30386883100`) passed quality, strict documentation, full tests, branch coverage,
 distributions, installed-wheel smoke, Linux, Windows, macOS, and Python 3.11-3.14.
 
-The later example, guide, API, handoff, navigation, and PR-description commits require their own
-final CI inspection.
+Final 02E documentation and handoff head `f4d9ca0652904e8c546e20ee2d34301ba2a94e72`
+passed CI #397 (`30387640653`) across the complete repository matrix.
 
-## Exact next unit: 02F temporal-network Bootstrap
+## Completed subunit 02F: ordinary temporal-network Bootstrap
 
-Before writing code, inspect:
+Closed domain:
 
 ```text
-src/pykdex/network_time/
-src/pykdex/estimators/temporal_network_kde.py
-existing temporal-network tests and handoffs
+NetworkTimeWorkspace + TemporalNetworkKDE -> bootstrap_kde
 ```
 
-Determine the exact current event and workspace types rather than guessing from names.
+Statistical rules:
 
-The next built-in adapter must:
+- resample accepted snapped-network-location-plus-time identities after snapping;
+- use one sampled-index sequence for network location, time, and optional marks;
+- preserve accepted-event count, rejection audit, network, lixels, and exact arixels;
+- preserve CRS, spatial/temporal units, time domain, temporal origin, and timezone;
+- create unique replicate-local IDs and retain sampled source indices;
+- require unit weights and fixed numeric scalar spatial/temporal bandwidths;
+- require built-in kernel and junction-policy string names;
+- support simple, discontinuous, and continuous policies;
+- support linear and cyclic time without independent time permutation;
+- reindex event-to-lixel rows and temporal-offset/distance columns by the same event axis;
+- rebuild path propagation traces for path-based policies.
 
-1. resample complete accepted snapped-network-location-plus-time event identities after snapping;
-2. use one sampled-index sequence for edge/offset/location fields and time;
-3. preserve accepted-event count, rejection audit, network, lixels, arixel support, CRS, units,
-   direction, time domain, origin, and timezone;
-4. create unique replicate-local IDs and retain sampled source indices;
-5. require unit weights;
-6. require fixed numeric scalar network and temporal bandwidths;
-7. preserve built-in network kernel, temporal kernel, junction policy, target, direction, and cyclic
-   tail semantics;
-8. reindex reusable event-axis network distance assets where mathematically valid;
-9. preserve cyclic time without independent time permutation;
-10. separate outer replicate scheduling from inner sequential network-time evaluation;
-11. preserve logical identity across workers, spatial/time chunks, and replicate chunks;
-12. preflight complete ensemble, network-time workspace, reusable assets, temporal kernel blocks,
-    reconstructed events, and concurrent outputs;
-13. test manual replay, linear/cyclic time, asset reindexing, scheduling, support identity,
-    immutability, memory failure, and closed-component rejection;
-14. generate `HANDOFF_0.0.16_PROGRESS_02F_TEMPORAL_NETWORK_BOOTSTRAP.md` and pass full CI.
+Execution and identity:
 
-## Do not begin during 02F
+- outer replicate ranges may be threaded;
+- every inner `TemporalNetworkKDE` is sequential and chunks only target time rows;
+- explicit Bootstrap target chunks override legacy estimator `time_chunk_size`;
+- seed and replicate identity are independent of workers and chunks;
+- observed-field identity uses the fixed estimator contract, events, network, and arixel
+  support rather than raw floating-point output bytes;
+- memory preflight includes complete ensemble, reconstructed workspaces, factorized assets,
+  propagation bounds, spatial matrices, temporal blocks, and concurrent outputs;
+- source estimator and workspace remain unchanged.
 
-- fixed-exposure event-rate Bootstrap;
+Clean implementation head:
+
+```text
+2636e6c542359ef89decb6896cfadb267460bd03
+```
+
+CI #404 (`30415551843`) passed quality, strict documentation, full tests, branch coverage,
+distributions, installed-wheel smoke, Linux, Windows, macOS, and Python 3.11-3.14.
+
+## Exact next unit: 02G fixed-exposure event-rate Bootstrap
+
+Inspect the exact current contracts in:
+
+```text
+src/pykdex/risk/
+src/pykdex/uncertainty/
+existing exposure and event-rate tests and handoffs
+```
+
+Design and implement only the fixed-exposure event-rate uncertainty path. Required decisions:
+
+1. identify which completed intensity Bootstrap families can feed event-rate uncertainty;
+2. require exact measured support compatibility between every intensity field and exposure;
+3. treat exposure as fixed and record that conditioning explicitly;
+4. preserve the existing explicit zero-denominator policy without hidden epsilon;
+5. decide whether to transform a completed intensity ensemble or wrap each intensity replicate;
+6. retain separate intensity, exposure, and event-rate fingerprints;
+7. budget the complete transformed event-rate ensemble before allocation;
+8. return pointwise percentile intervals labelled as event uncertainty conditional on fixed
+   exposure;
+9. test spatial, network, ordinary space-time, and network-time measured supports where the
+   current risk contracts permit them;
+10. generate `HANDOFF_0.0.16_PROGRESS_02G_FIXED_EXPOSURE_EVENT_RATE_BOOTSTRAP.md` and pass full CI.
+
+## Do not begin during 02G
+
+- uncertain-exposure Bootstrap;
 - independent case-control relative-risk Bootstrap;
+- pooled case-control resampling;
 - separability diagnostics;
 - permutation p-values;
 - weighted or adaptive built-in Bootstrap;
 - bandwidth selection inside replicates;
 - BCa, bootstrap-t, basic, or simultaneous intervals;
-- uncertain exposure;
 - streaming or disk-backed ensembles;
 - persistence changes;
 - package version bump;
@@ -295,9 +333,9 @@ The next built-in adapter must:
 1. Inspect PR #16, current head, changed files, and latest CI once.
 2. Confirm PR is open, Draft, unmerged, and version remains `0.0.15`.
 3. Confirm temporary workflows, formatting artifacts, placeholders, and diagnostic logs are absent.
-4. Read all ten required records.
+4. Read all eleven required records.
 5. Preserve execution, seed ordering, exact support, paired-event identity, and fail-fast contracts.
-6. Inspect exact temporal-network types and numerical routes before coding.
-7. Implement only temporal-network ordinary Bootstrap.
-8. Generate root and docs 02F handoffs after the numerical unit passes full CI.
-9. Do not move to risk-derived Bootstrap or separability before 02F closes.
+6. Inspect exact risk, exposure, event-rate, and uncertainty types before coding.
+7. Implement only fixed-exposure event-rate Bootstrap.
+8. Generate root and docs 02G handoffs after the numerical unit passes full CI.
+9. Do not move to relative-risk or separability before 02G closes.

@@ -64,4 +64,9 @@ upper = workspace.arixels.reshape(result.interval.upper)
 print("field shape:", estimate.shape)
 print("time domain:", result.metadata["time_domain"])
 print("resampling unit:", result.metadata["resampling_unit"])
-print("first arixel estimate and interval:", estimate.flat[0], lower.flat[0], upper.flat[0])
+print(
+    "first arixel estimate and interval:",
+    estimate.flat[0],
+    lower.flat[0],
+    upper.flat[0],
+)

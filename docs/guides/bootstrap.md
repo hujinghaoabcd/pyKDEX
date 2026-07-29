@@ -8,6 +8,7 @@ SpatialEvents + GridSupport + SpatialKDE
 NetworkWorkspace + NetworkKDE
 NetworkWorkspace + HeatNetworkKDE
 SpatiotemporalEvents + SpatiotemporalGridSupport + SpatiotemporalKDE
+NetworkTimeWorkspace + TemporalNetworkKDE
 ```
 
 All adapters keep the observed event count fixed, resample complete event identities with
@@ -228,6 +229,68 @@ The built-in adapter requires the complete measured product-grid support
 `SpatiotemporalGridSupport`. Arbitrary `SpatiotemporalPointSupport` is not accepted in the first
 built-in release.
 
+## Temporal-network example
+
+Temporal-network Bootstrap begins from a prepared `NetworkTimeWorkspace`. It samples each
+accepted snapped network location and its event time as one paired identity.
+
+```python
+from pykdex import (
+    CyclicTimeDomain,
+    NetworkTimeWorkspace,
+    SpatialEvents,
+    TemporalNetworkKDE,
+    load_t_junction,
+)
+from pykdex.execution import ExecutionPlan
+from pykdex.uncertainty import BootstrapPlan, bootstrap_kde
+
+network = load_t_junction().network
+events = SpatialEvents.from_array(
+    [[-0.75, 0.0], [0.5, 0.0], [0.0, 0.5]],
+    crs=network.crs,
+    spatial_unit=network.spatial_unit,
+)
+workspace = NetworkTimeWorkspace.prepare(
+    network,
+    events,
+    [23.5, 0.5, 8.0],
+    temporal_unit="hours",
+    lixel_length=0.25,
+    temporal_resolution=6.0,
+    time_domain=CyclicTimeDomain(period=24.0),
+    temporal_origin="study-hour-zero",
+    timezone="UTC",
+    max_snap_distance=0.05,
+).with_distances(cutoff=0.8)
+
+result = bootstrap_kde(
+    TemporalNetworkKDE(
+        spatial_bandwidth=0.8,
+        temporal_bandwidth=2.0,
+        junction_policy="simple",
+        target="density",
+    ),
+    workspace,
+    plan=BootstrapPlan(
+        n_resamples=999,
+        confidence_level=0.95,
+        random_state=20260729,
+        execution_plan=ExecutionPlan(
+            memory_budget_bytes=512 * 1024 * 1024,
+            target_chunk_size=2,
+            replicate_chunk_size=2,
+            n_jobs=2,
+            backend="thread",
+        ),
+    ),
+)
+```
+
+The exact measured support is `workspace.arixels`; a separate support argument is rejected.
+Linear and cyclic time are supported. Ordinary Bootstrap never permutes event time
+independently of snapped network location.
+
 ## Network resampling semantics
 
 For every radial or heat-network replicate, pyKDEX:
@@ -267,6 +330,21 @@ not consume them. Each replicate instead:
 
 A replicate can omit source-event offsets but cannot introduce a new offset. The source heat mesh
 therefore provides a conservative upper bound on replicate degrees of freedom.
+
+### Temporal-network factorized assets
+
+A prepared temporal-network distance asset is factorized into event-to-lixel network
+distances and time-to-event temporal offsets. For every replicate, pyKDEX:
+
+- reindexes network-distance rows by sampled accepted-event identity;
+- reindexes temporal-offset and temporal-distance columns by the same sampled identity;
+- preserves target time rows, lixel columns, network, cutoff, directedness, and arixel
+  support;
+- rebuilds replicate event and base-workspace fingerprints;
+- rebuilds propagation traces instead of reusing a distance asset for path-based policies.
+
+Duplicate Bootstrap selections therefore create matching duplicate spatial rows and
+temporal columns. Network location and time cannot become mispaired.
 
 ## Paired space-time resampling semantics
 
@@ -331,6 +409,17 @@ The built-in spatiotemporal adapter requires:
 - paired spatial-time event-row resampling;
 - no bandwidth selection inside replicates.
 
+The built-in temporal-network adapter requires:
+
+- a valid `NetworkTimeWorkspace` with accepted snapped events;
+- exact measured `ArixelSupport` from the workspace;
+- unit accepted-event weights;
+- finite positive numeric scalar spatial and temporal bandwidths;
+- built-in spatial-kernel, temporal-kernel, and junction-policy string names;
+- fixed target, direction, cyclic-tail tolerance, coefficient tolerance, and record limit;
+- paired snapped-location-time event-identity resampling;
+- no bandwidth strategy or selection inside replicates.
+
 Custom estimator components, selectors, adaptive bandwidths, arbitrary callbacks, changing
 support, and weighted built-in resampling are rejected.
 
@@ -385,7 +474,7 @@ generator, stored spectral state where applicable, numerical work arrays, output
 additional conservative solver-temporary allowance for every requested concurrent replicate.
 Spatiotemporal Bootstrap includes source coordinates and times, the complete product support,
 reconstructed paired events, full replicate outputs, and target-chunk spatial and temporal
-kernel-distance working blocks for every requested concurrent worker.
+kernel-distance working blocks for every requested concurrent worker. Temporal-network Bootstrap additionally includes reconstructed paired snapped events, factorized network and time assets, propagation bounds, spatial matrices, and temporal-kernel blocks.
 
 If fixed overhead or one replicate cannot fit, the operation raises `MemoryError` before replicate
 scheduling. Each inner estimator uses one worker, so outer replicate and inner estimator thread
@@ -413,13 +502,12 @@ result.ensemble.metadata["memory_model"]
 Network results record source and replicate workspace fingerprints. Heat results additionally
 record the fixed solver route, dense threshold, source and replicate heat-compute-plan
 fingerprints, and the source-mesh DOF upper bound. Spatiotemporal results record the exact time
-domain, temporal origin, timezone, and paired-event resampling unit.
+domain, temporal origin, timezone, and paired-event resampling unit. Temporal-network results additionally record the exact arixel support, paired snapped-location-time resampling unit, and replicate workspace fingerprints.
 
 ## Current exclusions
 
 The current built-in Bootstrap does not include:
 
-- temporal-network Bootstrap;
 - event-rate or relative-risk Bootstrap;
 - weighted, smoothed, parametric, Bayesian, block, or wild Bootstrap;
 - adaptive bandwidth uncertainty or replicate-wise bandwidth/time selection;
