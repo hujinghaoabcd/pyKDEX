@@ -104,11 +104,7 @@ def _memory_model(
     output_bytes = int(n_replicates * n_elements * 8 + n_elements * 8 + n_elements)
     working_bytes = int(n_elements * 8)
     total = int(
-        source_bytes
-        + exposure_bytes
-        + denominator_bytes
-        + output_bytes
-        + working_bytes
+        source_bytes + exposure_bytes + denominator_bytes + output_bytes + working_bytes
     )
     model = _EventRateMemoryModel(
         source_ensemble_bytes=source_bytes,
