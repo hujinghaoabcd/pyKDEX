@@ -1,0 +1,197 @@
+name: Finalize relative-risk Bootstrap design
+
+on:
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/uncertainty-separability-scalable-design
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e ".[dev,docs]"
+      - name: Update design navigation and recovery entry
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          mkdocs = Path("mkdocs.yml")
+          text = mkdocs.read_text(encoding="utf-8")
+          old = "      - 0.0.16 progress 02G: development/handoff-0.0.16-progress-02g-fixed-exposure-event-rate-bootstrap.md\n"
+          new = (
+              old
+              + "      - 0.0.16 relative-risk Bootstrap design: development/design-0.0.16-relative-risk-bootstrap.md\n"
+          )
+          if text.count(old) != 1:
+              raise RuntimeError("expected one 02G MkDocs entry")
+          mkdocs.write_text(text.replace(old, new), encoding="utf-8")
+
+          handoff = Path("HANDOFF_NEXT_CONVERSATION.md")
+          text = handoff.read_text(encoding="utf-8")
+          old = "8. fixed-exposure event-rate Bootstrap on exact measured support.\n"
+          new = old + "9. detailed 02H independent relative-risk Bootstrap design.\n"
+          if text.count(old) != 1:
+              raise RuntimeError("expected one completed 02G list entry")
+          text = text.replace(old, new)
+          old = """The exact next unit is a detailed design for independent case-control relative-risk
+          Bootstrap. Do not begin numerical implementation until replicate pairing, independent seed
+          ledgers, shared fixed-bandwidth compatibility, normalization, raw/log linked outputs, and
+          memory accounting are fixed in the design.
+          """
+          new = """The exact next implementation subunit is 02H-1: normalized shared density-contract
+          metadata for all completed density Bootstrap adapters. Do not begin numerical ratio ensembles
+          or public relative-risk symbols before that prerequisite passes full CI.
+          """
+          if text.count(old) != 1:
+              raise RuntimeError("expected one 02H design summary")
+          text = text.replace(old, new)
+          old = "12. `HANDOFF_0.0.16_PROGRESS_02G_FIXED_EXPOSURE_EVENT_RATE_BOOTSTRAP.md`.\n"
+          new = (
+              old
+              + "13. `docs/development/design-0.0.16-relative-risk-bootstrap.md`.\n"
+              + "14. `HANDOFF_0.0.16_DESIGN_RELATIVE_RISK_BOOTSTRAP.md`.\n"
+          )
+          if text.count(old) != 1:
+              raise RuntimeError("expected one read-order 02G ending")
+          text = text.replace(old, new)
+          text = text.replace(
+              "- exact next unit: 02H independent case-control relative-risk Bootstrap design.\n",
+              "- exact next unit: 02H-1 normalized shared density-contract metadata.\n",
+          )
+          start = text.index(
+              "## Exact next unit: 02H independent case-control relative-risk Bootstrap design\n"
+          )
+          suffix = """## Completed design subunit 02H: independent relative-risk Bootstrap
+
+          Design records:
+
+          ```text
+          docs/development/design-0.0.16-relative-risk-bootstrap.md
+          HANDOFF_0.0.16_DESIGN_RELATIVE_RISK_BOOTSTRAP.md
+          ```
+
+          Fixed decisions:
+
+          - consume two completed ordinary density Bootstrap results;
+          - case and control are resampled independently within group before the ratio operation;
+          - require distinct source results, source-event provenance, and seed-ledger fingerprints;
+          - require equal replicate counts and equal confidence levels;
+          - pair rows by the same logical replicate index without a new RNG;
+          - reject truncation, recycling, random rematching, and Cartesian-product expansion;
+          - require exact measured support and one normalized shared fixed estimator contract;
+          - require all-true source density validity masks;
+          - verify observed and every replicate density integrate to one;
+          - never silently renormalize density rows;
+          - reuse explicit control-denominator `raise`, `nan`, and `minimum` policies;
+          - use conservative whole-column invalidity for `nan` because current `FieldEnsemble`
+            validity is one-dimensional;
+          - retain full observed and replicate invalid/adjusted control masks in a linked result;
+          - preserve zero case density as raw risk zero and log risk `-inf`;
+          - return a dedicated immutable container linking raw and log `BootstrapResult` objects;
+          - preflight resident case/control ensembles plus complete raw/log outputs and masks;
+          - generate no new random numbers and expose no significance p-values.
+
+          Methodological boundary:
+
+          - this is empirical pointwise sampling uncertainty for a density-ratio surface;
+          - it is not a pooled-label randomization test, asymptotic tolerance contour, Monte Carlo
+            null test, or simultaneous band;
+          - established relative-risk inference literature is cited in the primary design.
+
+          ## Exact next implementation subunit: 02H-1 shared density-contract metadata
+
+          Add normalized, auditable relative-risk contract metadata to every completed density
+          Bootstrap adapter while preserving existing contract fingerprints.
+
+          Required families:
+
+          ```text
+          spatial
+          network
+          heat_network
+          spatiotemporal
+          network_time
+          ```
+
+          The normalized mapping must include only estimator/support choices needed for relative-risk
+          compatibility, such as:
+
+          - result family and support fingerprint;
+          - fixed bandwidths or fixed heat parameters;
+          - kernel names;
+          - metric or junction policy;
+          - directedness;
+          - boundary correction and boundary fingerprint;
+          - network fingerprint and solver route where applicable;
+          - temporal kernel, time-domain, and cyclic-tail choices where applicable.
+
+          It must exclude:
+
+          - event fingerprints and sample sizes;
+          - observed/replicate values;
+          - seed metadata;
+          - workers, chunks, and memory budgets.
+
+          Required tests:
+
+          1. equal case/control-compatible estimators produce equal normalized mappings and fingerprints;
+          2. each meaningful estimator difference changes the mapping/fingerprint;
+          3. event data changes do not change the shared contract;
+          4. execution plan changes do not change the shared contract;
+          5. all five density families expose the same metadata key;
+          6. metadata is serializable, immutable after result construction, and included in ensemble and
+             result metadata;
+          7. existing Bootstrap numerical values and statistical fingerprints remain unchanged except
+             for intentionally expanded result metadata identities where documented;
+          8. full repository CI passes before linked result types begin.
+
+          Generate:
+
+          ```text
+          HANDOFF_0.0.16_PROGRESS_02H_1_RELATIVE_RISK_CONTRACTS.md
+          docs/development/handoff-0.0.16-progress-02h-1-relative-risk-contracts.md
+          ```
+
+          ## Do not begin during 02H-1
+
+          - `bootstrap_relative_risk` public API;
+          - `RelativeRiskBootstrapResult` numerical container;
+          - raw or log ratio ensemble allocation;
+          - pooled case-control resampling;
+          - case/control mark permutation;
+          - unequal replicate counts;
+          - adaptive or independently selected case/control bandwidths;
+          - significance contours or p-values;
+          - simultaneous bands;
+          - package version bump, ready-for-review transition, or merge.
+
+          ## Recovery checklist
+
+          1. Inspect PR #16, current head, latest CI, and changed-file list once.
+          2. Confirm the package remains `0.0.15` and PR #16 remains Draft/unmerged.
+          3. Confirm temporary workflows and diagnostic files are absent.
+          4. Read all fourteen required records.
+          5. Preserve existing numerical behavior and execution-independent statistical identities.
+          6. Implement only normalized shared density-contract metadata and its tests.
+          7. Generate both 02H-1 recovery records after full CI.
+          8. Do not create relative-risk output ensembles before 02H-1 closes.
+          """
+          handoff.write_text(text[:start] + suffix, encoding="utf-8")
+          PY
+      - run: python -m mkdocs build --strict
+      - name: Commit design closure
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/development/design-0.0.16-relative-risk-bootstrap.md HANDOFF_0.0.16_DESIGN_RELATIVE_RISK_BOOTSTRAP.md HANDOFF_NEXT_CONVERSATION.md mkdocs.yml
+          git commit -m "Finalize relative-risk Bootstrap design"
+          git push origin HEAD:agent/uncertainty-separability-scalable-design
