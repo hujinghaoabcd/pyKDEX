@@ -61,4 +61,8 @@ print("rate unit:", rate_bootstrap.metadata["rate_unit"])
 print("fixed exposure:", rate_bootstrap.metadata["fixed_exposure"])
 print("exposure uncertainty:", rate_bootstrap.metadata["exposure_uncertainty"])
 print("first estimate:", rate_bootstrap.interval.estimate[0])
-print("first pointwise interval:", rate_bootstrap.interval.lower[0], rate_bootstrap.interval.upper[0])
+print(
+    "first pointwise interval:",
+    rate_bootstrap.interval.lower[0],
+    rate_bootstrap.interval.upper[0],
+)

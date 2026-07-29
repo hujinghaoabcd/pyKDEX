@@ -30,6 +30,13 @@ TemporalNetworkKDE + NetworkTimeWorkspace
 
 ::: pykdex.uncertainty.bootstrap_kde
 
+## Fixed-exposure event-rate Bootstrap
+
+Transform a completed intensity Bootstrap into event-rate uncertainty conditional on one
+fixed measured exposure field.
+
+::: pykdex.uncertainty.bootstrap_event_rate
+
 ## Pointwise percentile summary
 
 ::: pykdex.uncertainty.pointwise_percentile_interval

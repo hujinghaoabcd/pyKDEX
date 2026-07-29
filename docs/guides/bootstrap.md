@@ -442,6 +442,85 @@ used to replay the run.
 Target and replicate chunks are execution controls, not statistical parameters. Observed
 space-time field fingerprints deliberately exclude execution metadata.
 
+## Fixed-exposure event-rate Bootstrap
+
+`bootstrap_event_rate` transforms a completed intensity Bootstrap on an exact measured
+support using one fixed `ExposureField`:
+
+```python
+from pykdex.risk import ExposureField
+from pykdex.uncertainty import bootstrap_event_rate
+
+exposure = ExposureField.from_density(
+    exposure_density,
+    intensity_bootstrap.ensemble.support,
+    exposure_unit="person",
+)
+rate_bootstrap = bootstrap_event_rate(
+    intensity_bootstrap,
+    exposure,
+    event_unit="event",
+    zero_policy="raise",
+)
+```
+
+The source must be a completed `bootstrap_kde` result with
+`field_family="intensity"`. Probability-density ensembles are rejected because density has
+discarded total event mass.
+
+For every replicate and valid support element, the transformation is:
+
+```text
+event_rate = event_intensity / effective_exposure_density
+```
+
+Exposure is applied identically to the observed intensity and every replicate. It is not
+resampled. The returned intervals therefore describe event-resampling uncertainty
+**conditional on fixed exposure** and do not include uncertainty in population,
+person-time, traffic volume, monitoring effort, or another exposure measurement.
+
+### Exact support and supported families
+
+The exposure and source ensemble must share the exact measured-support fingerprint. The
+transformation supports completed intensity ensembles on:
+
+```text
+GridSupport
+LixelSupport
+measured SpatiotemporalPointSupport
+SpatiotemporalGridSupport
+ArixelSupport
+```
+
+Built-in Bootstrap estimator adapters currently generate the spatial-grid, network-lixel,
+spatiotemporal-grid, and network-time-arixel families.
+
+### Explicit denominator policy
+
+The same denominator policy used by deterministic event-rate fields is retained:
+
+- `raise` rejects exposure at or below `validity_threshold`;
+- `nan` marks those support columns invalid in observed, replicate, and interval arrays;
+- `minimum` applies only the user-supplied positive `minimum_denominator` and keeps adjusted
+  cells valid.
+
+No hidden epsilon, pseudocount, or undocumented clipping rule is introduced. The output
+validity mask combines the source intensity validity mask with finite effective exposure.
+
+### Seed, identity, and memory
+
+No KDE is refitted and no new random stream is created. The source Bootstrap plan, seed
+ledger, logical replicate order, confidence level, and estimator-family label are retained.
+
+Derived observed and replicate fingerprints combine source intensity identity, fixed
+exposure, denominator policy, event unit, and exact support. The optional transformation
+memory budget is operational and does not change statistical identity.
+
+`memory_budget_bytes` is explicit and separate from the earlier KDE execution budget. The
+preflight peak includes the resident source intensity ensemble, exposure and denominator
+state, and the complete event-rate output ensemble. Insufficient budgets fail before the
+complete output matrix is allocated.
+
 ## Pointwise percentile intervals
 
 The returned `BootstrapResult` contains:
@@ -508,7 +587,7 @@ domain, temporal origin, timezone, and paired-event resampling unit. Temporal-ne
 
 The current built-in Bootstrap does not include:
 
-- event-rate or relative-risk Bootstrap;
+- relative-risk Bootstrap;
 - weighted, smoothed, parametric, Bayesian, block, or wild Bootstrap;
 - adaptive bandwidth uncertainty or replicate-wise bandwidth/time selection;
 - basic, bootstrap-t, BCa, or simultaneous intervals;

@@ -12,11 +12,12 @@ Completed development subunits:
 5. heat-equation network ordinary Bootstrap;
 6. ordinary spatiotemporal Bootstrap on measured product grids.
 7. ordinary temporal-network Bootstrap on measured arixel support.
+8. fixed-exposure event-rate Bootstrap on exact measured support.
 
-The exact next implementation unit is fixed-exposure event-rate Bootstrap. Do not begin
-independent case-control relative-risk Bootstrap, uncertain-exposure Bootstrap, separability
-diagnostics, or permutation testing before the fixed-exposure event-rate unit is designed,
-implemented, documented, and validated.
+The exact next unit is a detailed design for independent case-control relative-risk
+Bootstrap. Do not begin numerical implementation until replicate pairing, independent seed
+ledgers, shared fixed-bandwidth compatibility, normalization, raw/log linked outputs, and
+memory accounting are fixed in the design.
 
 ## Read these records in order
 
@@ -31,6 +32,7 @@ implemented, documented, and validated.
 9. `HANDOFF_0.0.16_PROGRESS_02D_HEAT_BOOTSTRAP.md`;
 10. `HANDOFF_0.0.16_PROGRESS_02E_SPATIOTEMPORAL_BOOTSTRAP.md`.
 11. `HANDOFF_0.0.16_PROGRESS_02F_TEMPORAL_NETWORK_BOOTSTRAP.md`.
+12. `HANDOFF_0.0.16_PROGRESS_02G_FIXED_EXPOSURE_EVENT_RATE_BOOTSTRAP.md`.
 
 ## Current repository state
 
@@ -44,7 +46,7 @@ implemented, documented, and validated.
 - no provisional 0.0.16 top-level exports;
 - public execution namespace: `pykdex.execution`;
 - public uncertainty namespace: `pykdex.uncertainty`;
-- exact next unit: fixed-exposure event-rate Bootstrap.
+- exact next unit: 02H independent case-control relative-risk Bootstrap design.
 
 Inspect the current PR head, latest CI, and changed-file list once before continuing. Documentation
 and handoff commits may follow a separately validated numerical implementation head.
@@ -288,40 +290,104 @@ Clean implementation head:
 CI #404 (`30415551843`) passed quality, strict documentation, full tests, branch coverage,
 distributions, installed-wheel smoke, Linux, Windows, macOS, and Python 3.11-3.14.
 
-## Exact next unit: 02G fixed-exposure event-rate Bootstrap
+## Completed subunit 02G: fixed-exposure event-rate Bootstrap
 
-Inspect the exact current contracts in:
+Public operation:
 
 ```text
-src/pykdex/risk/
-src/pykdex/uncertainty/
-existing exposure and event-rate tests and handoffs
+intensity BootstrapResult + fixed ExposureField -> bootstrap_event_rate
 ```
 
-Design and implement only the fixed-exposure event-rate uncertainty path. Required decisions:
+Statistical rules:
 
-1. identify which completed intensity Bootstrap families can feed event-rate uncertainty;
-2. require exact measured support compatibility between every intensity field and exposure;
-3. treat exposure as fixed and record that conditioning explicitly;
-4. preserve the existing explicit zero-denominator policy without hidden epsilon;
-5. decide whether to transform a completed intensity ensemble or wrap each intensity replicate;
-6. retain separate intensity, exposure, and event-rate fingerprints;
-7. budget the complete transformed event-rate ensemble before allocation;
-8. return pointwise percentile intervals labelled as event uncertainty conditional on fixed
-   exposure;
-9. test spatial, network, ordinary space-time, and network-time measured supports where the
-   current risk contracts permit them;
-10. generate `HANDOFF_0.0.16_PROGRESS_02G_FIXED_EXPOSURE_EVENT_RATE_BOOTSTRAP.md` and pass full CI.
+- accept only completed `bootstrap_kde` intensity ensembles;
+- preserve the source Bootstrap plan, seed ledger, replicate identities, and confidence level;
+- require exact measured-support identity between source ensemble and exposure;
+- treat exposure as fixed and never resample it;
+- return event uncertainty conditional on fixed exposure;
+- reject probability-density source ensembles;
+- reuse explicit `raise`, `nan`, and `minimum` denominator policies;
+- introduce no hidden epsilon or pseudocount;
+- combine source validity with finite effective exposure;
+- retain distinct source-intensity, exposure, and event-rate fingerprints.
 
-## Do not begin during 02G
+Execution and memory:
 
-- uncertain-exposure Bootstrap;
-- independent case-control relative-risk Bootstrap;
+- no KDE is refitted and no random stream is generated;
+- observed and replicate rates are deterministic transforms of stored intensity fields;
+- an explicit derived-operation memory budget is separate from the earlier KDE budget;
+- preflight includes the resident source ensemble, exposure/denominator state, and complete
+  output ensemble;
+- source result and exposure remain immutable.
+
+Supported measured support families:
+
+```text
+spatial_grid
+network_lixel
+measured spatiotemporal_points when a valid intensity ensemble exists
+spatiotemporal_grid
+network_time_arixel
+```
+
+Clean implementation head:
+
+```text
+50686d4a05195c41d40c9acd0ec010d3a67c17f4
+```
+
+CI #416 (`30416870784`) passed quality, strict documentation, full tests, branch coverage,
+distributions, installed-wheel smoke, Linux, Windows, macOS, and Python 3.11-3.14.
+
+## Exact next unit: 02H independent case-control relative-risk Bootstrap design
+
+Inspect:
+
+```text
+src/pykdex/risk/density.py
+src/pykdex/risk/relative_risk.py
+src/pykdex/uncertainty/
+existing relative-risk tests and 0.0.15 handoffs
+```
+
+Produce a detailed design before numerical code. It must decide:
+
+1. whether initial case and control ensembles must have equal replicate counts;
+2. how replicate rows are paired while preserving independent within-group resampling;
+3. whether distinct seed-ledger fingerprints are mandatory and how accidental shared streams
+   are rejected;
+4. how exact support, result family, shared scalar bandwidths, kernels, metrics, policies, and
+   correction contracts are compared;
+5. how observed and every replicate density are verified to integrate to one;
+6. how denominator `raise`, `nan`, and `minimum` policies define raw-risk validity;
+7. how zero case density yields raw risk zero and log risk `-inf` without becoming an invalid
+   denominator;
+8. how `FieldEnsemble` validation represents valid `-inf` log-risk values;
+9. whether the public return is two linked `BootstrapResult` objects or one dedicated linked
+   result container;
+10. how complete case, control, raw-risk, and log-risk ensembles are budgeted without hidden
+    streaming;
+11. how pooled case-control resampling and mark permutation are kept outside this operation;
+12. which analytical and independent numerical fixtures validate the first release.
+
+Required design records:
+
+```text
+docs/development/design-0.0.16-relative-risk-bootstrap.md
+HANDOFF_0.0.16_DESIGN_RELATIVE_RISK_BOOTSTRAP.md
+```
+
+Do not write numerical relative-risk Bootstrap code until the design answers all twelve
+questions.
+
+## Do not begin during the 02H design unit
+
 - pooled case-control resampling;
+- case/control mark permutation;
+- uncertain exposure;
 - separability diagnostics;
 - permutation p-values;
-- weighted or adaptive built-in Bootstrap;
-- bandwidth selection inside replicates;
+- adaptive or independently selected case/control bandwidths;
 - BCa, bootstrap-t, basic, or simultaneous intervals;
 - streaming or disk-backed ensembles;
 - persistence changes;
@@ -333,9 +399,8 @@ Design and implement only the fixed-exposure event-rate uncertainty path. Requir
 1. Inspect PR #16, current head, changed files, and latest CI once.
 2. Confirm PR is open, Draft, unmerged, and version remains `0.0.15`.
 3. Confirm temporary workflows, formatting artifacts, placeholders, and diagnostic logs are absent.
-4. Read all eleven required records.
-5. Preserve execution, seed ordering, exact support, paired-event identity, and fail-fast contracts.
-6. Inspect exact risk, exposure, event-rate, and uncertainty types before coding.
-7. Implement only fixed-exposure event-rate Bootstrap.
-8. Generate root and docs 02G handoffs after the numerical unit passes full CI.
-9. Do not move to relative-risk or separability before 02G closes.
+4. Read all twelve required records.
+5. Preserve exact support, independent group identities, seed provenance, and explicit denominator rules.
+6. Write only the 02H relative-risk Bootstrap design and tests/fixtures plan.
+7. Open no new public API and write no numerical ratio ensemble code during the design unit.
+8. Update the current handoff after the design passes strict documentation and full CI.
