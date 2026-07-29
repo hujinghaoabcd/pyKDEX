@@ -13,6 +13,8 @@ from pykdex.bandwidths.heat import BaseHeatTime, get_heat_time
 from pykdex.core.base import BaseKDE
 from pykdex.core.network_results import NetworkField
 from pykdex.core.results import BandwidthSelectionResult
+from pykdex.execution import ExecutionPlan
+from pykdex.execution.plan import ResolvedExecutionPlan, resolve_target_execution
 from pykdex.network.events import NetworkEvents
 from pykdex.network.heat import (
     HeatComputePlan,
@@ -44,6 +46,8 @@ class HeatNetworkKDE(BaseKDE):
             inserted, even when closer than this value.
         target: ``"density"`` or ``"intensity"``.
         negative_tolerance: Maximum tolerated negative solver roundoff.
+        execution_plan: Optional memory contract. Heat evolution is global and
+            therefore accepts only sequential, unchunked execution.
         random_state: Reserved deterministic random seed.
         verbose: Print estimator progress.
     """
@@ -55,6 +59,7 @@ class HeatNetworkKDE(BaseKDE):
         mesh_size: float | None = None,
         target: str = "density",
         negative_tolerance: float = 1e-10,
+        execution_plan: ExecutionPlan | None = None,
         random_state: Optional[int] = None,
         verbose: bool = False,
     ) -> None:
@@ -71,10 +76,13 @@ class HeatNetworkKDE(BaseKDE):
         tolerance = float(negative_tolerance)
         if not np.isfinite(tolerance) or tolerance <= 0.0:
             raise ValueError("negative_tolerance must be finite and positive.")
+        if execution_plan is not None and not isinstance(execution_plan, ExecutionPlan):
+            raise TypeError("execution_plan must be an ExecutionPlan or None.")
         self.diffusion_time = diffusion_time
         self.diffusion_time_strategy = strategy
         self.mesh_size = None if mesh_size is None else float(mesh_size)
         self.negative_tolerance = tolerance
+        self.execution_plan = execution_plan
         self._reset_fit_state()
 
     def _reset_fit_state(self) -> None:
@@ -92,6 +100,7 @@ class HeatNetworkKDE(BaseKDE):
         self.component_mass_error_: float | None = None
         self.raw_minimum_: float | None = None
         self.vertex_continuity_error_: float | None = None
+        self.last_execution_: ResolvedExecutionPlan | None = None
 
     def fit(
         self,
@@ -135,6 +144,21 @@ class HeatNetworkKDE(BaseKDE):
                 if self.target == "density"
                 else events.weights
             )
+            fixed_overhead = (
+                plan.memory_bytes
+                + operator.n_dofs * 8 * 5
+                + workspace.lixels.n_lixels * 8
+                + coefficients.nbytes
+            )
+            resolved_execution = resolve_target_execution(
+                self.execution_plan,
+                operation_name="HeatNetworkKDE.evolve",
+                n_targets=workspace.lixels.n_lixels,
+                n_sources=0,
+                bytes_per_pair=0,
+                fixed_overhead_bytes=fixed_overhead,
+                chunkable=False,
+            )
             source_mass = np.zeros(operator.n_dofs, dtype=float)
             np.add.at(source_mass, operator.event_dofs, coefficients)
             raw_values = plan.evolve(source_mass, diffusion_time)[0, :, 0]
@@ -167,6 +191,7 @@ class HeatNetworkKDE(BaseKDE):
             self.component_mass_error_ = component_error
             self.raw_minimum_ = raw_minimum
             self.vertex_continuity_error_ = 0.0
+            self.last_execution_ = resolved_execution
             self.events_ = np.ascontiguousarray(events.coordinates.copy())
             self.weights_ = np.ascontiguousarray(events.weights.copy())
             self.n_events_ = events.n_events
@@ -204,6 +229,7 @@ class HeatNetworkKDE(BaseKDE):
                 "lixel_evaluation": "cell_average",
                 "terminal_boundary": "neumann",
                 "solver": plan.solver,
+                "execution": resolved_execution.to_metadata(),
             }
             self._mark_fitted()
             return self

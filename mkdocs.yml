@@ -74,6 +74,8 @@ nav:
       - Network bandwidths: guides/network-bandwidths.md
       - Workspace persistence: guides/workspace-persistence.md
       - Exposure and relative risk: guides/exposure-relative-risk.md
+      - Deterministic execution: guides/execution.md
+      - Bootstrap uncertainty: guides/bootstrap.md
       - Spatial boundary and anisotropy: guides/spatial-boundary-anisotropy.md
       - Kernels: guides/kernels.md
       - Bandwidths: guides/bandwidths.md
@@ -91,6 +93,8 @@ nav:
       - Network bandwidths: api/network-bandwidths.md
       - Persistence: api/persistence.md
       - Risk: api/risk.md
+      - Execution: api/execution.md
+      - Uncertainty: api/uncertainty.md
       - Boundary corrections: api/corrections.md
       - Kernels: api/kernels.md
       - Bandwidths: api/bandwidths.md
@@ -113,5 +117,17 @@ nav:
       - 0.0.15 progress 02: development/handoff-0.0.15-progress-02-event-rate.md
       - 0.0.15 progress 03: development/handoff-0.0.15-progress-03-relative-risk.md
       - 0.0.15 final handoff: development/handoff-0.0.15-exposure-relative-risk.md
+      - 0.0.16 design: development/design-0.0.16-uncertainty-separability-scalable.md
+      - 0.0.16 design handoff: development/handoff-0.0.16-design-uncertainty-separability-scalable.md
+      - 0.0.16 progress 01: development/handoff-0.0.16-progress-01-execution-plan.md
+      - 0.0.16 progress 02A: development/handoff-0.0.16-progress-02a-bootstrap-foundation.md
+      - 0.0.16 progress 02B: development/handoff-0.0.16-progress-02b-spatial-bootstrap.md
+      - 0.0.16 progress 02C: development/handoff-0.0.16-progress-02c-network-bootstrap.md
+      - 0.0.16 progress 02D: development/handoff-0.0.16-progress-02d-heat-bootstrap.md
+      - 0.0.16 progress 02E: development/handoff-0.0.16-progress-02e-spatiotemporal-bootstrap.md
+      - 0.0.16 progress 02F: development/handoff-0.0.16-progress-02f-temporal-network-bootstrap.md
+      - 0.0.16 progress 02G: development/handoff-0.0.16-progress-02g-fixed-exposure-event-rate-bootstrap.md
+      - 0.0.16 relative-risk Bootstrap design: development/design-0.0.16-relative-risk-bootstrap.md
+      - 0.0.16 progress 02H-1: development/handoff-0.0.16-progress-02h-1-relative-risk-contracts.md
       - Roadmap: development/roadmap.md
   - 中文: zh/index.md

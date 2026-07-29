@@ -16,6 +16,8 @@ from pykdex.bandwidths.network import (
 from pykdex.core.base import BaseKDE
 from pykdex.core.network_results import NetworkField
 from pykdex.core.results import BandwidthSelectionResult
+from pykdex.execution import ExecutionPlan
+from pykdex.execution.plan import ResolvedExecutionPlan
 from pykdex.kernels import BaseKernel, get_kernel
 from pykdex.network.distance import NetworkDistanceAsset
 from pykdex.network.evaluation import evaluate_path_kernel, evaluate_simple_kernel
@@ -49,6 +51,7 @@ class NetworkKDE(BaseKDE):
         coefficient_tolerance: Recursive path-coefficient cutoff.
         max_records_per_event: Safety limit for path records per event.
         store_propagation: Retain complete traces on the fitted estimator.
+        execution_plan: Optional deterministic memory and worker contract.
         random_state: Reserved deterministic random seed.
         verbose: Print estimator progress.
     """
@@ -63,6 +66,7 @@ class NetworkKDE(BaseKDE):
         coefficient_tolerance: float = 1e-12,
         max_records_per_event: int = 100_000,
         store_propagation: bool = False,
+        execution_plan: ExecutionPlan | None = None,
         random_state: Optional[int] = None,
         verbose: bool = False,
     ) -> None:
@@ -87,6 +91,8 @@ class NetworkKDE(BaseKDE):
             raise ValueError("max_records_per_event must be greater than zero.")
         if not isinstance(store_propagation, (bool, np.bool_)):
             raise TypeError("store_propagation must be boolean.")
+        if execution_plan is not None and not isinstance(execution_plan, ExecutionPlan):
+            raise TypeError("execution_plan must be an ExecutionPlan or None.")
         self.kernel = kernel
         self.bandwidth = bandwidth
         self.junction_policy = junction_policy
@@ -94,6 +100,7 @@ class NetworkKDE(BaseKDE):
         self.coefficient_tolerance = coefficient_value
         self.max_records_per_event = record_limit
         self.store_propagation = bool(store_propagation)
+        self.execution_plan = execution_plan
         self._reset_fit_state()
 
     def _reset_fit_state(self) -> None:
@@ -110,6 +117,7 @@ class NetworkKDE(BaseKDE):
         self.values_: np.ndarray | None = None
         self.network_bandwidth_strategy_: BaseNetworkBandwidth | None = None
         self.bandwidth_selection_: BandwidthSelectionResult | None = None
+        self.last_execution_: ResolvedExecutionPlan | None = None
 
     def fit(self, workspace: NetworkWorkspace) -> "NetworkKDE":
         """Fit and evaluate the estimator on a prepared network workspace."""
@@ -178,7 +186,13 @@ class NetworkKDE(BaseKDE):
             distance_asset: NetworkDistanceAsset | None = None
             traces: tuple[PropagationTrace, ...] | None = None
             if policy.path_based:
-                values, traces, raw_minimum, n_records = evaluate_path_kernel(
+                (
+                    values,
+                    traces,
+                    raw_minimum,
+                    n_records,
+                    resolved_execution,
+                ) = evaluate_path_kernel(
                     workspace,
                     events,
                     kernel,
@@ -188,15 +202,17 @@ class NetworkKDE(BaseKDE):
                     directed=effective_directed,
                     coefficient_tolerance=self.coefficient_tolerance,
                     max_records_per_event=self.max_records_per_event,
+                    execution_plan=self.execution_plan,
                 )
             else:
-                values, distance_asset = evaluate_simple_kernel(
+                values, distance_asset, resolved_execution = evaluate_simple_kernel(
                     workspace,
                     events,
                     kernel,
                     fitted_bandwidth,
                     coefficients,
                     directed=effective_directed,
+                    execution_plan=self.execution_plan,
                 )
                 raw_minimum = float(np.min(values))
                 n_records = 0
@@ -237,6 +253,7 @@ class NetworkKDE(BaseKDE):
                 if isinstance(selection_result, BandwidthSelectionResult)
                 else None
             )
+            self.last_execution_ = resolved_execution
             self.fit_metadata_ = {
                 "kernel": kernel.name,
                 "target": self.target,
@@ -264,6 +281,7 @@ class NetworkKDE(BaseKDE):
                     if self.bandwidth_selection_ is None
                     else self.bandwidth_selection_.method
                 ),
+                "execution": resolved_execution.to_metadata(),
             }
             self._mark_fitted()
             return self

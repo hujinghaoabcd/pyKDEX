@@ -32,6 +32,9 @@ from pykdex.corrections import (
     get_boundary_correction,
 )
 from pykdex.data import SpatialBoundary, SpatialEvents
+from pykdex.execution import ExecutionPlan
+from pykdex.execution.chunks import execute_target_chunks
+from pykdex.execution.plan import ResolvedExecutionPlan, resolve_target_execution
 from pykdex.kernels import BaseKernel, get_kernel
 from pykdex.metrics import BaseMetric, get_metric
 from pykdex.spatial.evaluation import (
@@ -74,6 +77,7 @@ class SpatialKDE(BaseKDE):
         boundary_correction: ``"none"``, ``"renormalization"``,
             ``"reflection"``, or a correction strategy instance.
         chunk_size: Optional positive number of support rows evaluated per chunk.
+        execution_plan: Optional deterministic memory and worker contract.
         random_state: Reserved deterministic random seed for future selectors.
         verbose: Print estimator progress.
     """
@@ -89,6 +93,7 @@ class SpatialKDE(BaseKDE):
         boundary: SpatialBoundary | None = None,
         boundary_correction: str | BaseBoundaryCorrection = "none",
         chunk_size: Optional[int] = None,
+        execution_plan: ExecutionPlan | None = None,
         random_state: Optional[int] = None,
         verbose: bool = False,
     ) -> None:
@@ -100,6 +105,8 @@ class SpatialKDE(BaseKDE):
                 raise TypeError("chunk_size must be a positive integer or None.")
             if int(chunk_size) <= 0:
                 raise ValueError("chunk_size must be greater than zero.")
+        if execution_plan is not None and not isinstance(execution_plan, ExecutionPlan):
+            raise TypeError("execution_plan must be an ExecutionPlan or None.")
         if boundary is not None and not isinstance(boundary, SpatialBoundary):
             raise TypeError("boundary must be a SpatialBoundary or None.")
         self.kernel = kernel
@@ -108,6 +115,7 @@ class SpatialKDE(BaseKDE):
         self.boundary = boundary
         self.boundary_correction = boundary_correction
         self.chunk_size = int(chunk_size) if chunk_size is not None else None
+        self.execution_plan = execution_plan
         self._reset_fit_state()
 
     def _reset_fit_state(self) -> None:
@@ -121,6 +129,7 @@ class SpatialKDE(BaseKDE):
         self.boundary_: Optional[SpatialBoundary] = None
         self.boundary_correction_: Optional[BaseBoundaryCorrection] = None
         self.boundary_correction_state_: Optional[BoundaryCorrectionState] = None
+        self.last_execution_: ResolvedExecutionPlan | None = None
 
     def fit(
         self,
@@ -314,7 +323,7 @@ class SpatialKDE(BaseKDE):
     def evaluate(self, support: SupportInput) -> np.ndarray:
         """Evaluate the fitted estimator at support coordinates."""
         validated = self._prepare_support(support)
-        values, _ = self._evaluate_array(validated.coordinates)
+        values, _, _ = self._evaluate_array(validated.coordinates)
         return values
 
     predict = evaluate
@@ -322,17 +331,31 @@ class SpatialKDE(BaseKDE):
     def _evaluate_array(
         self,
         support: np.ndarray,
-    ) -> tuple[np.ndarray, np.ndarray | None]:
-        chunk_size = self.chunk_size or support.shape[0]
+    ) -> tuple[np.ndarray, np.ndarray | None, ResolvedExecutionPlan]:
+        if self.n_events_ is None:
+            raise RuntimeError("Fitted event count is unavailable.")
+        output_arrays = 2 if self.balloon_bandwidth_strategy_ is not None else 1
+        resolved = resolve_target_execution(
+            self.execution_plan,
+            operation_name="SpatialKDE.evaluate",
+            n_targets=support.shape[0],
+            n_sources=self.n_events_,
+            bytes_per_pair=96,
+            fixed_overhead_bytes=support.shape[0] * output_arrays * 8,
+            legacy_target_chunk_size=self.chunk_size,
+        )
         values = np.empty(support.shape[0], dtype=float)
         support_bandwidths = (
             np.empty(support.shape[0], dtype=float)
             if self.balloon_bandwidth_strategy_ is not None
             else None
         )
-        for start in range(0, support.shape[0], chunk_size):
-            stop = min(start + chunk_size, support.shape[0])
-            chunk_values, chunk_bandwidths = self._evaluate_chunk(support[start:stop])
+
+        def worker(start: int, stop: int) -> tuple[np.ndarray, np.ndarray | None]:
+            return self._evaluate_chunk(support[start:stop])
+
+        for start, stop, result in execute_target_chunks(resolved, worker):
+            chunk_values, chunk_bandwidths = result
             values[start:stop] = chunk_values
             if support_bandwidths is not None:
                 if chunk_bandwidths is None:
@@ -342,7 +365,8 @@ class SpatialKDE(BaseKDE):
                 support_bandwidths[start:stop] = chunk_bandwidths
         if support_bandwidths is not None:
             support_bandwidths.setflags(write=False)
-        return values, support_bandwidths
+        self.last_execution_ = resolved
+        return values, support_bandwidths, resolved
 
     def _evaluate_chunk(
         self,
@@ -398,7 +422,9 @@ class SpatialKDE(BaseKDE):
     def predict_result(self, support: SupportInput) -> SpatialKDEResult:
         """Evaluate and return a structured result object."""
         validated = self._prepare_support(support)
-        values, support_bandwidths = self._evaluate_array(validated.coordinates)
+        values, support_bandwidths, resolved_execution = self._evaluate_array(
+            validated.coordinates
+        )
         if self.kernel_ is None or self.metric_ is None:
             raise RuntimeError("Fitted estimator components are unavailable.")
         result_bandwidth: float | np.ndarray
@@ -416,6 +442,7 @@ class SpatialKDE(BaseKDE):
         metadata = dict(self.fit_metadata_ or {})
         if validated.shape is not None:
             metadata["support_shape"] = validated.shape
+        metadata["execution"] = resolved_execution.to_metadata()
         return SpatialKDEResult(
             values=values,
             support=validated.coordinates,

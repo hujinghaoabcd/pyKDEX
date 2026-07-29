@@ -15,6 +15,9 @@ from pykdex.bandwidths.network_time import (
 )
 from pykdex.core.base import BaseKDE
 from pykdex.core.network_time_results import NetworkTimeField
+from pykdex.execution import ExecutionPlan
+from pykdex.execution.chunks import execute_target_chunks
+from pykdex.execution.plan import ResolvedExecutionPlan, resolve_target_execution
 from pykdex.kernels import BaseKernel, get_kernel
 from pykdex.network import NetworkLocations
 from pykdex.network.evaluation import (
@@ -55,6 +58,7 @@ class TemporalNetworkKDE(BaseKDE):
         target: str = "density",
         directed: bool | None = None,
         time_chunk_size: Optional[int] = None,
+        execution_plan: ExecutionPlan | None = None,
         cyclic_tail_tolerance: float = 1e-12,
         coefficient_tolerance: float = 1e-12,
         max_records_per_event: int = 100_000,
@@ -86,6 +90,8 @@ class TemporalNetworkKDE(BaseKDE):
                 raise TypeError("time_chunk_size must be a positive integer or None.")
             if int(time_chunk_size) <= 0:
                 raise ValueError("time_chunk_size must be greater than zero.")
+        if execution_plan is not None and not isinstance(execution_plan, ExecutionPlan):
+            raise TypeError("execution_plan must be an ExecutionPlan or None.")
         tolerance = float(cyclic_tail_tolerance)
         coefficient = float(coefficient_tolerance)
         if not np.isfinite(tolerance) or not 0.0 < tolerance < 1.0:
@@ -107,6 +113,7 @@ class TemporalNetworkKDE(BaseKDE):
         self.junction_policy = junction_policy
         self.directed = None if directed is None else bool(directed)
         self.time_chunk_size = None if time_chunk_size is None else int(time_chunk_size)
+        self.execution_plan = execution_plan
         self.cyclic_tail_tolerance = tolerance
         self.coefficient_tolerance = coefficient
         self.max_records_per_event = int(max_records_per_event)
@@ -125,6 +132,7 @@ class TemporalNetworkKDE(BaseKDE):
         self.propagation_traces_: tuple[PropagationTrace, ...] | None = None
         self.network_time_bandwidths_: NetworkTimeBandwidths | None = None
         self.values_: np.ndarray | None = None
+        self.last_execution_: ResolvedExecutionPlan | None = None
 
     @staticmethod
     def _asset_usable(
@@ -193,6 +201,8 @@ class TemporalNetworkKDE(BaseKDE):
             maximum_spatial_bandwidth = float(np.max(spatial_bandwidth))
             traces: tuple[PropagationTrace, ...] | None = None
             distance_asset: NetworkTimeDistanceAsset | None = None
+            n_records = 0
+            asset_overhead = 0
             if policy.path_based:
                 traces = tuple(
                     trace_network_propagation(
@@ -208,15 +218,7 @@ class TemporalNetworkKDE(BaseKDE):
                     )
                     for index in range(events.n_events)
                 )
-                spatial_matrix = evaluate_propagation_kernel_matrix(
-                    traces,
-                    NetworkLocations.from_lixels(workspace.arixels.lixels),
-                    spatial_kernel,
-                    spatial_bandwidth,
-                )
-                temporal_offsets = (
-                    workspace.arixels.time_centers[:, None] - events.times[None, :]
-                )
+                n_records = sum(trace.n_records for trace in traces)
             else:
                 cutoff = (
                     maximum_spatial_bandwidth if spatial_kernel.finite_support else None
@@ -236,31 +238,76 @@ class TemporalNetworkKDE(BaseKDE):
                         directed=effective_directed,
                     )
                 assert distance_asset is not None
-                spatial_matrix = evaluate_distance_kernel_matrix(
-                    distance_asset.network_distances,
-                    spatial_kernel,
-                    spatial_bandwidth,
+                network_asset = distance_asset.network_distances
+                asset_overhead = (
+                    network_asset.row_indices.nbytes
+                    + network_asset.column_indices.nbytes
+                    + network_asset.distances.nbytes
+                    + distance_asset.temporal_offsets.nbytes
                 )
-                temporal_offsets = distance_asset.temporal_offsets
-            temporal_matrix = evaluate_temporal_kernel(
-                temporal_offsets,
-                domain=events.temporal.domain,
-                kernel=temporal_kernel,
-                bandwidth=temporal_bandwidth,
-                tail_tolerance=self.cyclic_tail_tolerance,
-            )
             coefficients = (
                 events.weights / events.weight_sum
                 if self.target == "density"
                 else events.weights
             )
+            n_lixels = workspace.arixels.lixels.n_lixels
+            spatial_matrix_bytes = events.n_events * n_lixels * 8
+            fixed_overhead = (
+                asset_overhead
+                + spatial_matrix_bytes
+                + workspace.arixels.n_arixels * 8
+                + np.asarray(spatial_bandwidth).nbytes
+                + np.asarray(temporal_bandwidth).nbytes
+                + coefficients.nbytes
+                + n_records * 96
+            )
+            resolved_execution = resolve_target_execution(
+                self.execution_plan,
+                operation_name=f"TemporalNetworkKDE.{policy.name}",
+                n_targets=workspace.arixels.n_times,
+                n_sources=events.n_events + n_lixels,
+                bytes_per_pair=40,
+                fixed_overhead_bytes=fixed_overhead,
+                legacy_target_chunk_size=self.time_chunk_size,
+            )
+            if policy.path_based:
+                assert traces is not None
+                spatial_matrix = evaluate_propagation_kernel_matrix(
+                    traces,
+                    NetworkLocations.from_lixels(workspace.arixels.lixels),
+                    spatial_kernel,
+                    spatial_bandwidth,
+                )
+            else:
+                assert distance_asset is not None
+                spatial_matrix = evaluate_distance_kernel_matrix(
+                    distance_asset.network_distances,
+                    spatial_kernel,
+                    spatial_bandwidth,
+                )
             values_2d = np.empty(workspace.arixels.shape, dtype=float)
-            chunk = self.time_chunk_size or workspace.arixels.n_times
-            for start in range(0, workspace.arixels.n_times, chunk):
-                stop = min(start + chunk, workspace.arixels.n_times)
-                values_2d[start:stop] = (
-                    temporal_matrix[start:stop] * coefficients[None, :]
-                ) @ spatial_matrix
+
+            def worker(start: int, stop: int) -> np.ndarray:
+                if distance_asset is None:
+                    temporal_offsets = (
+                        workspace.arixels.time_centers[start:stop, None]
+                        - events.times[None, :]
+                    )
+                else:
+                    temporal_offsets = distance_asset.temporal_offsets[start:stop]
+                temporal_matrix = evaluate_temporal_kernel(
+                    temporal_offsets,
+                    domain=events.temporal.domain,
+                    kernel=temporal_kernel,
+                    bandwidth=temporal_bandwidth,
+                    tail_tolerance=self.cyclic_tail_tolerance,
+                )
+                return (temporal_matrix * coefficients[None, :]) @ spatial_matrix
+
+            for start, stop, chunk_values in execute_target_chunks(
+                resolved_execution, worker
+            ):
+                values_2d[start:stop] = chunk_values
             raw_minimum = float(np.min(values_2d))
             values_2d[values_2d < 0.0] = 0.0
             if not np.all(np.isfinite(values_2d)):
@@ -307,6 +354,7 @@ class TemporalNetworkKDE(BaseKDE):
             self.propagation_traces_ = traces if self.store_propagation else None
             self.network_time_bandwidths_ = fitted_bandwidths
             self.values_ = values
+            self.last_execution_ = resolved_execution
             self.fit_metadata_ = {
                 "spatial_kernel": spatial_kernel.name,
                 "temporal_kernel": temporal_kernel.name,
@@ -347,10 +395,9 @@ class TemporalNetworkKDE(BaseKDE):
                     None if distance_asset is None else distance_asset.fingerprint
                 ),
                 "path_based": policy.path_based,
-                "n_propagation_records": (
-                    0 if traces is None else sum(trace.n_records for trace in traces)
-                ),
+                "n_propagation_records": n_records,
                 "raw_minimum_before_clipping": raw_minimum,
+                "execution": resolved_execution.to_metadata(),
             }
             self._mark_fitted()
             return self
