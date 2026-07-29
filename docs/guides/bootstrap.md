@@ -583,6 +583,50 @@ record the fixed solver route, dense threshold, source and replicate heat-comput
 fingerprints, and the source-mesh DOF upper bound. Spatiotemporal results record the exact time
 domain, temporal origin, timezone, and paired-event resampling unit. Temporal-network results additionally record the exact arixel support, paired snapped-location-time resampling unit, and replicate workspace fingerprints.
 
+## Relative-risk compatibility metadata
+
+Every completed KDE Bootstrap result and ensemble now records an immutable normalized
+compatibility mapping:
+
+```text
+relative_risk_contract
+relative_risk_contract_fingerprint
+```
+
+The mapping is not a relative-risk estimate. It is an auditable prerequisite used to decide
+whether independently generated case and control density ensembles share the same fixed
+estimator and exact measured support.
+
+All families use the common keys:
+
+```text
+schema_version
+result_family
+support_fingerprint
+target
+bandwidths
+```
+
+Family-specific fields describe kernels, metric or junction policy, boundary identity,
+direction, network identity, heat policy, time domain, and cyclic-tail choices where
+relevant.
+
+The contract deliberately excludes event data, sample size, numerical fields, seed
+metadata, workers, chunks, memory budgets, and completion order. Consequently case and
+control groups with different observations can remain compatible, while a meaningful
+smoothing or support difference changes the contract fingerprint.
+
+The mapping is read-only. A standard dictionary view can be serialized for audit:
+
+```python
+contract = result.metadata["relative_risk_contract"]
+serializable = dict(contract)
+```
+
+The pre-existing estimator contract fingerprint remains available and unchanged. The
+normalized relative-risk contract exists specifically for cross-group compatibility and
+human-readable mismatch diagnostics.
+
 ## Current exclusions
 
 The current built-in Bootstrap does not include:

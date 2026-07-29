@@ -14,10 +14,11 @@ Completed development subunits:
 7. ordinary temporal-network Bootstrap on measured arixel support.
 8. fixed-exposure event-rate Bootstrap on exact measured support.
 9. detailed 02H independent relative-risk Bootstrap design.
+10. normalized 02H-1 shared density-contract metadata.
 
-The exact next implementation subunit is 02H-1: normalized shared density-contract
-metadata for all completed density Bootstrap adapters. Do not begin numerical ratio ensembles
-or public relative-risk symbols before that prerequisite passes full CI.
+The exact next implementation subunit is 02H-2: the linked immutable
+`RelativeRiskBootstrapResult` validation container. Do not compute raw/log ratio ensembles or
+expose `bootstrap_relative_risk` before the container and its validation tests pass full CI.
 
 ## Read these records in order
 
@@ -35,6 +36,8 @@ or public relative-risk symbols before that prerequisite passes full CI.
 12. `HANDOFF_0.0.16_PROGRESS_02G_FIXED_EXPOSURE_EVENT_RATE_BOOTSTRAP.md`.
 13. `docs/development/design-0.0.16-relative-risk-bootstrap.md`.
 14. `HANDOFF_0.0.16_DESIGN_RELATIVE_RISK_BOOTSTRAP.md`.
+15. `HANDOFF_0.0.16_PROGRESS_02H_1_RELATIVE_RISK_CONTRACTS.md`.
+16. `docs/development/handoff-0.0.16-progress-02h-1-relative-risk-contracts.md`.
 
 ## Current repository state
 
@@ -48,7 +51,7 @@ or public relative-risk symbols before that prerequisite passes full CI.
 - no provisional 0.0.16 top-level exports;
 - public execution namespace: `pykdex.execution`;
 - public uncertainty namespace: `pykdex.uncertainty`;
-- exact next unit: 02H-1 normalized shared density-contract metadata.
+- exact next unit: 02H-2 linked relative-risk result validation types.
 
 Inspect the current PR head, latest CI, and changed-file list once before continuing. Documentation
 and handoff commits may follow a separately validated numerical implementation head.
@@ -378,12 +381,16 @@ Methodological boundary:
   null test, or simultaneous band;
 - established relative-risk inference literature is cited in the primary design.
 
-## Exact next implementation subunit: 02H-1 shared density-contract metadata
+## Completed subunit 02H-1: normalized shared density contracts
 
-Add normalized, auditable relative-risk contract metadata to every completed density
-Bootstrap adapter while preserving existing contract fingerprints.
+Common metadata keys:
 
-Required families:
+```text
+relative_risk_contract
+relative_risk_contract_fingerprint
+```
+
+Implemented families:
 
 ```text
 spatial
@@ -393,65 +400,102 @@ spatiotemporal
 network_time
 ```
 
-The normalized mapping must include only estimator/support choices needed for relative-risk
-compatibility, such as:
+Rules:
 
-- result family and support fingerprint;
-- fixed bandwidths or fixed heat parameters;
-- kernel names;
-- metric or junction policy;
-- directedness;
-- boundary correction and boundary fingerprint;
-- network fingerprint and solver route where applicable;
-- temporal kernel, time-domain, and cyclic-tail choices where applicable.
+- the contract is an immutable mapping proxy;
+- a standard dictionary view is JSON serializable;
+- common fields are schema version, family, support fingerprint, target, and bandwidth tuple;
+- family fields record fixed kernels, metrics/policies, boundary/network/time identity, and
+  heat solver policy where relevant;
+- event fingerprints, sample size, values, seeds, workers, chunks, and budgets are excluded;
+- the original estimator contract fingerprint remains unchanged;
+- compatible estimators with different events/execution plans yield equal contracts;
+- meaningful family-specific estimator changes yield different contracts;
+- result and ensemble metadata share the same contract object.
 
-It must exclude:
+Clean implementation head:
 
-- event fingerprints and sample sizes;
-- observed/replicate values;
-- seed metadata;
-- workers, chunks, and memory budgets.
+```text
+2b867ef171618feb8d812c58a1acf2d29f8c8c2c
+```
 
-Required tests:
+CI #434 (`30419359103`) passed quality, strict documentation, full tests, branch coverage,
+distributions, installed-wheel smoke, Linux, Windows, macOS, and Python 3.11-3.14.
 
-1. equal case/control-compatible estimators produce equal normalized mappings and fingerprints;
-2. each meaningful estimator difference changes the mapping/fingerprint;
-3. event data changes do not change the shared contract;
-4. execution plan changes do not change the shared contract;
-5. all five density families expose the same metadata key;
-6. metadata is serializable, immutable after result construction, and included in ensemble and
-   result metadata;
-7. existing Bootstrap numerical values and statistical fingerprints remain unchanged except
-   for intentionally expanded result metadata identities where documented;
-8. full repository CI passes before linked result types begin.
+## Exact next implementation subunit: 02H-2 linked result validation types
+
+Implement only the immutable linked container proposed by the design:
+
+```text
+RelativeRiskBootstrapResult
+```
+
+02H-2 inputs are already constructed raw and log `BootstrapResult` fixtures. It must not
+calculate ratios or expose a public transformation function.
+
+Required owned state:
+
+- raw relative-risk `BootstrapResult`;
+- log-relative-risk `BootstrapResult`;
+- explicit `DenominatorPolicy`;
+- normalization tolerance;
+- deterministic pairing rule;
+- case and control source-result fingerprints;
+- case and control ensemble fingerprints;
+- case and control event fingerprints;
+- case and control seed-ledger fingerprints;
+- combined derived seed fingerprint;
+- observed control invalid/adjusted masks `(M,)`;
+- replicate control invalid/adjusted masks `(B, M)`;
+- immutable metadata and stable linked fingerprint.
+
+Required validation:
+
+1. raw field family is `relative_risk` and log field family is `log_relative_risk`;
+2. both nested operations are `bootstrap_relative_risk`;
+3. support, replicate count, confidence level, validity mask, estimator family, and pairing
+   fingerprints agree;
+4. case/control source and seed identities are non-empty and distinct;
+5. pairing rule is exactly `same_logical_replicate_index`;
+6. normalization tolerance is finite and positive;
+7. observed masks have shape `(M,)` and replicate masks `(B, M)`;
+8. adjusted masks are subsets of invalid masks;
+9. masks are immutable and finite boolean arrays;
+10. raw valid values are finite/non-negative;
+11. log valid values allow finite numbers and `-inf`, but reject `+inf`;
+12. metadata is immutable and the linked fingerprint changes when any statistical identity
+    changes;
+13. memory-budget or execution metadata changes do not change the linked statistical
+    fingerprint.
+
+Add focused fixtures that build nested results manually without calling a numerical ratio
+implementation.
 
 Generate:
 
 ```text
-HANDOFF_0.0.16_PROGRESS_02H_1_RELATIVE_RISK_CONTRACTS.md
-docs/development/handoff-0.0.16-progress-02h-1-relative-risk-contracts.md
+HANDOFF_0.0.16_PROGRESS_02H_2_RELATIVE_RISK_RESULT.md
+docs/development/handoff-0.0.16-progress-02h-2-relative-risk-result.md
 ```
 
-## Do not begin during 02H-1
+## Do not begin during 02H-2
 
-- `bootstrap_relative_risk` public API;
-- `RelativeRiskBootstrapResult` numerical container;
-- raw or log ratio ensemble allocation;
-- pooled case-control resampling;
-- case/control mark permutation;
+- public `bootstrap_relative_risk`;
+- numerical raw/log division;
+- density normalization scans;
+- denominator-policy application to source matrices;
+- pooled case-control resampling or permutation;
 - unequal replicate counts;
-- adaptive or independently selected case/control bandwidths;
-- significance contours or p-values;
-- simultaneous bands;
+- simultaneous bands or p-values;
 - package version bump, ready-for-review transition, or merge.
 
 ## Recovery checklist
 
-1. Inspect PR #16, current head, latest CI, and changed-file list once.
-2. Confirm the package remains `0.0.15` and PR #16 remains Draft/unmerged.
-3. Confirm temporary workflows and diagnostic files are absent.
-4. Read all fourteen required records.
-5. Preserve existing numerical behavior and execution-independent statistical identities.
-6. Implement only normalized shared density-contract metadata and its tests.
-7. Generate both 02H-1 recovery records after full CI.
-8. Do not create relative-risk output ensembles before 02H-1 closes.
+1. Inspect PR #16, current head, latest CI, and changed files once.
+2. Confirm temporary workflows are absent and package version remains `0.0.15`.
+3. Read all sixteen required records.
+4. Preserve existing Bootstrap results and contract metadata.
+5. Implement only linked result ownership and validation.
+6. Use manually constructed fixtures; do not write numerical transformation code.
+7. Generate both 02H-2 recovery records after full CI.
+8. Do not begin 02H-3 until 02H-2 closes.
