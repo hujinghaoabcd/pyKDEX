@@ -40,7 +40,7 @@ jobs:
               return text[:index] + line + text[index:]
 
           def insert_before(text: str, marker: str, block: str) -> str:
-              index = text.find(marker)
+              index = text.rfind(marker)
               if index < 0:
                   raise RuntimeError(f"marker not found: {marker!r}")
               return text[:index] + block + text[index:]
