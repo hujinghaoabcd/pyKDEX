@@ -127,5 +127,6 @@ nav:
       - 0.0.16 progress 02E: development/handoff-0.0.16-progress-02e-spatiotemporal-bootstrap.md
       - 0.0.16 progress 02F: development/handoff-0.0.16-progress-02f-temporal-network-bootstrap.md
       - 0.0.16 progress 02G: development/handoff-0.0.16-progress-02g-fixed-exposure-event-rate-bootstrap.md
+      - 0.0.16 relative-risk Bootstrap design: development/design-0.0.16-relative-risk-bootstrap.md
       - Roadmap: development/roadmap.md
   - 中文: zh/index.md
